@@ -214,7 +214,7 @@ Edit `.env`:
 ```
 LLM_API_KEY=ollama
 LLM_BASE_URL=http://localhost:11434/v1
-LLM_MODEL_NAME=qwen2.5:14b        # use 14b on MacBook, 32b on server
+LLM_MODEL_NAME=qwen3:14b           # use 14b on MacBook (24GB RAM), larger on server
 NEO4J_URI=bolt://localhost:7687
 NEO4J_AUTH=neo4j/mirofish
 ```
@@ -601,7 +601,7 @@ Deploy the consumer API on a separate server (or same server, different port). S
 | MiroFish fork strategy | Fork nikmcfly/MiroFish-Offline, add upstream remote | Most complete and documented variant; Neo4j is fine in Docker Compose |
 | MiroFish engine | nikmcfly/MiroFish-Offline (Neo4j + Ollama) | Complete, well-documented, English UI |
 | LLM backend | Chutes via OpenRouter | CPU miner stays GPU-free, ~85% cheaper than AWS |
-| Local LLM (dev) | Ollama + qwen2.5:14b | Free, runs on MacBook M-series |
+| Local LLM (dev) | Ollama + qwen3:14b | Free, runs on MacBook with 24GB RAM |
 | Graph storage | Neo4j (via Docker Compose) | Used by MiroFish-Offline, well-supported |
 | Miner hardware | CPU-only, 8 vCPU / 32 GB RAM | Accessible, low barrier for global miners |
 | Scoring | Diversity + Consistency + Latency | Objective, hard to game, rewards genuine quality |
