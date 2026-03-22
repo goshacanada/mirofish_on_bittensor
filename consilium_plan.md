@@ -31,7 +31,8 @@
 5. **Open mesh** — anyone can run a node; more nodes = richer collective knowledge
 6. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add data and explore insights. Everything else is invisible.
 7. **Educational entertainment** — Consilium helps users explore, learn, and prepare for real-world professional conversations. It is not a substitute for professional advice in any domain.
-8. **Domain-agnostic** — the architecture works identically for wellness, finance, legal, engineering, or any knowledge domain. No domain receives special regulatory treatment because no domain provides professional services.
+8. **Domain-agnostic** — the platform contains zero domain-specific code. All domain knowledge — agents, graphs, schemas — lives in external open-source repos and is loaded on-demand only when the user's data triggers it.
+9. **User-driven domains** — the platform never suggests or pre-installs domain capabilities. The user loads their own data; the system classifies it and asks permission to install the relevant domain plugin. If a user never loads medical records, no medical code ever runs on their machine.
 
 ---
 
@@ -39,23 +40,190 @@
 
 ```
 Your Machine
-├── Personal Knowledge Graph (Neo4j) ← your organized data for any domain
-├── Advisory Agent Team              ← your permanent AI consilium
-├── Data Ingestor                    ← pulls from connected data sources
-├── Local LLM (Ollama)               ← inference stays on your hardware
-└── Mesh Gateway                     ← sends anonymized questions, receives perspectives
+├── Consilium Platform (domain-agnostic core)
+│   ├── Data Classifier (LLM)          ← detects what kind of data you loaded
+│   ├── Graph Database (Neo4j)          ← empty until you add data
+│   ├── Agent Framework                 ← runs agents from installed domain plugins
+│   ├── Local LLM (Ollama)              ← inference stays on your hardware
+│   └── Mesh Gateway                    ← sends anonymized questions, receives perspectives
+│
+├── Domain Plugins (installed on-demand from GitHub repos)
+│   ├── [not installed until user loads relevant data]
+│   ├── e.g. wellness plugin ← pulled only when user uploads lab results
+│   ├── e.g. finance plugin  ← pulled only when user loads portfolio data
+│   └── e.g. legal plugin    ← pulled only when user uploads legal documents
+│
+└── Your Data (drives everything)
+    ├── Whatever you load → classified → routed to the right graph
+    └── You control what domains are active on your machine
 
 Mesh Network (other people's machines)
-├── Node A: Alice's instance    ← runs her own consilium, answers anonymized queries
-├── Node B: Bob's instance      ← same
-├── Node C: ...                 ← thousands of nodes worldwide
-└── Each node: draws on its own data context, shares only perspectives
+├── Node A: runs wellness + finance plugins    ← her data drove those installs
+├── Node B: runs only finance plugin           ← he only loaded financial data
+├── Node C: runs wellness + legal plugins      ← her data drove those installs
+└── Each node is different — shaped by its owner's data
 
 Expert Marketplace (Bittensor subnet)
 ├── Credentialed domain experts answer micro-questions
 ├── Paid per answer ($0.05–0.50) — like token pricing
-└── Answers improve the foundational knowledge graph for all nodes
+└── Answers improve domain knowledge graphs for all nodes using that domain
 ```
+
+---
+
+## Domain Plugin Architecture — The Core Legal and Technical Design
+
+**This is the most important architectural decision in Consilium.** The platform itself contains zero domain-specific code. All domain intelligence — specialist agents, knowledge graphs, schemas, data parsers — lives in **external open-source GitHub repositories** maintained by their respective communities. The platform is pure infrastructure.
+
+### How It Works
+
+```
+User loads a document (PDF, CSV, photo, API link)
+    │
+    ▼
+Data Classifier (local LLM) analyzes the content
+    │
+    ├── "This looks like a blood panel lab report"
+    │   → Domain: wellness
+    │   → Prompt: "Would you like to install the Wellness & Body Literacy plugin?"
+    │   → User confirms → platform pulls github.com/community/consilium-wellness
+    │
+    ├── "This looks like a brokerage account statement"
+    │   → Domain: finance
+    │   → Prompt: "Would you like to install the Personal Finance plugin?"
+    │   → User confirms → platform pulls github.com/community/consilium-finance
+    │
+    ├── "This looks like a lease agreement"
+    │   → Domain: legal
+    │   → Prompt: "Would you like to install the Legal Literacy plugin?"
+    │   → User confirms → platform pulls github.com/community/consilium-legal
+    │
+    └── "I can't classify this document"
+        → Stored as raw data in a general-purpose graph
+        → User can manually assign a domain later
+```
+
+**The user must explicitly confirm every domain plugin installation.** The platform never auto-installs domain capabilities. This is critical for legal positioning: every domain-specific capability is user-initiated.
+
+### What a Domain Plugin Contains
+
+Each domain plugin is a self-contained GitHub repository with a standard structure:
+
+```
+consilium-wellness/                    ← example: wellness domain plugin
+├── manifest.yaml                      ← plugin metadata, version, dependencies
+├── knowledge_graph/
+│   ├── import.py                      ← imports foundational KG into Neo4j
+│   ├── schema.cypher                  ← graph schema (node types, edge types)
+│   └── data/                          ← foundational KG data files
+│       ├── hetionet_subset.json       ← pre-processed Hetionet data
+│       └── uberon_anatomy.json        ← anatomy ontology
+├── agents/
+│   ├── agent_manifest.yaml            ← lists available specialist agents
+│   ├── cardiology_agent.py            ← agent persona + graph query patterns
+│   ├── nephrology_agent.py
+│   ├── endocrinology_agent.py
+│   └── generalist_agent.py
+├── parsers/
+│   ├── lab_pdf_parser.py              ← extracts structured data from lab PDFs
+│   ├── apple_health_parser.py         ← parses Apple Health XML export
+│   ├── fhir_parser.py                 ← imports FHIR-format records
+│   └── oura_parser.py                 ← Oura Ring API client
+├── questions/
+│   ├── question_templates.yaml        ← templates for expert micro-questions
+│   └── golden_sets.yaml               ← known-correct Q&A for expert calibration
+├── ui/
+│   ├── dashboard_widgets.json         ← domain-specific UI components
+│   └── explore_prompts.yaml           ← suggested exploration topics
+└── README.md                          ← domain documentation
+```
+
+**Anyone can create a domain plugin.** The plugin format is open-source and documented. A researcher could create a `consilium-genomics` plugin. A fitness community could create `consilium-athletics`. A car enthusiast could create `consilium-automotive-maintenance`. The platform doesn't control what domains exist — the community does.
+
+### Existing Open-Source Projects as Plugins
+
+Domain plugins can wrap existing open-source projects. The platform doesn't re-invent domain expertise — it provides a standardized interface for existing work:
+
+| Domain | Existing project | What the plugin wraps |
+|--------|-----------------|----------------------|
+| Wellness | **MDAgents** (github.com/gersteinlab/MDAgents) | Multi-agent clinical reasoning framework — becomes the agent layer |
+| Wellness | **Hetionet** (github.com/hetio/hetionet) | Biomedical knowledge graph — becomes the foundational KG |
+| Wellness | **Uberon** (github.com/obophenotype/uberon) | Anatomy ontology — extends the KG |
+| Finance | **FinGPT** (github.com/AI4Finance-Foundation/FinGPT) | Financial LLM framework — becomes the agent layer |
+| Legal | **LegalBench** (github.com/HazyResearch/legalbench) | Legal reasoning benchmark — seeds the knowledge graph |
+| Engineering | **OpenStax** textbooks | Engineering fundamentals — seeds the knowledge graph |
+
+**The platform never ships with any of these.** They are pulled from GitHub only when the user's data triggers the relevant domain and the user confirms installation.
+
+### Why This Avoids FDA Completely
+
+```
+Traditional medical AI product:
+  Company ships code that processes health data → FDA says "that's SaMD"
+
+Consilium:
+  1. Company ships a generic platform with ZERO health code
+  2. User loads their own health data into the platform
+  3. Platform (generic LLM) says "this looks like health data"
+  4. User chooses to install an open-source community plugin (e.g. MDAgents)
+  5. Plugin code runs locally on user's machine
+  6. Platform never touches, distributes, or endorses health-specific code
+
+Who is the "manufacturer" of the medical device?
+  - Not Consilium (ships no health code, doesn't control plugins)
+  - Not the plugin author (open-source, no commercial relationship)
+  - Not the user (they're a consumer, not a manufacturer)
+  → There is no manufacturer → There is no medical device
+```
+
+This is the same legal model as:
+- **VS Code**: generic editor. Microsoft doesn't regulate Python extensions.
+- **WordPress**: generic CMS. Automattic doesn't regulate health plugins.
+- **Docker Hub**: generic container registry. Docker doesn't regulate medical containers.
+- **npm/PyPI**: generic package registries. They don't regulate what packages do.
+
+The platform is a **tool**, not a **product**. The domain knowledge is user-installed, community-maintained, open-source software. Consilium is the operating system; domain plugins are the apps.
+
+### Data Classifier — How the Platform Detects Domains
+
+The Data Classifier is a local LLM prompt (runs on the user's Ollama instance) that analyzes incoming data and produces a domain classification:
+
+```python
+# Simplified classifier logic (runs locally, never sends data anywhere)
+
+CLASSIFIER_PROMPT = """
+Classify this document into one of these categories:
+- wellness: medical records, lab results, prescriptions, health readings
+- finance: bank statements, portfolios, tax documents, invoices
+- legal: contracts, agreements, court filings, regulations
+- engineering: technical specs, schematics, maintenance logs
+- unknown: cannot determine
+
+Return ONLY the category name. Do not interpret the content.
+"""
+
+# User drops a PDF into Consilium
+document_text = extract_text(uploaded_file)
+domain = local_llm.classify(CLASSIFIER_PROMPT, document_text)
+
+if domain != "unknown" and domain not in installed_plugins:
+    # Ask user permission — NEVER auto-install
+    user_response = prompt_user(
+        f"This document appears to contain {domain} information. "
+        f"Would you like to install the {domain} domain plugin "
+        f"to help organize this data? (You can review the plugin "
+        f"source code at github.com/community/consilium-{domain})"
+    )
+    if user_response == "yes":
+        install_plugin(f"consilium-{domain}")
+```
+
+**Key constraints on the classifier:**
+- Runs locally (never sends document content anywhere)
+- Only classifies — does not interpret, analyze, or extract
+- Outputs a single category label, not domain-specific insights
+- The classifier prompt is domain-agnostic (the same prompt handles all domains)
+- Classification happens BEFORE any domain plugin is loaded
 
 When your local agents face a question beyond their confidence, the Mesh Gateway asks the network:
 > *"Individual has elevated creatinine trending up over 8 months, concurrent metformin use, HbA1c 7.2, eGFR declining — what patterns does your wellness agent see?"*
@@ -66,11 +234,13 @@ No name. No age. No location. Just the data points needed for pattern recognitio
 
 ## Knowledge Foundation — Domain Knowledge Graphs
 
-Before personal data is added, each domain is pre-loaded with a **foundational knowledge graph** — a map of entities, systems, and their relationships. Agents reason against this foundation to interpret personal data in domain context.
+When a domain plugin is installed (user-initiated), it imports a **foundational knowledge graph** into the local Neo4j instance — a map of domain entities and their relationships. Agents from that plugin reason against this foundation to interpret user data in domain context.
 
-**Wellness & Body Literacy domain** (primary launch domain):
+**The platform ships with no knowledge graph.** The graph database is empty until the user loads data and installs a domain plugin. Each plugin brings its own graph schema, import scripts, and foundational data.
 
-The wellness knowledge graph maps organs, systems, biomarkers, and their relationships.
+**Example: Wellness & Body Literacy domain plugin** (primary launch domain):
+
+When installed, the wellness plugin imports a knowledge graph mapping organs, systems, biomarkers, and their relationships.
 
 ### The Two-Layer Graph
 
@@ -317,24 +487,33 @@ Raw data (PDF, API, XML)
 
 ---
 
-## Phase 2 — Local Specialist Agent Team
+## Phase 2 — Local Agent Team (Plugin-Provided)
 
-### 2.1 Specialist Roles
+### 2.1 Agent Roles Are Defined by Domain Plugins
 
-Each person's local consilium includes a permanent team of specialist agents. They are instantiated as LLM personas with access to the health graph.
+The platform provides the agent framework — the ability to run persistent LLM agents with graph access. **Which agents exist is determined by the installed domain plugins**, not by the platform.
+
+**Example: Wellness plugin agents** (from `consilium-wellness/agents/`):
 
 | Agent | Specialty | Watches for |
 |-------|-----------|-------------|
-| `GeneralistAgent` | Primary care, triage | Overall health, flags for specialists |
-| `CardiologyAgent` | Heart, vascular | ECG anomalies, BP trends, cardiac risk |
-| `NephrologyAgent` | Kidneys | eGFR decline, creatinine, electrolytes |
-| `EndocrinologyAgent` | Hormones, metabolism | HbA1c, thyroid, glucose, insulin resistance |
-| `NeurologyAgent` | Brain, nervous system | Sleep quality, HRV, cognitive markers |
-| `HematologyAgent` | Blood | CBC trends, hemoglobin, inflammation markers |
-| `PulmonologyAgent` | Lungs, respiratory | SpO2 trends, sleep apnea indicators |
-| `GastroAgent` | Digestive system | Liver enzymes, gut microbiome markers |
-| `PharmacologyAgent` | Drug interactions | Monitors all medications for conflicts |
-| `PreventionAgent` | Risk modeling | Projects future risks from current trends |
+| `GeneralistAgent` | Primary care patterns | Overall trends, flags for specialists |
+| `CardiologyAgent` | Heart, vascular | ECG anomalies, BP trends |
+| `NephrologyAgent` | Kidneys | eGFR patterns, creatinine, electrolytes |
+| `EndocrinologyAgent` | Hormones, metabolism | HbA1c, thyroid, glucose patterns |
+| `NeurologyAgent` | Brain, nervous system | Sleep quality, HRV |
+| `HematologyAgent` | Blood | CBC trends, hemoglobin |
+| `PharmacologyAgent` | Drug interactions | Monitors all medications for known conflicts |
+
+**Example: Finance plugin agents** (from `consilium-finance/agents/`):
+
+| Agent | Specialty | Watches for |
+|-------|-----------|-------------|
+| `PortfolioAgent` | Asset allocation | Concentration risk, sector exposure |
+| `TaxAgent` | Tax implications | Unrealized gains, wash sale patterns |
+| `MacroAgent` | Economic trends | Rate sensitivity, inflation exposure |
+
+**The platform doesn't know what these agents do.** It just runs them against the graph and collects their outputs. The domain-specific intelligence lives entirely in the plugin code — which is open-source, community-maintained, and user-installed.
 
 ### 2.2 Agent Memory via Graph
 
@@ -817,11 +996,13 @@ This is the same legal framing as:
 - **Wolfram Alpha**: computational knowledge, not professional consulting
 - **Fitbit / Apple Health**: wellness data display, not medical diagnosis
 
-**2. The system is domain-agnostic.**
+**2. The platform ships with zero domain-specific code.**
 
-FDA regulates Software as a Medical Device (SaMD). A general-purpose knowledge system that works identically for wellness, finance, law, and engineering is not a medical device — it's a knowledge tool. The same code, same architecture, same agent framework handles every domain. There is no health-specific logic that could be classified as medical device software.
+FDA regulates Software as a Medical Device (SaMD). Consilium's core platform contains no health-specific logic — no medical knowledge graph, no clinical agents, no lab result parsers, no health-related code of any kind. It is a graph database + agent framework + mesh protocol. Like VS Code without extensions.
 
-If the FDA were to classify Consilium as SaMD, they would also need to classify it as a financial advisory tool (SEC), a legal practice tool (state bar), and an engineering tool (licensing boards) — because it's the same system. This creates a classification absurdity that reinforces the general-purpose framing.
+All domain intelligence lives in **external open-source GitHub repositories** (e.g., MDAgents, Hetionet) that are pulled only when the user loads domain-relevant data and explicitly confirms installation. The platform operator does not author, control, endorse, or distribute these plugins. They are community-maintained open-source software.
+
+**There is no medical device to classify.** The platform is a generic tool. The health-related code is open-source community software installed by the user. This is the same model as Docker (doesn't regulate what containers run), VS Code (doesn't regulate extensions), or WordPress (doesn't regulate plugins).
 
 **3. Experts answer general knowledge questions, not case-specific queries.**
 
@@ -876,12 +1057,14 @@ Key legal distinctions:
 
 | Product | What it does | Regulatory status | Why it works |
 |---------|-------------|-------------------|-------------|
+| **VS Code** | Generic editor + community extensions (Python, medical, etc.) | Not regulated | Platform doesn't control extensions |
+| **Docker Hub** | Generic container registry — anyone can publish containers | Not regulated | Platform doesn't regulate what containers do |
+| **WordPress** | Generic CMS + 60,000 plugins (including health plugins) | Not regulated | Platform doesn't control plugin content |
+| **npm / PyPI** | Package registries hosting millions of packages | Not regulated | Registry doesn't endorse or control packages |
 | **WebMD** | Displays health information, symptom checkers | Not FDA-regulated | Educational information, not diagnosis |
-| **Apple Health** | Displays health data from wearables | Not FDA-regulated (data display); Apple Watch ECG is FDA-cleared separately | Data organization vs. clinical interpretation |
+| **Apple Health** | Displays health data from wearables | Not FDA-regulated (data display) | Data organization, not clinical interpretation |
 | **TurboTax** | Prepares tax returns using user data | Not SEC/IRS regulated as financial advice | Software tool, not a CPA practice |
-| **Duolingo** | Language education with AI tutors | Not regulated as educational institution | Entertainment/education platform |
-| **Stack Overflow** | Expert Q&A for programming | No professional liability | General knowledge sharing, not consulting |
-| **Consilium** | Organizes personal data + knowledge exploration + expert knowledge graph | Not regulated (target) | General-purpose educational knowledge tool |
+| **Consilium** | Generic knowledge platform + user-installed domain plugins | Not regulated (target) | Platform ships zero domain code; all domain intelligence is user-installed open-source community software |
 
 ### Remaining Legal Tasks
 

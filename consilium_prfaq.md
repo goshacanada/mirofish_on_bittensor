@@ -16,13 +16,15 @@ Consilium is a general-purpose knowledge organization and educational entertainm
 
 **How it works:**
 
-1. **Your knowledge graph**: Personal data — lab results, financial statements, legal documents, wearable readings — is stored in a local graph database on your device. The system comes pre-loaded with foundational domain knowledge graphs so your AI agents understand the connections between concepts.
+1. **You load your data**: Drop in a lab report PDF, connect your Apple Watch, upload a brokerage statement, or photograph a legal document. Consilium's local AI classifier detects what kind of data it is.
 
-2. **Your consilium**: A permanent team of AI advisory agents monitors your knowledge graph continuously. When new data arrives, the relevant agents review it, explore connections, and write a plain-language summary with questions you might want to discuss with your real-world professional.
+2. **Domain plugins install on-demand**: If you load a lab report and don't have a wellness plugin installed, Consilium asks: "This looks like health data. Would you like to install the Wellness & Body Literacy plugin to organize it?" You confirm, and the system pulls the relevant open-source plugin from GitHub — including domain-specific agents (like MDAgents for wellness), a foundational knowledge graph, and data parsers. **If you never load health data, no health code ever runs on your machine.**
 
-3. **The mesh**: When your local consilium faces a question beyond its confidence, it sends an anonymized query to the Consilium network — thousands of other instances running for other people. Each responding node draws on its own data context to offer a perspective. Your consilium aggregates these mesh perspectives alongside its own analysis. No data is shared — only reasoning.
+3. **Your consilium**: A permanent team of AI advisory agents from your installed plugins monitors your knowledge graph. When new data arrives, the relevant agents explore connections and generate questions you might want to discuss with your real-world professional.
 
-4. **Expert knowledge marketplace**: The knowledge graphs that all agents reason against are continuously improved by credentialed domain experts (physicians, CFAs, attorneys, engineers). Experts answer targeted micro-questions on their phone — 10–30 seconds each, paid $0.05–0.50 per answer. An LLM-powered Question Engine identifies gaps and uncertainties in the knowledge graph and generates the most informative questions to ask. Thousands of expert micro-answers accumulate into a continuously improving knowledge base.
+4. **The mesh**: When your local consilium faces a question beyond its confidence, it sends an anonymized query to the Consilium network — thousands of other instances. Each node has different plugins installed depending on what data its owner loaded. Your consilium aggregates mesh perspectives alongside its own analysis. No data is shared — only reasoning.
+
+5. **Expert knowledge marketplace**: The knowledge graphs that plugins provide are continuously improved by credentialed domain experts answering targeted micro-questions on their phone — 10–30 seconds each, paid $0.05–0.50 per answer. An LLM-powered Question Engine identifies gaps in the knowledge graph and generates the most informative questions to fill them.
 
 **Consilium does not provide professional advice of any kind.** It is an educational entertainment and knowledge exploration tool that helps users organize information and prepare for conversations with qualified professionals.
 
@@ -48,7 +50,7 @@ A: On your device only. Consilium runs a local database on your computer. Your d
 
 **Q: What domains does Consilium support?**
 
-A: At launch: Wellness & Body Literacy (health data, lab results, wearable readings), Personal Finance (coming soon), and Legal Literacy (coming soon). The architecture is domain-agnostic — adding a new domain means importing a new foundational knowledge graph and onboarding domain-specific experts.
+A: Consilium itself is domain-agnostic — it's a blank canvas. Domains are added through **open-source plugins** that install automatically when you load relevant data. If you upload a lab report, it asks if you want the Wellness plugin (which wraps projects like MDAgents and Hetionet from GitHub). If you upload a brokerage statement, it asks about the Finance plugin. If you never load health data, no health code ever touches your machine. Anyone can create a domain plugin — there's a community-maintained registry of available plugins.
 
 **Q: Do I need to be technical to use Consilium?**
 
@@ -122,15 +124,28 @@ A: The micro-question model dramatically lowers the bar:
 
 **Q: Why is Consilium not a regulated product?**
 
-A: Five reasons, each independently sufficient:
+A: The platform ships with **zero domain-specific code**. No health logic, no financial logic, no legal logic. It is a graph database + agent framework + mesh protocol — pure infrastructure. All domain intelligence is delivered through open-source community plugins that install only when the user loads relevant data and explicitly confirms.
 
-1. **General-purpose**: It handles wellness, finance, legal, and engineering identically. It is a knowledge tool, not a medical/financial/legal product.
-2. **No professional advice**: Agents present patterns and generate questions — never recommendations, diagnoses, or prescriptions. UI enforces observational language only.
-3. **No professional-client relationship**: Experts answer general knowledge questions, never see user data, and are not providing professional services.
-4. **Local data only**: User data never leaves the device. No covered entity relationship under HIPAA or equivalent.
-5. **Educational entertainment**: Same legal category as WebMD, TurboTax, Duolingo, and Stack Overflow.
+This is the same model as VS Code (doesn't regulate extensions), Docker (doesn't regulate containers), WordPress (doesn't regulate plugins), and npm (doesn't regulate packages). The FDA cannot classify a generic platform as a Software as a Medical Device when the platform contains no medical software. The health-specific code (MDAgents, Hetionet, etc.) is open-source community software that the user independently chooses to install.
 
-Precedent: WebMD has operated for 25+ years displaying health information without FDA classification. TurboTax prepares tax returns without being classified as a CPA practice. Consilium follows the same established patterns.
+Additional defenses, each independently sufficient:
+
+1. **No professional advice**: Agents present patterns and generate questions — never recommendations, diagnoses, or prescriptions.
+2. **No professional-client relationship**: Experts answer general knowledge questions, never see user data.
+3. **Local data only**: User data never leaves the device. No HIPAA covered entity relationship.
+4. **User-initiated everything**: The platform never suggests loading health data or installing health plugins. The user drives every domain-specific action.
+
+Precedent: VS Code has medical imaging extensions. Docker Hub hosts clinical containers. npm hosts healthcare packages. None of these platforms are FDA-regulated because they are generic infrastructure, not medical products.
+
+**Q: How does the domain plugin system work?**
+
+A: When a user loads data (drops a PDF, connects a data source), the platform's local LLM classifier detects the domain (wellness, finance, legal, etc.). If no plugin for that domain is installed, the platform asks: "This looks like [domain] data. Would you like to install the [domain] plugin?" The user confirms, and the platform pulls the open-source plugin repository from GitHub.
+
+Each plugin is a self-contained GitHub repo containing: (1) a foundational knowledge graph for the domain, (2) domain-specific AI agents, (3) data parsers for domain document types, and (4) micro-question templates for expert validation. Anyone can create a plugin — the format is open and documented.
+
+Critically: the platform never auto-installs plugins, never pre-loads domain capabilities, and never suggests what data the user should load. Every domain activation is user-initiated. This creates a clean legal separation between the platform (generic infrastructure) and domain intelligence (user-installed community software).
+
+Existing open-source projects serve as plugin foundations: MDAgents and Hetionet for wellness, FinGPT for finance, LegalBench for legal reasoning.
 
 **Q: How does the Bittensor integration work?**
 
