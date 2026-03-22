@@ -557,196 +557,214 @@ Getting the first 50 doctors is the hardest problem. Concrete strategies:
 
 **Target: 50 credentialed doctors across 5 specialties before subnet launch.**
 
-### What Doctors Actually Review
+### What Doctors Actually Do — Micro-Questions, Not Full Diagnoses
 
-Doctors receive **anonymized opinion packages** — never the patient's identity:
+**Key design principle:** Doctors are never asked to review a full case or provide a diagnosis. Instead, the system asks them **small, targeted questions** — each answerable in 10–30 seconds. Doctors are paid per answer at a nominal rate, like paying for tokens. The system uses an LLM to generate questions that will maximally improve the body knowledge graph and agent reasoning.
 
-```json
-{
-  "case_id": "case_8f3a...",
-  "specialty": "nephrology",
-  "anonymized_context": {
-    "conditions": ["Type 2 Diabetes (8 years)", "Hypertension"],
-    "medications": ["Metformin 1000mg", "Lisinopril 10mg"],
-    "labs": { "eGFR_trend": "68→61→58→55→52 over 20 months", "creatinine": "1.8 mg/dL", "Hgb": "10.2" },
-    "wearables": { "avg_hrv": "38ms declining", "avg_sleep": "5.8h" }
-  },
-  "agent_opinion": "eGFR decline rate of ~4 pts/year in diabetic is concerning.
-                    Anemia of CKD likely. Recommend: urine ACR, iron studies, PTH.
-                    Metformin review at eGFR <45. Nephrology referral within 3 months.",
-  "rubric": [
-    { "criterion": "Correctly identified anemia of CKD as likely cause", "weight": 0.25 },
-    { "criterion": "Cited appropriate eGFR threshold for metformin review (45 mL/min)", "weight": 0.20 },
-    { "criterion": "Recommended appropriate next tests (ACR, iron, PTH)", "weight": 0.30 },
-    { "criterion": "Urgency framing appropriate (non-urgent but timely)", "weight": 0.15 },
-    { "criterion": "No unsafe recommendation included", "weight": 0.10 }
-  ]
-}
-```
+**Why micro-questions instead of full case review:**
+- A full case review takes 5–10 minutes, costs $10–50, and requires understanding context
+- A micro-question takes 10–30 seconds, costs $0.05–0.50, and requires only specialty knowledge
+- Micro-questions scale: 1000 questions/day across 50 doctors = massive knowledge acquisition
+- Doctors can answer between patients, in an elevator, on a phone — zero context switching
+- No risk of the doctor accidentally providing a diagnosis (regulatory/liability win)
+- Easier to golden-set test — simple questions have clearer right/wrong answers
 
-**Rubric generation — a key design challenge:**
+### The Question Engine
 
-Rubrics cannot be fully pre-built because every clinical case is unique. The system uses a **hybrid approach**:
+The heart of the system. An LLM examines the body knowledge graph and agent reasoning chains, identifies **where uncertainty lives**, and generates targeted questions to resolve it.
 
-1. **Template rubrics per specialty** (pre-authored by physician committees): generic criteria that apply to most cases in a specialty. Example for nephrology: "Correctly identified stage of CKD", "Recommended appropriate monitoring frequency", "No unsafe medication recommendation given renal function."
-
-2. **Case-specific rubric augmentation** (auto-generated per case): an LLM generates 2–4 additional criteria specific to the case details. Example: "Recognized metformin dose adjustment needed at eGFR <45." These auto-generated criteria are flagged as machine-generated.
-
-3. **Rubric validation loop**: every 100th case, a senior physician reviews the auto-generated rubric criteria and flags bad ones. Bad criteria are fed back to improve the generator. Over time, the auto-generated criteria converge toward physician quality.
-
-4. **Doctor free-text override**: doctors can always add "criterion not covered by rubric" with their own assessment. These free-text additions are reviewed and potentially promoted to template criteria.
-
-Doctors mark each criterion: met / partially met / not met, optionally adding a note. This produces a structured score vector, not just a free-text opinion.
-
-### How Scores Flow From Doctors to Chain
-
-Validators are the intermediary between human doctors and the Bittensor chain:
+**How questions are generated:**
 
 ```
-For each AI agent (miner), per tempo:
+1. Agent produces an opinion on a patient case
+   → e.g. "eGFR declining at 4pts/year, recommend nephrology referral"
 
-1. Validator selects cases for review and routes to matched doctors
-2. Doctors submit ratings via the review portal (web UI)
-3. Validator collects all doctor ratings received this tempo
-4. Validator software aggregates:
-   a. Compute weighted criterion scores (per-criterion, weighted by criterion importance)
-   b. Apply specialty weighting (in-specialty doctors weighted 2x)
-   c. Apply doctor reputation multiplier (explained below)
-   d. Blend with automated scoring signals:
-      - Guideline adherence check (automated, rule-based)
-      - Drug interaction safety check (automated, database lookup)
-      - Internal consistency check (does the opinion contradict itself?)
-5. Produce final score per miner: 0.0 → 1.0
-6. Normalize across all miners → weight vector → submit to chain
+2. The Question Engine LLM analyzes the agent's reasoning chain:
+   → What edges in the body knowledge graph did the agent traverse?
+   → Which edges have low confidence or missing evidence?
+   → Where did the agent make an assumption vs. follow established knowledge?
+   → Where do different agents in the consilium disagree?
 
-Yuma Consensus then:
-- Clips outlier validator scores toward the median (penalizes collusion)
-- Distributes TAO emissions:
-  41% → miners (proportional to aggregated scores)
-  41% → validators (proportional to stake × consensus alignment)
-  18% → subnet owner (HealthMesh protocol)
-- Validators allocate a portion of their 41% to pay doctors
+3. The LLM generates 2–5 micro-questions targeting the weakest links:
+
+   Question types:
+
+   MULTIPLE CHOICE (most common, fastest to answer):
+   "For a diabetic patient with eGFR 52 on metformin 1000mg:
+    a) Continue current dose
+    b) Reduce to 500mg
+    c) Switch to alternative
+    d) Depends on other factors (which?)"
+
+   THRESHOLD (numeric, calibrates decision boundaries):
+   "At what eGFR would you refer a diabetic patient to nephrology?
+    [slider: 30 ─── 45 ─── 60]"
+
+   YES/NO WITH CONFIDENCE (fast, binary signal):
+   "Does concurrent anemia increase urgency of nephrology referral
+    in CKD stage 3a?
+    ○ Yes  ○ No  ○ Uncertain
+    Confidence: [Low ─── Medium ─── High]"
+
+   RANKING (prioritization):
+   "Rank the next tests for declining eGFR + anemia in a diabetic:
+    [ ] Urine albumin/creatinine ratio
+    [ ] Iron studies
+    [ ] PTH level
+    [ ] Reticulocyte count
+    [ ] Vitamin B12"
+
+   FREE TEXT (rare, high-value, higher pay):
+   "What diagnosis would you consider if eGFR is declining at 4pts/year
+    but urine albumin is normal? (one sentence)"
 ```
 
-**Automated vs. human scoring split:** Not every case needs a doctor. The validator runs automated checks on 100% of miner outputs (safety, guideline adherence, internal consistency). Only a sampled subset (10–30%) goes to human doctors for full rubric review. The sampling is biased toward: complex cases, cases where automated scores are ambiguous, and cases from miners with unstable score histories. This keeps doctor workload manageable while maintaining quality.
+**Question targeting — active learning for the knowledge graph:**
 
-### Doctor Reputation and Grading
+The Question Engine doesn't generate random medical trivia. It specifically targets **edges in the body knowledge graph that would change agent behavior if updated**. This is active learning — the system identifies what it doesn't know and asks the most informative question to fill the gap.
 
-Doctor ratings are themselves scored by the validator. A doctor who consistently rates well earns higher reputation — which multiplies their per-case compensation and their weight in score aggregation.
+```
+Example: improving the decision graph
 
-**How doctor quality is measured:**
+Current state in body knowledge graph:
+  [eGFR < 45] ──REQUIRES──► [Metformin dose review]
+  confidence_tier: inferred
+  evidence_count: 12
+
+Question Engine identifies:
+  - This edge drives a key agent recommendation
+  - Confidence is "inferred" (not established)
+  - The threshold (45) is uncertain — some guidelines say 30, others say 45
+  - If the threshold is wrong, thousands of agent opinions are miscalibrated
+
+Generated question:
+  "At what eGFR would you begin reducing metformin dose?
+   [slider: 20 ─── 30 ─── 45 ─── 60]"
+   Sent to: 20 nephrologists + 20 endocrinologists
+
+Results: median answer = 30, IQR = 25–45
+  → Edge updated: [eGFR < 30] ──REQUIRES──► [Metformin discontinuation]
+                  [eGFR 30–45] ──REQUIRES──► [Metformin dose reduction]
+  → confidence_tier upgraded: inferred → established
+  → evidence_count: 40 (physician responses)
+  → All agents using this edge now have better calibration
+```
+
+### How Doctor Answers Flow to the Chain
+
+```
+Question Engine generates questions from agent reasoning gaps
+    → Questions routed to matched doctors via validator portals
+    → Each question sent to 3–10 doctors in the relevant specialty
+    → Doctors answer on phone/web (10–30 seconds each)
+    → Validator collects answers, computes consensus:
+        - Multiple choice: majority vote + agreement %
+        - Threshold: median + IQR
+        - Yes/No: proportion + confidence-weighted average
+        - Ranking: Borda count or similar aggregation
+    → Consensus answers fed back into body knowledge graph:
+        - Update edge confidence tiers
+        - Adjust decision thresholds
+        - Add new edges if doctor answers reveal missing relationships
+    → Validator scores each miner's agent opinions against
+       the updated knowledge graph:
+        - Agents whose reasoning aligned with doctor consensus → higher score
+        - Agents whose reasoning contradicted doctor consensus → lower score
+    → Weight vector submitted to chain via Commit-Reveal
+    → Yuma Consensus distributes emissions
+```
+
+**The key insight:** Doctors don't score agents directly. They answer knowledge questions. The system uses those answers to update the knowledge graph, and then agents are scored automatically against the improved graph. This separates the doctor's contribution (medical knowledge) from the scoring mechanism (automated, deterministic).
+
+### Pricing — Doctors as Tokens
+
+Doctors are paid per answer, not per case. The pricing model mirrors LLM token pricing:
+
+```
+Question type         Estimated time    Pay per answer
+─────────────────────────────────────────────────────
+Multiple choice       10 sec            $0.05–0.10
+Yes/No + confidence   10 sec            $0.05–0.10
+Threshold (slider)    15 sec            $0.10–0.20
+Ranking               20 sec            $0.15–0.25
+Free text             30–60 sec         $0.25–0.50
+```
+
+**At scale:**
+- A doctor answering questions during downtime: 100 questions/day × $0.10 avg = $10/day
+- A doctor doing a focused 30-min session: 60–100 questions = $6–10/session
+- A motivated doctor doing 2 sessions/day: $12–20/day supplemental income
+- Not life-changing money, but **zero-friction** — no scheduling, no context, no liability
+- The real draw for early adopters: CME credits + shaping the AI that will define their specialty
+
+**Cost to the network:**
+- 1000 questions/day × $0.10 avg = $100/day = $3K/month in doctor payments
+- This is paid from validator emissions (41% of subnet TAO)
+- At current TAO prices and moderate subnet emissions, this is sustainable
+- Compare to: one traditional medical consultation costs $200–500
+
+### Doctor Reputation — Graded on Answer Quality
+
+Every doctor answer is graded. Doctors who answer well see more questions and higher pay. Doctors who answer poorly or randomly get fewer questions.
+
+**How answer quality is measured:**
 
 | Signal | Timing | Weight |
 |--------|--------|--------|
-| Consensus with other credentialed doctors reviewing the same case | Immediate | 40% |
-| Golden set accuracy (known-correct cases injected blind) | Immediate | 30% |
-| Proxy outcome alignment (did the recommended test confirm the hypothesis?) | Weeks–months | 20% |
-| Long-term retrospective outcome (patient trajectory) | Months–years | 10% |
+| Agreement with other doctors on the same question | Immediate | 50% |
+| Golden set accuracy (questions with known textbook answers) | Immediate | 30% |
+| Downstream agent improvement (did the updated edge improve agent performance?) | Weeks | 20% |
 
-**Golden sets:** The HealthMesh protocol maintains a curated library of cases with physician-consensus ground truth (analogous to HealthBench's 48K rubric criteria). 10–20% of cases sent to doctors are golden sets — the doctor doesn't know which ones. This calibrates and audits every doctor in real time. Golden sets are stratified by specialty and difficulty.
+**Golden sets are easy with micro-questions:** "What is the normal range for serum creatinine in adult males?" has a definitive answer. 15–20% of questions are golden sets — the doctor never knows which ones.
 
-**Consensus scoring:** Each case is sent to 3–5 doctors in the same specialty. Inter-doctor agreement is the primary short-term signal. A doctor who consistently agrees with the credentialed specialist majority earns high reputation; a doctor whose scores are outliers triggers review. Importantly, consensus is measured across validators — if Validator A's doctors and Validator B's doctors consistently agree, both validators gain consensus alignment in Yuma Consensus.
-
-**The reputation score** gates per-case compensation:
+**Reputation gates question volume and pay multiplier:**
 
 ```
-Effective compensation = base_rate × reputation_multiplier
-
 reputation_multiplier:
-  0.0–0.4 reputation: 0.5× (half pay — probation period)
-  0.4–0.7 reputation: 1.0× (standard rate)
-  0.7–0.9 reputation: 1.5× (senior reviewer bonus)
-  0.9–1.0 reputation: 2.0× (expert reviewer bonus)
-
-base_rate: set by each validator independently (market-driven)
-  estimated range: $10–50 per case review, depending on specialty and complexity
+  0.0–0.3: suspended (too many wrong answers)
+  0.3–0.5: 0.5× pay, limited question volume (probation)
+  0.5–0.7: 1.0× pay, standard volume
+  0.7–0.9: 1.5× pay, priority access to high-value questions
+  0.9–1.0: 2.0× pay, free-text questions unlocked, influence on question generation
 ```
 
-Doctors below 0.3 reputation for 30 consecutive days are suspended pending review.
-
-### The Delayed Ground Truth Problem
-
-Not all medical opinions can be graded immediately — outcomes arrive weeks, months, or years later. The system operates on **three time horizons**:
-
-**Immediate (same-tempo) — 70% of validator reward allocation:**
-- Automated scoring: safety checks, guideline adherence, internal consistency
-- Doctor consensus: agreement across 3–5 reviewers on the same case
-- Golden set accuracy: performance on known-correct cases
-
-**Medium-term (weeks to months) — 20% held by validator:**
-- Proxy outcome signals: did the recommended test confirm the hypothesis?
-- Example: agent recommended urine ACR test → patient uploads ACR result 6 weeks later → agent's prediction of albuminuria was confirmed
-- Validators that incorporated doctor ratings aligned with proxy outcomes earn retrospective reputation boost
-
-**Long-term (months to years) — 10% reputation adjustment:**
-- Retrospective outcome tracking: did the patient trajectory match the agent's prediction?
-- This does NOT use escrow (too complex for a doctor payment system). Instead, it adjusts **doctor reputation scores** retrospectively, which affects future earning multipliers.
-
-**Ground truth sources (patient-controlled, never mandatory):**
-- Patient uploads subsequent lab results
-- Patient marks "outcome confirmed" on a consilium case
-- Patient's future agent opinions reference back to this case
-
-**If no ground truth arrives:** medium-term allocation is released at the consensus rate after 6 months. No penalty for unavailable outcomes — the system accepts that most cases will never have confirmed outcomes.
-
-### Prediction Market Layer (Advanced)
-
-For complex or contested cases, the subnet runs a lightweight prediction market alongside standard validation:
-
-```
-Doctor A says: "eGFR will reach Stage 4 within 12 months" — stakes 10 TAO
-Doctor B says: "eGFR will stabilize with current treatment" — stakes 10 TAO
-Doctor C says: "Stage 4 within 18–24 months" — stakes 5 TAO
-
-Outcome (patient uploads eGFR 13 months later: 42 → Stage 3b, not Stage 4):
-  Doctor B partially right — recovered 8 TAO
-  Doctor C closest — recovered 9 TAO
-  Doctor A wrong — lost stake
-```
-
-Prediction markets elicit calibrated probabilistic beliefs rather than forced binary ratings. They are opt-in for doctors who want higher-stakes participation.
-
-### Anti-Gaming Mechanisms
+### Anti-Gaming for Micro-Questions
 
 | Attack | Defense |
 |--------|---------|
-| Doctor rates randomly to collect base pay | Golden set detection; low consensus → low reputation → lower compensation |
-| Doctor creates multiple accounts | One credential per verified license; NPI/license number is unique; oracle checks for duplicates |
-| Sybil attack via fake licenses | Oracle verifies against real medical board registries; license number checked for uniqueness and active status |
-| Doctors collude to inflate a specific agent | Cases are randomly assigned; doctors don't know which miner produced the opinion; cross-validator consensus penalizes coordinated outliers |
-| Agent operator bribes doctors | Doctors don't know which miner produced the opinion they're reviewing; assignment is random per case |
-| Validator fabricates doctor ratings | Cross-validator consensus: if Validator A's scores consistently diverge from Validators B, C, D (each using independent doctor pools), Yuma Consensus clips Validator A |
-| Validator runs without real doctors (all automated) | Golden sets with known-tricky edge cases designed to fool automated scoring but not real physicians; validators whose golden set patterns look automated are flagged |
-| Out-of-specialty doctor reviews nephrology cases | Credential specialty field matched at routing; out-of-specialty ratings receive 0.5× weight |
+| Doctor answers randomly to farm volume | Golden sets catch this immediately; random answers on multiple-choice have ~25% accuracy, golden set threshold is 70% |
+| Doctor always picks the same answer (e.g., always "a") | Pattern detection; questions are randomized in option order |
+| Bot answers questions (no real doctor) | Golden sets + CAPTCHA on suspicious patterns + credential re-verification |
+| Doctor creates multiple accounts | One credential per NPI/license; duplicate detection |
+| Doctors collude on answers | Questions are randomized across doctors; answer order shuffled; same question sent to doctors across different validators |
 
 ### Incentive Flow Summary
 
 ```
-Miner node produces clinical opinion
-    → Validator receives the opinion
-    → Validator runs automated scoring (safety, guidelines, consistency)
-    → Validator routes 10–30% of cases to credentialed doctors via review portal
-    → Doctors review anonymized case + agent opinion against rubric (web UI)
-    → Validator aggregates automated + doctor scores
-    → Validator submits weight vector via Commit-Reveal to chain
-    → Yuma Consensus runs across all validators
-    → TAO emission this tempo:
-        41% → miner nodes (proportional to aggregated scores)
-        41% → validators (proportional to stake × consensus alignment)
-            └─ validators pay doctors from this allocation (variable %)
-        18% → HealthMesh subnet (funds oracle, rubric library, development)
+Agent produces clinical opinion
+    → Question Engine LLM identifies uncertainty in agent's reasoning
+    → Generates 2–5 targeted micro-questions
+    → Questions routed to 3–10 matched doctors via validator portals
+    → Doctors answer (10–30 sec each, $0.05–0.50 per answer)
+    → Validator aggregates answers → consensus
+    → Consensus updates body knowledge graph (edge confidence, thresholds)
+    → Agents re-scored against improved knowledge graph
+    → Validator submits weight vector to chain
+    → TAO emissions:
+        41% → miners (agents aligned with doctor-validated knowledge earn more)
+        41% → validators (consensus-aligned validators earn more)
+            └─ validators pay doctors per answer from their allocation
+        18% → HealthMesh subnet (funds Question Engine, oracle, development)
 ```
-
-**Validator economics:** A validator's main costs are (1) doctor compensation, (2) infrastructure, and (3) TAO stake opportunity cost. Validators compete for doctors by offering competitive per-case rates. Validators with higher-quality doctor pools produce weight vectors more aligned with consensus → earn more TAO → can afford to pay doctors more. This creates a virtuous cycle.
 
 ### Why Doctors Will Participate
 
-- **Revenue**: $10–50 per case review (set by the validator market). A high-reputation specialist reviewing 15–20 cases/day = $150–1000/day in supplemental income. Paid in fiat via Stripe — no crypto knowledge needed.
-- **CME credits**: partnership with CME accreditors means reviewing AI diagnostic opinions counts toward mandatory continuing education hours. Doctors already pay $500–2000/year for CME — HealthMesh makes it paid instead.
-- **Low friction**: reviewing a pre-structured rubric for an anonymized case takes 5–10 minutes. No scheduling, no patient contact, fully asynchronous. Works on mobile.
-- **No liability**: doctors are rating AI agent opinions on anonymized contexts — they are not treating patients and carry no clinical or malpractice liability.
-- **Specialty impact**: cardiologists directly shape which cardiology agents survive and which die. The best agents for their specialty win, improving care globally. This is meaningful for physicians who care about AI safety in medicine.
-- **Research opportunities**: the dataset of doctor-vs-AI agreement patterns is publishable. Academic physicians can co-author papers on AI diagnostic quality in their specialty.
+- **Zero friction**: answer questions on your phone while waiting for coffee. 10 seconds per question. No case review, no context loading, no documentation.
+- **Paid per answer**: like a medical trivia game that pays. $0.05–0.50 per answer, accumulating passively throughout the day.
+- **CME credits**: partnership with CME accreditors. Answering clinical micro-questions counts toward continuing education hours. Doctors already pay for CME — this pays them instead.
+- **No liability**: doctors answer general medical knowledge questions, not patient-specific cases. No doctor-patient relationship. No diagnosis. No malpractice exposure.
+- **Shape the AI**: high-reputation doctors directly influence which knowledge edges the AI relies on. For physicians who care about AI safety in medicine, this is a way to ensure the AI in their specialty gets it right.
+- **Research value**: aggregate question-answer patterns across specialties are publishable. Academic physicians can co-author papers on clinical knowledge consensus.
 
 ---
 
@@ -829,12 +847,18 @@ TAO emissions fund the network initially, but long-term sustainability requires 
 Per patient node per month:
   Infrastructure cost: ~$5 (Neo4j + Ollama on modest hardware)
   Mesh query cost:     ~$2 (10 queries × $0.20 per query in LLM inference)
-  Doctor validation:   ~$10 (2 doctor-reviewed cases × $5 per case)
-  Total cost:          ~$17/month
+  Doctor micro-questions: ~$1 (20 questions generated × $0.05 avg per answer)
+  Question Engine LLM:  ~$0.50 (generating questions from reasoning gaps)
+  Total cost:          ~$8.50/month
 
-Revenue needed per patient: $20–50/month subscription covers costs + margin
-Break-even at scale: ~1000 paying subscribers = $20K–50K/month revenue
+Revenue needed per patient: $29/month subscription covers costs with healthy margin
+Break-even at scale: ~500 paying subscribers = ~$14.5K/month revenue
 ```
+
+**Doctor costs are dramatically lower with micro-questions:**
+- Old model: $10–50 per full case review → ~$10/patient/month
+- New model: $0.05–0.50 per micro-question → ~$1/patient/month
+- 10× cheaper per unit of doctor knowledge acquired
 
 ---
 
@@ -852,8 +876,8 @@ Break-even at scale: ~1000 paying subscribers = $20K–50K/month revenue
 | Mesh protocol | libp2p (same as IPFS) | Mature P2P networking, DHT built-in |
 | Bittensor subnet | bittensor SDK + Yuma Consensus | Incentive layer; validators run automated scoring + doctor portal |
 | Doctor credentialing | Medical board oracle (NPPES/state APIs) + optional on-chain SBT | Verified credentials; doctor never needs crypto |
-| Doctor review portal | React web app hosted by validators | Rubric-based case review, Stripe payments, mobile-friendly |
-| Prediction markets | Lightweight on-chain market per contested case (Phase 12) | Calibrates probabilistic physician beliefs; opt-in for doctors |
+| Question Engine | LLM analyzing agent reasoning chains → generates targeted micro-questions | Active learning for body knowledge graph; identifies and fills knowledge gaps |
+| Doctor question portal | React PWA (mobile-first) hosted by validators | Micro-question interface, Stripe payments, 10-sec answer flow |
 | Patient frontend | React + local web server | Dashboard on localhost |
 | Privacy (Phase 4) | SGX / TDX TEE, ZK-SNARKs, k-anonymity | Industry standard for confidential compute + re-identification prevention |
 
@@ -957,10 +981,10 @@ The user never sees a graph, a database query, or an agent prompt. They see: "Yo
 | **6** | Proactive monitoring — scheduled agent checks, alerts | Agents watch your data continuously |
 | **7** | Mesh protocol — P2P consultation requests | Your node asks others for opinions |
 | **8** | Bittensor subnet registration + miner interface | Agent nodes earn TAO for quality opinions |
-| **9** | Doctor credentialing oracle + SBT issuance | Verified doctors can join as validators |
-| **10** | Doctor review UI + rubric engine | Doctors review cases and submit scores |
-| **11** | Reward escrow + outcome confirmation | 30% of doctor rewards held until outcomes confirmed |
-| **12** | Prediction market layer | High-stakes probabilistic doctor validation |
+| **9** | Doctor credentialing oracle + SBT issuance | Verified doctors can join as question answerers |
+| **10** | Question Engine + doctor question portal (mobile PWA) | LLM generates micro-questions, doctors answer on phone |
+| **11** | Knowledge graph feedback loop — answers update edge confidence | Doctor answers improve agent reasoning automatically |
+| **12** | Doctor reputation system + pay-per-answer billing | Quality control on doctor answers, Stripe payouts |
 | **13** | macOS native app — one-click install, no terminal | Non-technical MacBook users can onboard |
 | **14** | HealthMesh Appliance — hardware design, manufacturing, distribution | Mass-market plug-and-play device |
 | **15** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
@@ -1041,7 +1065,8 @@ Issues that need resolution before mainnet launch. Honest assessment of what's u
 
 1. **Model benchmarking**: What is the minimum model size / capability threshold for clinical reasoning quality that doctors would rate as "acceptable"? Is qwen3:14b-Q4 sufficient, or does this require 70B+ models?
 2. **Rubric scalability**: Can auto-generated rubric criteria achieve physician-level quality at scale, or will this always require human curation?
-3. **Doctor retention**: What per-case rate is needed to retain doctors long-term? How does this compare to telehealth moonlighting rates ($40–100/hour)?
-4. **Federated pattern detection**: Has anyone implemented the "pattern ballot + boolean attestation" protocol at scale? What are the failure modes?
+3. **Doctor engagement curve**: Will doctors sustain interest in answering micro-questions long-term, or does novelty wear off? Need to design progression mechanics (unlock harder/higher-paying question types as reputation grows) to maintain engagement.
+4. **Question Engine quality**: Can the LLM reliably identify the most informative questions to ask? Bad questions waste doctor time and budget. Need to measure information gain per question and optimize the generator.
+5. **Federated pattern detection**: Has anyone implemented the "pattern ballot + boolean attestation" protocol at scale? What are the failure modes?
 5. **Graph import engineering**: How much work is the Hetionet + Uberon → unified schema merge? Is this weeks or months of data engineering?
 6. **Appliance hardware selection**: Raspberry Pi 5 (4/8GB) vs Intel NUC vs custom ARM board? Need to benchmark Neo4j + Ollama + quantized LLM on candidate hardware. Can a Pi 5 with 8GB run qwen3:8b quantized with acceptable latency for agent reasoning?

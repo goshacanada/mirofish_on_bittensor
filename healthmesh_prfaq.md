@@ -22,7 +22,7 @@ Unlike existing health AI tools (ChatGPT, Apple Health Intelligence, telehealth 
 
 3. **The mesh**: When your local consilium faces a case beyond its confidence, it sends an anonymized query to the HealthMesh network — thousands of other instances running for other people. Each responding node draws on its own patient's longitudinal case history to offer an opinion. Your consilium aggregates these mesh opinions alongside its own analysis. No data is shared — only reasoning.
 
-4. **Doctor validation**: Every AI opinion produced by the network is subject to review by credentialed physicians. HealthMesh runs as a Bittensor subnet where AI agent nodes (miners) earn TAO tokens proportional to the quality of their clinical opinions, as judged by board-certified doctors. Doctors review anonymized cases through a simple web portal, earning competitive per-case compensation without needing any cryptocurrency knowledge. Validators — the infrastructure operators connecting doctors to the network — compete to recruit the best physician reviewers, creating a self-improving quality loop.
+4. **Doctor-in-the-loop knowledge**: The AI's medical knowledge graph is continuously refined by real physicians — but doctors never review full cases or provide diagnoses. Instead, the system uses an LLM-powered Question Engine that identifies gaps and uncertainties in the AI's reasoning and generates targeted micro-questions for doctors: "At what eGFR would you refer a diabetic patient to nephrology? [slider: 30–60]". Doctors answer on their phone in 10–30 seconds, earning a small fee per answer (like token pricing — $0.05–0.50 per question). Thousands of these micro-answers continuously improve the knowledge graph that all AI agents reason against. The result: AI opinions grounded in physician-validated knowledge, without requiring any single doctor to review a full patient case.
 
 **HealthMesh is available for early access starting [date]. Patients can run the local consilium for free. Mesh consultations and doctor-validated opinions require a Pro subscription ($29/month).**
 
@@ -52,7 +52,7 @@ A: At launch: Apple Health (heart rate, ECG, SpO2, activity, sleep), Oura Ring (
 
 **Q: How accurate are the AI specialist opinions?**
 
-A: Every AI opinion produced by the mesh is subject to review by board-certified physicians in the relevant specialty. Doctors rate AI opinions against structured clinical rubrics, and AI agents that consistently produce low-quality opinions are deprioritized by the network. The system also injects known-correct test cases to continuously calibrate quality. However, HealthMesh is not FDA-cleared as a diagnostic tool, and all opinions should be discussed with your physician before acting on them.
+A: The medical knowledge graph that all AI agents reason against is continuously validated by real physicians. The system generates thousands of targeted micro-questions daily — clinical knowledge questions answered by credentialed doctors in 10–30 seconds each. These answers update the knowledge edges that agents use for reasoning. AI agents whose opinions align with doctor-validated knowledge earn more from the network; agents that contradict validated knowledge are deprioritized. The system also injects known-correct test questions to continuously audit doctor answer quality. However, HealthMesh is not FDA-cleared as a diagnostic tool, and all opinions should be discussed with your physician before acting on them.
 
 **Q: Do I need to be technical to use HealthMesh?**
 
@@ -101,12 +101,13 @@ HealthMesh's moat is the network effect: more patient nodes = richer mesh opinio
 
 **Q: How do you solve the doctor cold-start problem?**
 
-A: We do not launch without doctors. Pre-launch plan:
+A: The micro-question model dramatically lowers the bar vs. traditional case review:
 
-1. **CME accreditation**: Partner with an ACCME-accredited institution so that reviewing AI diagnostic opinions counts toward mandatory continuing medical education hours. Doctors currently pay $500–2000/year for CME; HealthMesh pays them instead.
-2. **Academic partnerships**: Offer residency programs at 2–3 medical centers the review portal as a teaching tool. Residents review AI opinions as part of their clinical reasoning training.
-3. **Competitive compensation**: $10–50 per case review (5–10 minutes each), fully asynchronous, mobile-friendly. Competes favorably with telehealth moonlighting rates ($40–100/hour) on flexibility.
-4. **Target**: 50 credentialed doctors across cardiology, nephrology, endocrinology, primary care, and pulmonology before subnet registration. 3-month closed beta with 20 patients + 10 doctors to validate the feedback loop.
+1. **Near-zero friction**: Doctors answer clinical knowledge questions on their phone in 10–30 seconds. No case context to load, no diagnosis to provide. It's closer to a medical trivia app than a clinical review portal.
+2. **CME accreditation**: Partner with an ACCME-accredited institution so that answering clinical knowledge questions counts toward mandatory continuing education hours. Doctors currently pay $500–2000/year for CME; HealthMesh pays them instead.
+3. **Pay-per-answer**: $0.05–0.50 per question. Not life-changing money, but zero-effort. A doctor answering 100 questions/day during downtime earns $10/day passively.
+4. **Academic partnerships**: Offer to residency programs as a clinical reasoning training tool. Medical students and residents answering micro-questions is directly educational.
+5. **Target**: 50 credentialed doctors across 5 specialties before subnet registration. 3-month closed beta with 20 patients + 10 doctors to validate the question generation → knowledge graph improvement loop.
 
 **Q: What are the regulatory risks?**
 
@@ -114,7 +115,7 @@ A: The primary risk is FDA classification as a Software as a Medical Device (SaM
 
 1. **Phase 1–3** (local consilium + mesh): Designed to stay within the Clinical Decision Support (CDS) exemption under the 21st Century Cures Act. Agents present evidence, trends, and citations — not direct treatment recommendations. All outputs labeled as informational.
 2. **Phase 4+** (agent recommendations): Before launching features that make explicit clinical recommendations, we will pursue an FDA Pre-Submission meeting to determine the appropriate regulatory pathway (De Novo or 510(k)).
-3. **Liability**: No doctor-patient relationship exists between reviewing physicians and patients. Doctors rate AI quality; they do not treat patients. Clear terms of service and liability waivers for patients.
+3. **Liability**: No doctor-patient relationship exists. Doctors answer general medical knowledge questions — they never see patient data, never review cases, and never provide diagnoses. This is medical knowledge curation, not clinical practice. Clear terms of service and liability waivers for all participants.
 
 International expansion requires engagement with EU MDR, UK MHRA, and other regulatory bodies on a per-market basis.
 
@@ -123,11 +124,11 @@ International expansion requires engagement with EU MDR, UK MHRA, and other regu
 A: Bittensor is a decentralized network that pays AI systems for producing useful outputs. In HealthMesh:
 
 - **AI agent nodes** (miners) earn cryptocurrency (TAO) for producing high-quality clinical opinions.
-- **Validators** are infrastructure operators who run a doctor review portal. They collect physician ratings on AI opinions, aggregate them into quality scores, and submit those scores to the Bittensor network.
-- **Doctors** log into a simple web portal, review anonymized AI opinions against clinical rubrics, and get paid in dollars (via Stripe) or optionally in TAO. They never need to understand cryptocurrency.
-- The Bittensor network's consensus mechanism (Yuma Consensus) ensures that validators who submit honest quality scores earn more than those who try to game the system.
+- **Validators** are infrastructure operators who run a Question Engine and doctor question portal. They generate micro-questions from agent reasoning gaps, route them to credentialed doctors, collect answers, and update the medical knowledge graph.
+- **Doctors** answer targeted clinical knowledge questions on their phone (10–30 seconds each) and get paid per answer in dollars (via Stripe). They never need to understand cryptocurrency or review full patient cases.
+- The validator scores agents against the doctor-validated knowledge graph and submits quality scores to the Bittensor network. The consensus mechanism (Yuma Consensus) ensures honest scoring.
 
-The result: AI agents that produce poor clinical opinions earn less and are eventually removed from the network. AI agents that produce physician-validated, high-quality opinions earn more and are prioritized. The network self-improves over time.
+The result: The medical knowledge graph that all agents reason against gets continuously refined by real physicians. Agents aligned with validated knowledge earn more; agents contradicting it earn less. The network's medical reasoning improves continuously — not by training new models, but by improving the knowledge graph they all share.
 
 **Q: What is the TAO token and why does it matter?**
 
