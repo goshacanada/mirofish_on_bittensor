@@ -53,21 +53,13 @@ gh auth login
 gh auth status   # verify it worked
 ```
 
-### Step 0.3 — Fork the MiroFish repos to your GitHub account
-
-Fork both MiroFish variants you'll be working with. Do this on GitHub web **or** via the CLI:
+### Step 0.3 — Fork MiroFish-Offline to your GitHub account ✅ DONE
 
 ```bash
-# Fork the English offline fork (Neo4j + Ollama, reference implementation)
 gh repo fork nikmcfly/MiroFish-Offline --clone=false
-
-# Fork the Claude/KuzuDB fork (this becomes your miner's simulation engine)
-gh repo fork amadad/mirofish --clone=false
 ```
 
-This creates `github.com/YOUR_USERNAME/MiroFish-Offline` and `github.com/YOUR_USERNAME/mirofish` under your account.
-
-**Why both?** You'll use the offline fork (Step 1) to learn MiroFish before touching code. You'll use the amadad fork as the actual engine inside your subnet miner. Having both forked means you can commit your explorations and experiments without polluting your main subnet repo.
+This is the single MiroFish fork you'll use — both for learning and as the miner's simulation engine. It uses Neo4j + Ollama, runs entirely locally, and is the most complete and documented variant. `github.com/goshacanada/MiroFish-Offline` is already created.
 
 ### Step 0.4 — Create your main subnet project repo ✅ DONE
 
@@ -127,24 +119,13 @@ git commit -m "chore: initial .gitignore — protect secrets and wallets"
 git push origin main
 ```
 
-### Step 0.5 — Add upstream remotes to your MiroFish forks
-
-After cloning your forks locally, wire up the upstream originals so you can sync future changes:
+### Step 0.5 — Clone MiroFish-Offline locally and add upstream remote
 
 ```bash
-# Clone your fork of the amadad fork (your miner engine)
-git clone git@github.com:YOUR_USERNAME/mirofish.git mirofish-engine
-cd mirofish-engine
-git remote add upstream https://github.com/amadad/mirofish.git
-git remote -v   # should show both origin (yours) and upstream (amadad's)
-cd ..
-
-# Clone your fork of the offline fork (for learning)
-git clone git@github.com:YOUR_USERNAME/MiroFish-Offline.git mirofish-offline
-cd mirofish-offline
+git clone git@github.com:goshacanada/MiroFish-Offline.git ~/GitHub/mirofish-offline
+cd ~/GitHub/mirofish-offline
 git remote add upstream https://github.com/nikmcfly/MiroFish-Offline.git
-git remote -v
-cd ..
+git remote -v   # should show both origin (yours) and upstream (nikmcfly's)
 ```
 
 To sync upstream changes later: `git fetch upstream && git merge upstream/main`
@@ -156,8 +137,7 @@ You should have exactly this folder structure on your Mac before starting Phase 
 ```
 ~/GitHub/
 ├── mirofish_on_bittensor/   ← your main subnet project ✅ DONE
-├── mirofish-engine/         ← fork of amadad/mirofish (your simulation engine)
-└── mirofish-offline/        ← fork of nikmcfly/MiroFish-Offline (for learning)
+└── mirofish-offline/        ← fork of nikmcfly/MiroFish-Offline (learning + miner engine)
 ```
 
 ### Step 0.7 — Protect your secrets from day one
@@ -273,23 +253,6 @@ git commit -m "explore: document simulation output structure and flow"
 git push
 ```
 
-### Step 1.5 — Explore your fork of the amadad/mirofish engine
-
-```bash
-cd ~/GitHub/mirofish-engine
-claude
-```
-
-**Claude Code prompt:**
-> "Compare this fork (amadad/mirofish with KuzuDB and Claude API support) with the nikmcfly/MiroFish-Offline fork. Identify which is better suited as a Bittensor subnet miner — prioritizing: minimal external dependencies, easy Docker packaging, stable Python API for programmatic control (not just UI), and OpenAI-compatible LLM endpoint support. Document the key differences in a file called `FORK_COMPARISON.md`."
-
-Commit the comparison doc:
-```bash
-git add FORK_COMPARISON.md
-git commit -m "docs: fork comparison — amadad vs offline fork for subnet use"
-git push
-```
-
 ---
 
 ## Phase 2 — Build the Bittensor Miner Wrapper
@@ -309,7 +272,7 @@ claude
 > "In this existing git repo, create a Python project called `mirofish_on_bittensor` with this structure:
 > - `miner/` — Bittensor miner node (Axon server)
 > - `validator/` — Bittensor validator node (scoring engine)
-> - `simulation/` — MiroFish simulation wrapper (reuse amadad fork internals)
+> - `simulation/` — MiroFish simulation wrapper (reuse MiroFish-Offline internals)
 > - `api/` — Consumer REST API (FastAPI)
 > - `shared/` — Shared types, schemas, scoring utils
 > - `docker/` — Dockerfiles for each component
@@ -357,7 +320,7 @@ git push
 > 1. On init, loads or creates persistent agent populations for each `TopicDomain` (stored as JSON in `data/groups/`)
 > 2. Has a `run_query(query: SimulationQuery) -> OpinionReport` async method that:
 >    - Selects the relevant agent group
->    - Runs an OASIS simulation using the amadad/mirofish backend's `simulation_runner.py` as a subprocess
+>    - Runs an OASIS simulation using the MiroFish-Offline backend's `simulation_runner.py` as a subprocess
 >    - Parses the simulation output into an `OpinionReport`
 >    - Updates persistent agent memories with what happened
 > 3. Has a `background_update(domain: TopicDomain, news_item: str)` method for continuous updates
@@ -634,12 +597,12 @@ Deploy the consumer API on a separate server (or same server, different port). S
 
 | Decision | Choice | Reason |
 |---|---|---|
-| GitHub structure | 3 repos: subnet (yours), engine fork, offline fork | Clean separation, upstream sync, deployment via git |
-| MiroFish fork strategy | Fork both to your account, add upstream remotes | Own your changes, sync upstream updates, deploy from your repo |
-| MiroFish engine | amadad fork (English, KuzuDB) | No Neo4j dependency, Claude API support |
+| GitHub structure | 2 repos: subnet (yours) + MiroFish-Offline fork | Clean separation, upstream sync, deployment via git |
+| MiroFish fork strategy | Fork nikmcfly/MiroFish-Offline, add upstream remote | Most complete and documented variant; Neo4j is fine in Docker Compose |
+| MiroFish engine | nikmcfly/MiroFish-Offline (Neo4j + Ollama) | Complete, well-documented, English UI |
 | LLM backend | Chutes via OpenRouter | CPU miner stays GPU-free, ~85% cheaper than AWS |
 | Local LLM (dev) | Ollama + qwen2.5:14b | Free, runs on MacBook M-series |
-| Graph storage | KuzuDB (embedded) | No external service, easy Docker packaging |
+| Graph storage | Neo4j (via Docker Compose) | Used by MiroFish-Offline, well-supported |
 | Miner hardware | CPU-only, 8 vCPU / 32 GB RAM | Accessible, low barrier for global miners |
 | Scoring | Diversity + Consistency + Latency | Objective, hard to game, rewards genuine quality |
 | Consumer API | FastAPI + Redis | Async, fast, easy to deploy |
@@ -666,7 +629,7 @@ Total to mainnet: **~4–5 weeks** of focused work with Claude Code driving impl
 
 Each step has a "Claude Code prompt" — these are ready to paste directly into `claude` (Claude Code CLI). The workflow for every step is:
 
-1. `cd` into the relevant repo directory (always one of your three GitHub repos)
+1. `cd` into the relevant repo directory (either `mirofish_on_bittensor` or `mirofish-offline`)
 2. Run `claude` to start a session
 3. Paste the prompt
 4. Let Claude Code write the code, run it, and fix errors iteratively
