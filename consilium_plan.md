@@ -2,7 +2,7 @@
 
 **Vision:** Every person runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local graph database. When the AI faces a hard question, it consults a mesh of other instances worldwide and taps a network of credentialed domain experts who earn micro-payments by answering targeted knowledge questions. The result is a global knowledge improvement system where no one's data ever leaves their machine.
 
-**This is an open-source project built for the common good.** Consilium is not a company and not a product. It is free software that anyone can run, modify, and share. The goal is to give every person — regardless of means — the ability to organize complex information and walk into professional appointments prepared. Domain experts, including retirees who want to stay active and contribute their lifetime of knowledge, earn income by improving the knowledge graphs that make this possible. If it helps people have better conversations with their doctors, advisors, and attorneys, that is the reward.
+**This is an open-source project built for the common good.** The Consilium platform is free software that anyone can run, modify, and share. The Expert Portal — a company-operated service that routes micro-questions to credentialed experts — is the only paid component, funded by an optional Pro subscription (≤$20/month). The goal is to give every person — regardless of means — the ability to organize complex information and walk into professional appointments prepared. Domain experts, including retirees who want to stay active and contribute their lifetime of knowledge, earn income by improving the knowledge graphs that make this possible. If it helps people have better conversations with their doctors, advisors, and attorneys, that is the reward.
 
 **Consilium is not a product in any regulated domain.** It is a general-purpose knowledge organization and educational entertainment system. It helps users organize complex information, explore connections, and prepare for informed conversations with real-world professionals (doctors, lawyers, financial advisors, engineers). It does not provide advice, diagnoses, recommendations, or professional services of any kind.
 
@@ -26,7 +26,7 @@
 
 ## Core Principles
 
-1. **Open source, common good** — all code is free and open-source. This is not a company. It is infrastructure for people, built by people.
+1. **Open source, common good** — the platform is free and open-source. The Expert Portal is a company-operated service with a transparent fee. Infrastructure for people, built by people.
 2. **Local first** — your personal knowledge graph never leaves your device
 3. **Opinions travel, not data** — the mesh shares reasoning, not records
 4. **Graph-native** — all knowledge is modeled as a graph, enabling holistic reasoning across topics, time, and interconnected domains
@@ -70,7 +70,7 @@ Mesh Network (other people's machines)
 
 Expert Portal (company-operated service)
 ├── Credentialed domain experts answer micro-questions
-├── Earn micro-payments per answer ($0.05–0.50) funded by user deposits
+├── Earn micro-payments per answer ($0.05–0.50) funded by Pro subscriptions
 └── Answers improve domain knowledge graphs for all nodes using that domain
 ```
 
@@ -159,6 +159,39 @@ Domain plugins can wrap existing open-source projects. The platform doesn't re-i
 | Engineering | **OpenStax** textbooks | Engineering fundamentals — seeds the knowledge graph |
 
 **The platform never ships with any of these.** They are pulled from GitHub only when the user's data triggers the relevant domain and the user confirms installation.
+
+### Plugin Versioning and Security
+
+Plugins are pulled from GitHub repos and run locally on the user's machine with access to their knowledge graph. This requires security safeguards:
+
+```
+Plugin installation flow (with safety checks):
+1. User confirms plugin installation
+2. Platform fetches the plugin repo at a specific tagged release (e.g., v1.2.0)
+3. Platform verifies the release signature against the plugin registry's public key
+4. Platform displays a manifest summary: what node types, edge types, agents,
+   and parsers the plugin will install — user reviews and confirms
+5. Plugin is installed in a sandboxed directory
+6. Plugin code runs with access ONLY to its own graph namespace —
+   a wellness plugin cannot read finance graph data
+
+Plugin updates:
+- Updates are checked periodically (configurable: daily, weekly, manual)
+- Updates require user confirmation — never auto-applied
+- Each update shows a diff of what changed (new agents, schema changes, etc.)
+- User can pin a specific version and skip updates
+- Rollback to previous version is always available
+
+Security model:
+- Plugins are open-source — anyone can audit the code before installing
+- A community-maintained plugin registry lists reviewed plugins
+  with security audit status (audited / unaudited / flagged)
+- Unaudited plugins show a warning: "This plugin has not been reviewed
+  by the community. Install at your own risk."
+- Plugin sandboxing prevents cross-domain data access
+- Plugins cannot make network requests except through the platform's
+  Mesh Gateway (which enforces anonymization)
+```
 
 ### Why This Avoids FDA Completely
 
@@ -721,7 +754,7 @@ The responding node's agent draws on its *own patient's graph* to inform its opi
 
 **Volume:** a single consultation might query 5–20 nodes. Perspectives are aggregated by the local GeneralistAgent (or equivalent coordinator from the plugin).
 
-### 3.5 Mesh Credit System — BitTorrent-Style Barter
+### 3.4 Mesh Credit System — BitTorrent-Style Barter
 
 Mesh queries are free — no money changes hands. Instead, the mesh uses a **credit-based barter system** inspired by BitTorrent's tit-for-tat protocol:
 
@@ -735,7 +768,9 @@ You configure your capacity       → "serve up to N queries/day"
 - Each node tracks its own balance with each peer (peer-to-peer, no central ledger)
 - Serving a query for another node earns 1 credit with that peer
 - Sending a query to another node costs 1 credit with that peer
-- New nodes start with a small free credit allowance to bootstrap
+- New nodes start with 10 free credits to bootstrap (enough for a few initial consultations)
+- Free credits are one-time — not replenished. After that, you earn by serving.
+- Node identity is tied to a cryptographic keypair generated on first install — creating new nodes to farm free credits requires a fresh installation with empty data, which makes the node useless for serving (no data = no valuable perspectives = no one queries it)
 - Nodes that only consume and never serve eventually run out of credits and can't query the mesh — the system self-balances
 
 **Configurable capacity:** Users configure how many mesh queries their node will serve per day. A user with a powerful machine and rich data might serve 100 queries/day and accumulate credits quickly. A user with a laptop might serve 10 queries/day. The more you give, the more you can ask.
@@ -744,7 +779,7 @@ You configure your capacity       → "serve up to N queries/day"
 
 **Relationship to the Expert Portal:** The mesh (free, barter-based) and the Expert Portal (paid, company-operated) are completely separate systems. A user with zero money can still use the mesh to query other nodes' agents. The Expert Portal is only needed when the user wants to fund expert micro-questions to fill specific knowledge gaps.
 
-### 3.6 External AI Escalation
+### 3.5 External AI Escalation
 
 If the user configures an external LLM API key (OpenAI, Anthropic, Google, etc.), the system can escalate to more powerful AI models when the local LLM and mesh perspectives aren't sufficient. This is entirely user-controlled:
 
@@ -753,7 +788,7 @@ Reasoning escalation chain:
 1. Local LLM (Ollama, free, private)        ← default, handles most queries
 2. Mesh consultation (credit-based, free)    ← other nodes' agents weigh in
 3. External AI API (user's API key, paid)    ← more powerful model for hard questions
-4. Expert Portal (user's deposit, paid)      ← human expert for knowledge gaps
+4. Expert Portal (Pro subscription, paid)     ← human expert for knowledge gaps
 ```
 
 **How it works:**
@@ -764,7 +799,7 @@ Reasoning escalation chain:
 
 **Why this matters:** A local qwen3:14b quantized model may struggle with complex multi-system reasoning that GPT-4 or Claude handles well. Rather than compromising on reasoning quality, the user can opt into more powerful models for the hardest questions — at their own cost, under their own API key. The local system remains the default; external AI is a power-user option.
 
-### 3.4 Collective Context Without Sharing Data
+### 3.6 Collective Context Without Sharing Data
 
 **Important distinction:** agents don't "become smarter" from following one person's data — the underlying LLM's reasoning doesn't improve from longitudinal exposure. What improves is **context richness**. A node that has tracked someone's data for 10 years has a deeply populated graph: complete history, every trend, every agent opinion and whether it held up. When that node's agent answers a mesh query matching its competence tags, it draws on that deep longitudinal context — because it actually happened in its graph.
 
@@ -790,7 +825,7 @@ User's local system detects a knowledge gap
     → Expert answers on phone (10–30 seconds)
     → Portal validates answer (golden sets, consensus, pattern checks)
     → Answer flows back to update the shared knowledge graph
-    → User's balance is charged; expert is paid minus service fee
+    → Expert paid from Pro subscription pool
 
 Money flow:
     Pro user pays ≤$20/month subscription (Stripe)
@@ -876,6 +911,16 @@ reputation_score → routing priority + pay multiplier:
 ### The Question Engine
 
 The heart of the system. An LLM examines the knowledge graph and agent reasoning chains, identifies **where uncertainty lives**, and generates targeted questions to resolve it.
+
+**What runs where:**
+
+| Component | Runs on | Why |
+|-----------|---------|-----|
+| Question Engine (gap detection + question generation) | User's machine (local LLM) | Needs access to the user's graph and agent reasoning chains — this data never leaves the device |
+| Question routing + expert matching | Expert Portal (company servers) | Needs access to the full expert pool, reputation scores, and competence tag index |
+| Golden set management + injection | Expert Portal | Golden sets must be secret and centrally managed to prevent gaming |
+| Answer validation + consensus computation | Expert Portal | Requires answers from multiple experts across the network |
+| Knowledge graph diff generation | Expert Portal | Aggregates validated consensus into signed graph updates |
 
 **How questions are generated:**
 
@@ -971,8 +1016,35 @@ Question Engine generates questions from agent reasoning gaps
         - Update edge confidence tiers
         - Adjust decision thresholds
         - Add new edges if expert answers reveal missing relationships
-    → Updated knowledge graph published to all nodes via plugin update
+    → Updated knowledge graph distributed to all nodes (see below)
 ```
+
+### How Knowledge Graph Updates Reach All Nodes
+
+When expert answers improve the knowledge graph, those improvements must flow back to every user's local instance. This is handled through the **plugin update mechanism**:
+
+```
+Expert consensus establishes a new edge or updates confidence
+    → Expert Portal publishes the update as a signed diff:
+       { edge: "[eGFR < 30] ──REQUIRES──► [Metformin discontinuation]",
+         confidence: "established", evidence_count: 40, timestamp: ... }
+    → Diff is committed to the domain plugin's GitHub repo
+       (e.g., consilium-wellness/knowledge_graph/updates/)
+    → Each user's local instance periodically checks for plugin updates
+       (configurable: hourly, daily, or manual)
+    → User's system applies the diff to their local Neo4j
+    → Agents immediately reason against the improved graph
+
+Update format:
+    - Signed JSON diffs (not full graph dumps)
+    - Each diff is small (one edge update, ~1KB)
+    - Append-only log — updates never delete existing edges, only add or re-tier
+    - Diffs are cryptographically signed by the Expert Portal
+      to prevent tampering in the GitHub repo
+    - User can review pending updates before applying (opt-in)
+```
+
+**Why GitHub repos:** Simple, auditable, forkable. Anyone can inspect the update history. If the Expert Portal disappears, the last published state of the knowledge graph remains in the repo. No proprietary distribution channel.
 
 **The key insight:** Experts don't score agents directly. They answer knowledge questions. The system uses those answers to update the knowledge graph, and then agents reason against the improved graph automatically. This separates the expert's contribution (domain knowledge) from the agent improvement mechanism (automated, deterministic).
 
@@ -1065,7 +1137,7 @@ User loads data → agent reasons against knowledge graph
     → Portal validates answers (golden sets, consensus, pattern checks)
     → Consensus updates shared knowledge graph
     → Updated graph distributed to all nodes via plugin updates
-    → User charged from balance; expert paid minus service fee
+    → Expert paid from Pro subscription pool; service fee retained
 ```
 
 ### Why Experts Will Participate
@@ -1234,6 +1306,13 @@ Consilium does strictly more than any AI chat subscription — and costs the sam
 2. **Knowledge graph improvements are shared.** When one Pro user funds a question about eGFR thresholds, the improved edge benefits every user — free and paid. The per-user cost of knowledge improvement decreases as the network grows.
 3. **Expert micro-questions are cheap.** At $0.10 average per question, $20/month funds ~170 expert answers (after service fee). Most users' systems won't generate that many — knowledge gaps are filled once and stay filled.
 
+**Pro question budget:** Each Pro subscriber gets up to 200 expert questions/month. The Question Engine prioritizes questions by **information gain** — it asks the questions most likely to improve the knowledge graph first. In practice, most users generate far fewer than 200 questions because:
+- Knowledge gaps are filled once and stay filled (the graph improves permanently)
+- Many gaps are filled by other Pro users' questions before yours are needed
+- The Question Engine deduplicates — if 50 users trigger the same knowledge gap, one question is generated, not 50
+
+If a user's system generates more questions than their monthly budget, excess questions are queued for the next month. The budget exists to make costs predictable, not to restrict value.
+
 **Revenue model:** The Pro subscription covers expert micro-payments + service fee + portal operations. At scale:
 - 1,000 Pro subscribers × $20/month = $20K/month revenue
 - Expert payouts: ~$12K (assuming 60% goes to experts)
@@ -1250,8 +1329,8 @@ Consilium does strictly more than any AI chat subscription — and costs the sam
 
 | Component | Technology | Why |
 |-----------|-----------|-----|
-| Health graph | Neo4j (local, Community Edition) | Mature graph DB, excellent traversal, FHIR-compatible |
-| Body knowledge graph | Hetionet (Neo4j native, ~47K nodes) + Uberon/FMA (OWL→Cypher) | Pre-loaded anatomy/physiology, confidence-tiered. Note: SPOKE requires UCSF access — evaluate feasibility. Combined graph is large; may need separate Neo4j instance or lazy-loading for local deployments. |
+| Knowledge graph | Neo4j (local, Community Edition) | Mature graph DB, excellent traversal, supports multiple domain schemas |
+| Domain knowledge graphs | Installed by plugins. E.g., wellness: Hetionet (~47K nodes) + Uberon/FMA (OWL→Cypher) | Pre-loaded domain knowledge, confidence-tiered. Note: SPOKE requires UCSF access — evaluate feasibility. Combined graph can be large; may need lazy-loading for local deployments. |
 | Local LLM | Ollama + qwen3:14b (Q4_K_M quantization) | Runs on MacBook with 24GB RAM in quantized form. Full precision requires 32GB+. Performance impact of quantization on clinical reasoning needs benchmarking. |
 | External LLM (optional) | OpenAI / Anthropic / Google / OpenRouter via user's API key | Escalation for hard reasoning tasks; user-controlled, user-funded |
 | Specialist agents | Python + LangGraph or custom (MiroFish agent framework) | Stateful agent orchestration, extends MiroFish/OASIS multi-agent architecture |
@@ -1271,7 +1350,7 @@ Consilium does strictly more than any AI chat subscription — and costs the sam
 
 ### Phase 1 Target: MacBook (developer + early adopter)
 
-The initial deployment target is a MacBook (Apple Silicon, 16GB+ RAM). All components — Neo4j, Ollama, the agent framework, and the patient dashboard — run locally via Docker Compose behind a native macOS app.
+The initial deployment target is a MacBook (Apple Silicon, 16GB+ RAM). All components — Neo4j, Ollama, the agent framework, and the dashboard — run locally via Docker Compose behind a native macOS app.
 
 **Minimum specs:**
 - Apple Silicon Mac (M1 or later)
@@ -1292,10 +1371,10 @@ Consilium Home Unit
 │   - Estimated BOM cost: $150–250 (community can self-build or buy pre-assembled)
 │
 ├── Pre-installed software:
-│   - Neo4j Community Edition (health graph + body knowledge graph)
+│   - Neo4j Community Edition (knowledge graph database)
 │   - Ollama + quantized medical LLM (pre-downloaded)
 │   - Agent framework + all specialist agents
-│   - Patient dashboard (web UI on local network)
+│   - Consilium dashboard (web UI on local network)
 │   - Mesh gateway (P2P query serving, configurable capacity)
 │   - Auto-update service (pulls updates from Consilium repo)
 │
@@ -1356,21 +1435,19 @@ The user never sees a graph, a database query, or an agent prompt. They see: "Yo
 
 | Phase | What | Outcome |
 |-------|------|---------|
-| **1** | Health graph schema + Neo4j setup + manual data entry | Graph populated with your health data |
-| **2** | Body knowledge graph import — Hetionet/SPOKE + confidence tiers | Agents have physiological context to reason against |
+| **1** | Knowledge graph schema + Neo4j setup + manual data entry | Graph populated with your data |
+| **2** | Domain knowledge graph import (e.g., Hetionet/SPOKE for wellness) + confidence tiers | Agents have domain context to reason against |
 | **3** | Data ingestors — Apple Health, Oura, PDF labs | Graph auto-updated from real sources |
 | **4** | Local specialist agents — query graph, write opinions | Working local consilium |
 | **5** | Consilium workflow — multi-round debate, synthesis | Agents consult each other on your data |
 | **6** | Proactive monitoring — scheduled agent checks, alerts | Agents watch your data continuously |
 | **7** | Mesh protocol — P2P consultation requests | Your node asks others for opinions |
-| **8** | Expert Portal MVP — question routing, Stripe Connect, credential verification | Experts can answer micro-questions and get paid |
-| **9** | Expert credential verification (multi-domain) via public registries | Verified experts can join as knowledge contributors |
-| **10** | Question Engine + expert question portal (mobile PWA) | LLM generates micro-questions, experts answer on phone |
-| **11** | Knowledge graph feedback loop — answers update edge confidence | Expert answers improve agent reasoning automatically |
-| **12** | Expert reputation system + pay-per-answer billing | Quality control on expert answers, Stripe payouts |
-| **13** | macOS native app — one-click install, no terminal | Non-technical MacBook users can onboard |
-| **14** | Consilium Appliance — open-source hardware design, build guides, community assembly | Plug-and-play device anyone can build |
-| **15** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
+| **8** | Expert Portal MVP — credential verification, question routing, Stripe Connect, reputation system, mobile PWA | Experts can sign up, answer micro-questions on phone, and get paid |
+| **9** | Question Engine — LLM identifies knowledge gaps, generates targeted micro-questions | System automatically generates the right questions from agent reasoning |
+| **10** | Knowledge graph feedback loop — expert answers update edge confidence, agents re-reason | Expert answers improve agent reasoning automatically |
+| **11** | macOS native app — one-click install, no terminal | Non-technical MacBook users can onboard |
+| **12** | Consilium Appliance — open-source hardware design, build guides, community assembly | Plug-and-play device anyone can build |
+| **13** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
 
 ---
 
@@ -1425,19 +1502,19 @@ Installed plugins: Wellness & Body Literacy · Personal Finance
 | Apple Health / Fitbit | Apple's cloud | Limited | No | Partial | No | No |
 | WebMD / Mayo Clinic | N/A (static) | None | No | N/A | Editorial only | No |
 | Your professional (doctor, CPA, lawyer) | Their systems | Yes (fragmented) | Sometimes | Regulated | Yes (1 person) | Fee-for-service |
-| **Consilium** | **Your machine** | **Complete, lifelong** | **Yes, permanent** | **By design** | **Yes, expert micro-question consensus** | **Pay-per-question** |
+| **Consilium** | **Your machine** | **Complete, lifelong** | **Yes, permanent** | **By design** | **Yes, expert micro-question consensus** | **Free + Pro ≤$20/mo** |
 
 ---
 
 ## Open Questions and Risks
 
-Issues that need resolution before mainnet launch. Honest assessment of what's unsolved.
+Issues that need resolution before launch. Honest assessment of what's unsolved.
 
 ### Technical Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|-----------|
-| **LLM clinical reasoning quality**: Current open-source models (qwen3:14b quantized) may not match GPT-4-class clinical reasoning. If agent opinions are consistently poor, doctors will rate everything low and the incentive loop breaks. | High | Benchmark agent quality against HealthBench rubrics before launch. If quality is below threshold, consider using a larger model via API (Chutes/OpenRouter) for clinical reasoning while keeping data local. The local graph provides context the LLM wouldn't otherwise have — this may compensate for model size. |
+| **LLM reasoning quality**: Current open-source models (qwen3:14b quantized) may not match GPT-4-class reasoning. If agent opinions are consistently poor, experts will flag low quality and the improvement loop breaks. | High | Benchmark agent quality before launch. If quality is below threshold, users can escalate to external AI APIs for hard reasoning while keeping data local. The local graph provides context the LLM wouldn't otherwise have — this may compensate for model size. |
 | **Body knowledge graph size**: Combined Hetionet + Uberon + FMA could be 100M+ edges. Running this on a consumer laptop alongside personal data may be impractical. | Medium | Lazy-load strategy: only import subgraphs relevant to the patient's conditions. A patient with CKD + diabetes loads renal + endocrine subgraphs, not the entire human anatomy. |
 | **Neo4j Community Edition limits**: No clustering, no role-based access control. Adequate for single-user local deployment. | Low | Local deployment uses Community Edition. Expert Portal backend uses a separate database for aggregation. |
 

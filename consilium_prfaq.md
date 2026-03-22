@@ -153,7 +153,7 @@ A: Consilium uses a BitTorrent-style peer-to-peer mesh. When your local agents f
 
 **Q: How does the Expert Portal work?**
 
-A: The Expert Portal is a company-operated service that connects users with credentialed domain experts. When your local agents identify a knowledge gap, the system generates a targeted micro-question. If you have funds deposited, the question is sent to matched experts via the portal. Experts answer on their phone (10–30 seconds), get paid via Stripe, and the answer improves the shared knowledge graph for everyone. The portal charges a transparent service fee (e.g., 15%) on each transaction. The portal is domain-agnostic — it routes by competence tags, not by domain labels. Expert quality is managed through an Uber-style reputation system: high-rated experts get more questions and better pay; low-rated experts naturally receive fewer questions.
+A: The Expert Portal is a company-operated service that connects Pro subscribers with credentialed domain experts. When your local agents identify a knowledge gap, the system generates a targeted micro-question and sends it to matched experts via the portal. Experts answer on their phone (10–30 seconds), get paid via Stripe, and the answer improves the shared knowledge graph for everyone — free and Pro users alike. The portal is domain-agnostic — it routes by competence tags, not by domain labels. Expert quality is managed through an Uber-style reputation system: high-rated experts get more questions and better pay; low-rated experts naturally receive fewer questions.
 
 **Q: What are the biggest risks?**
 
