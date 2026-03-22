@@ -2,6 +2,8 @@
 
 **Vision:** Every person runs a permanent AI medical council on their own computer. Their complete health history lives in a local graph database. When a complex case needs broader input, the system consults a mesh of other instances — each running for other people — receiving medical opinions without ever sharing personal data. The result is a global network of AI specialists with knowledge from millions of cases, serving millions of individuals, where no one's data ever leaves their machine.
 
+**Relationship to MiroFish:** HealthMesh extends the MiroFish/OASIS multi-agent simulation framework (see `mirofish_bittensor_plan.md`). MiroFish provides the agent orchestration engine — persistent agent populations with graph-backed memory running opinion simulations. HealthMesh specializes this for medicine: the agents are medical specialists, the graph is a health knowledge graph, and the simulation is a clinical consilium rather than an opinion survey. The Bittensor subnet infrastructure (miner/validator/Axon) is shared between both plans.
+
 ---
 
 ## Core Principles
@@ -132,18 +134,29 @@ All edges carry: `confidence_tier`, `evidence_count`, `primary_source`, `last_re
 
 ### Mesh Contributes to the Knowledge Graph
 
-Over time the mesh itself becomes a source of `exploratory` and `inferred` knowledge:
+Over time the mesh itself becomes a source of `exploratory` and `inferred` knowledge — but without a central coordinator (which would contradict the decentralized design).
+
+**Federated pattern detection (no coordinator):**
 
 ```
-1000 nodes each see: HRV declined before creatinine rose
-→ Mesh coordinator observes this pattern across anonymized cases
-→ Edge [HRV decline] ──PRECEDES──► [eGFR decline]
-  upgraded from exploratory → inferred
-  evidence_count: 847 cases
-  confidence: 0.71
+Each node independently computes:
+  "In my patient's graph, HRV declined ≥15% in the 6 months before eGFR dropped ≥5 points"
+  → True / False
+
+Nodes publish anonymized pattern attestations to the DHT:
+  { pattern: "HRV_decline_precedes_eGFR_decline", observed: true, confidence: 0.73 }
+
+Any node can query the DHT and aggregate attestations:
+  → 847 / 1000 nodes attested this pattern
+  → Local node upgrades its body knowledge graph edge:
+     [HRV decline] ──PRECEDES──► [eGFR decline]
+     confidence_tier: exploratory → inferred
+     evidence_count: 847
 ```
 
-This is federated learning without sharing data — the *pattern* is the shared artifact, not the cases.
+This is **federated analytics** — each node computes locally, shares only the boolean result, and aggregation happens client-side. No coordinator ever sees individual patient data. The protocol is similar to how federated learning works in Google's Gboard keyboard (local training, shared gradients only), but simpler: boolean pattern attestations instead of model weights.
+
+**Limitations:** This only works for pre-defined pattern queries. The subnet owner publishes a periodic "pattern ballot" — a list of hypothesized relationships to test. Nodes that have relevant data attest; nodes without relevant data abstain. New pattern hypotheses can be proposed by any node and added to the ballot by the subnet owner after review.
 
 ---
 
@@ -159,6 +172,9 @@ The health graph is the foundation. Everything is a node or an edge.
 |------|-------------|---------|
 | `Condition` | Diagnosed medical condition | Type 2 Diabetes, Hypertension |
 | `Symptom` | Observed symptom | Fatigue, Shortness of breath |
+| `Allergy` | Known allergy or adverse reaction | Penicillin allergy, Sulfa sensitivity |
+| `FamilyHistory` | Hereditary / familial condition | Father: MI at 52, Mother: Type 2 DM |
+| `SocialFactor` | Lifestyle or environmental factor | Smoking 10 pack-years, Sedentary, Alcohol 14 units/wk |
 | `Medication` | Drug with dose and schedule | Metformin 1000mg 2x daily |
 | `LabResult` | Single lab measurement at a point in time | Creatinine 1.8 mg/dL on 2026-01-15 |
 | `LabPanel` | Group of related lab results | Complete Metabolic Panel |
@@ -169,7 +185,7 @@ The health graph is the foundation. Everything is a node or an edge.
 | `Procedure` | Medical procedure | Colonoscopy, ECG, MRI |
 | `AgentOpinion` | Opinion from a specialist agent | Nephrology agent analysis 2026-03-01 |
 | `MeshOpinion` | Anonymous opinion from another node | External cardiology opinion |
-| `Timeline` | Temporal anchor for events | — |
+| `Genomic` | Genetic variant or pharmacogenomic result | APOL1 G1/G2, CYP2D6 poor metabolizer |
 
 **Core Edge Types:**
 
@@ -179,13 +195,17 @@ The health graph is the foundation. Everything is a node or an edge.
 | `HAS_SYMPTOM` | Person/Condition → Symptom | Experiences / caused by |
 | `TAKES` | Person → Medication | Currently taking |
 | `TREATS` | Medication → Condition | Medication for condition |
-| `MEASURED_AT` | LabResult → Timeline | When measured |
+| `MEASURED_AT` | LabResult → date property | When measured (stored as datetime on the edge or node, not a separate Timeline node) |
 | `RESULT_OF` | LabResult → LabPanel | Part of this panel |
 | `INDICATES` | LabResult → Biomarker | Measures this biomarker |
 | `SUGGESTS` | Biomarker → Condition | Abnormal value may indicate |
 | `CORRELATES_WITH` | Biomarker ↔ Symptom | Statistical correlation |
 | `MANAGED_BY` | Condition → Doctor | Under care of |
-| `OCCURRED_AT` | Encounter → Timeline | When visit happened |
+| `ALLERGIC_TO` | Person → Allergy | Known allergy |
+| `HAS_FAMILY_HISTORY` | Person → FamilyHistory | Hereditary risk factor |
+| `HAS_SOCIAL_FACTOR` | Person → SocialFactor | Lifestyle / environmental factor |
+| `HAS_VARIANT` | Person → Genomic | Genetic variant carried |
+| `OCCURRED_AT` | Encounter → date property | When visit happened |
 | `LED_TO` | Encounter → Condition/Procedure | Visit resulted in |
 | `TRENDING` | Biomarker → Biomarker | Biomarker trend relationship |
 | `CONTRADICTS` | Medication → Medication | Drug interaction |
@@ -223,13 +243,13 @@ This is what gives agents *holistic* context. An agent querying "why is this pat
 
 ### 1.2 Temporal Modeling
 
-Every measurement is timestamped. The graph supports trend queries:
+Every measurement carries a `measured_at` datetime property directly on the node (not in a separate Timeline node — that would add unnecessary indirection and multiply edge count). The graph supports trend queries natively:
 
 ```cypher
 -- Find all eGFR readings in the last 2 years, ordered by time
-MATCH (b:Biomarker {name: "eGFR"})<-[:INDICATES]-(r:LabResult)-[:MEASURED_AT]->(t:Timeline)
-WHERE t.date > date() - duration({years: 2})
-RETURN r.value, t.date ORDER BY t.date
+MATCH (b:Biomarker {name: "eGFR"})<-[:INDICATES]-(r:LabResult)
+WHERE r.measured_at > date() - duration({years: 2})
+RETURN r.value, r.measured_at ORDER BY r.measured_at
 ```
 
 Agents use trends, not just snapshots:
@@ -384,6 +404,12 @@ When your local consilium faces a case beyond its confidence threshold, it reach
 
 No name. No age. No location. No dates. Just the medical picture.
 
+**Re-identification risk (honest assessment):** Removing demographics is necessary but not sufficient. Rare condition combinations can be uniquely identifying — a patient with Fabry disease + pheochromocytoma + a specific medication list may be one of a handful of people worldwide. Mitigation strategies:
+- **k-anonymity enforcement**: before sending a mesh query, the local node checks whether the condition combination is shared by at least k patients in the body knowledge graph. If not, the query is generalized (e.g., "rare lysosomal storage disease" instead of "Fabry disease").
+- **Differential privacy noise**: add controlled noise to lab values (within clinically meaningful ranges) to prevent exact-value matching.
+- **Query rate limiting**: a node cannot send more than N mesh queries per day, preventing profile reconstruction from query patterns.
+- **No longitudinal linking**: each mesh query uses a fresh pseudonymous ID. No way to determine that two queries came from the same patient.
+
 **What comes back:**
 ```json
 {
@@ -425,64 +451,99 @@ The responding node's agent draws on its *own patient's graph* to inform its opi
 
 **Volume:** a single consultation might query 5-20 nodes. Opinions are aggregated by the local GeneralistAgent.
 
-### 3.4 Collective Knowledge Without Sharing Data
+### 3.4 Collective Context Without Sharing Data
 
-Over time each node's agents become more knowledgeable because they have seen their own patient's full history. A node that has been running for 10 years for a diabetic patient has deeply informed nephrology, endocrinology, and cardiology agents — because those agents have tracked one real case longitudinally.
+**Important distinction:** agents don't "become smarter" from following one patient — the underlying LLM's medical reasoning doesn't improve from longitudinal exposure. What improves is **context richness**. A node that has tracked a diabetic patient for 10 years has a deeply populated graph: complete medication history, every lab trend, every wearable anomaly, every agent opinion and whether it proved correct. When that node's agent answers a mesh query about diabetic nephropathy, it can say *"in a case with a similar trajectory, eGFR stabilized after switching from metformin to an SGLT2 inhibitor at eGFR 48"* — because that actually happened in its graph.
 
-The mesh effect: when that node's agents give opinions to other nodes' queries, they draw on that deep case knowledge. Multiply by thousands of nodes, each with years of longitudinal data — the mesh becomes collectively as knowledgeable as a physician who has followed thousands of patients for years.
+The mesh effect: each node contributes **case-grounded context**, not generic LLM reasoning. A single node's context is one patient. A thousand nodes' aggregated responses represent a thousand real longitudinal cases — approaching the experience base of a specialist who has managed thousands of patients over decades. The LLM is the same everywhere; the graph data is what differentiates nodes.
+
+This also means node quality varies significantly. A node with 10 years of comprehensive data (labs, wearables, genomics, imaging) produces richer opinions than a node with 6 months of Apple Watch data. The validator scoring mechanism (see Bittensor Integration) must account for this.
 
 ---
 
 ## Bittensor Integration — Doctor Validation Layer
 
-This is the economic engine of HealthMesh. AI agents (miners) produce health opinions. Credentialed doctors (validators) grade those opinions and earn TAO rewards. The quality of a doctor's grading is itself scored over time, creating a self-regulating market for medical expertise.
+This is the economic engine of HealthMesh. AI agents (miners) produce health opinions. Validators run infrastructure that routes cases to credentialed doctors, collects their ratings, and submits weight vectors on-chain. Doctors are a **new role** — human raters compensated from validator emissions — not validators themselves.
 
 ### Roles in Bittensor Terms
 
 ```
-Miners     = HealthMesh AI agent nodes
-             → produce clinical opinions in response to anonymized queries
-             → earn TAO proportional to how well doctors rate their opinions
+Miners       = HealthMesh AI agent nodes
+               → produce clinical opinions in response to anonymized queries
+               → earn TAO proportional to quality scores from validators
 
-Validators = Credentialed medical doctors
-             → review anonymized cases + agent opinions
-             → submit quality scores (weight vectors) to the chain
-             → earn TAO proportional to their stake and consensus alignment
+Validators   = Infrastructure operators (similar to Tensorplex Dojo model)
+               → run automated scoring pipeline + doctor review portal
+               → route anonymized cases to credentialed doctors
+               → aggregate doctor ratings into weight vectors
+               → submit weights to chain via Yuma Consensus
+               → earn TAO proportional to stake × consensus alignment
+               → pay doctors from their validator emissions
+
+Doctors      = Human expert raters (NOT Bittensor validators)
+               → log into validator's review portal (web UI, no crypto needed)
+               → review anonymized cases + agent opinions against rubrics
+               → submit structured scores
+               → compensated in fiat (Stripe) or TAO (opt-in)
+               → never need to stake TAO, run nodes, or touch wallets
 
 Subnet owner = HealthMesh protocol
-             → defines the incentive mechanism
-             → earns 18% of emissions
-             → maintains the credentialing oracle and rubric library
+               → defines the incentive mechanism and rubric standards
+               → earns 18% of emissions
+               → maintains the credentialing oracle and rubric library
 ```
+
+**Why doctors cannot be validators directly:** Bittensor validators must stake TAO (capital barrier), run infrastructure 24/7 (operational barrier), and submit weight vectors every tempo (~72 min) (continuous commitment). Doctors don't do any of this. Asking a nephrologist to buy crypto, run a node, and submit on-chain transactions every 72 minutes is a product-killing friction. Instead, validators are infrastructure operators who run the review portal as a service, and doctors interact with a simple web UI — just like reviewing cases on UpToDate or a CME platform.
+
+This mirrors the Tensorplex Dojo (SN52) architecture: validators generate tasks, route them to human raters, and aggregate human feedback into weight vectors. The innovation here is that the human raters are **credentialed medical professionals**, not general crowdworkers.
 
 ### How Doctor Credentialing Works
 
-Doctors cannot participate anonymously — their opinions are worth money only if they are actually doctors. But credentials must be verified without storing PII on-chain.
+Doctors' opinions are only valuable if they are actually doctors. Credentials must be verified, but the system should not require doctors to interact with crypto at all.
 
 **Credentialing flow:**
 
 ```
-1. Doctor submits license number + jurisdiction to a credentialing oracle
-   (off-chain; run by HealthMesh or a trusted third party)
+1. Doctor signs up on the HealthMesh Review Portal (standard web registration)
+   → provides: license number, jurisdiction, specialty, NPI (US) or equivalent
 
-2. Oracle verifies against state/national medical board registries
-   (automated API checks where available; manual review otherwise)
+2. HealthMesh credentialing oracle verifies against medical board registries
+   → US: NPPES (NPI lookup), state medical board APIs
+   → EU: national medical registers
+   → Automated where APIs exist; manual review otherwise
+   → Estimated verification time: 24–72 hours
 
-3. If valid: oracle issues a Soulbound Token (SBT) to the doctor's wallet
-   - SBT encodes: specialty, jurisdiction, license status, expiry
-   - SBT is non-transferable — cannot be sold or loaned
-   - ZK proof attached: "this wallet holds a valid active MD license
-     in cardiology, issued by a recognized authority" — no name or
-     license number exposed on-chain
+3. If valid: oracle records a credential attestation on-chain
+   → Option A (SBT): Soulbound Token to a validator-managed wallet
+     (doctor never touches a wallet — validator holds the SBT on their behalf)
+   → Option B (off-chain): credential stored in the oracle database,
+     referenced by validator when submitting weights (simpler, less decentralized)
+   → Attestation encodes: specialty, jurisdiction, license status, expiry
+   → ZK proof option: validator can prove "this weight vector includes
+     ratings from N verified nephrologists" without revealing identities
 
-4. SBT is checked before any validator weight submission is accepted
-   - No SBT = weights rejected by the subnet
+4. Doctor's portal account is activated — they can start reviewing cases
+   → No wallet, no TAO, no crypto needed from the doctor's side
 
-5. License expiry monitoring: oracle re-checks annually; SBT revoked
-   if license lapses or is disciplinary action taken
+5. License expiry monitoring: oracle re-checks every 6 months; credential
+   revoked if license lapses or disciplinary action taken
 ```
 
-**Specialty matching:** The SBT encodes the doctor's specialty. The subnet only routes cases to doctors whose specialty matches the agent being validated. A nephrologist validates nephrology agent opinions; a cardiologist validates cardiology agent opinions. Specialists earn more for their specialty than out-of-specialty review.
+**Specialty matching:** The credential encodes the doctor's specialty. The validator portal routes cases only to doctors whose specialty matches the agent being reviewed. A nephrologist reviews nephrology agent opinions; a cardiologist reviews cardiology agent opinions. In-specialty reviews are weighted 2x in the score aggregation.
+
+**Doctor onboarding — solving the cold start:**
+
+Getting the first 50 doctors is the hardest problem. Concrete strategies:
+
+| Strategy | Target | How |
+|----------|--------|-----|
+| CME credits | All doctors | Partner with a CME accreditor (ACCME). Reviewing AI diagnostic opinions qualifies as continuing medical education. Doctors already spend money on CME — HealthMesh makes it paid instead. |
+| Medical school partnerships | Residents, fellows | Offer as a teaching tool. Residents review AI opinions and learn from the rubric feedback loop. Partner initially with 2–3 academic medical centers. |
+| Telehealth moonlighting | Early-career physicians | Position as flexible, asynchronous work. 5–10 min per case, no patient liability, no scheduling constraints. Compete with telehealth moonlighting platforms on flexibility. |
+| Specialty society outreach | Board-certified specialists | Present at society meetings (ASN for nephrology, ACC for cardiology). Frame as "shape the AI that will assist your specialty." |
+| Research collaborators | Academic physicians | Offer co-authorship on publications analyzing doctor-vs-AI agreement patterns. Academic currency. |
+
+**Target: 50 credentialed doctors across 5 specialties before subnet launch.**
 
 ### What Doctors Actually Review
 
@@ -511,81 +572,110 @@ Doctors receive **anonymized opinion packages** — never the patient's identity
 }
 ```
 
-The rubric is pre-generated (from HealthBench-style physician-authored criteria) and specialty-specific. Doctors mark each criterion: met / partially met / not met, optionally adding a note. This produces a structured score vector, not just a free-text opinion.
+**Rubric generation — a key design challenge:**
 
-### How Doctor Scores Are Aggregated
+Rubrics cannot be fully pre-built because every clinical case is unique. The system uses a **hybrid approach**:
 
-The subnet validator code aggregates individual doctor ratings and produces weight vectors for Yuma Consensus:
+1. **Template rubrics per specialty** (pre-authored by physician committees): generic criteria that apply to most cases in a specialty. Example for nephrology: "Correctly identified stage of CKD", "Recommended appropriate monitoring frequency", "No unsafe medication recommendation given renal function."
+
+2. **Case-specific rubric augmentation** (auto-generated per case): an LLM generates 2–4 additional criteria specific to the case details. Example: "Recognized metformin dose adjustment needed at eGFR <45." These auto-generated criteria are flagged as machine-generated.
+
+3. **Rubric validation loop**: every 100th case, a senior physician reviews the auto-generated rubric criteria and flags bad ones. Bad criteria are fed back to improve the generator. Over time, the auto-generated criteria converge toward physician quality.
+
+4. **Doctor free-text override**: doctors can always add "criterion not covered by rubric" with their own assessment. These free-text additions are reviewed and potentially promoted to template criteria.
+
+Doctors mark each criterion: met / partially met / not met, optionally adding a note. This produces a structured score vector, not just a free-text opinion.
+
+### How Scores Flow From Doctors to Chain
+
+Validators are the intermediary between human doctors and the Bittensor chain:
 
 ```
-For each AI agent (miner):
+For each AI agent (miner), per tempo:
 
-1. Collect all doctor ratings submitted this tempo
-2. Compute weighted criterion scores (per-criterion, weighted by criterion importance)
-3. Apply specialty weighting (in-specialty doctors weighted 2x out-of-specialty)
-4. Apply doctor reputation multiplier (explained below)
-5. Produce final score per agent: 0.0 → 1.0
-6. Normalize across all agents → weight vector → submit to chain
+1. Validator selects cases for review and routes to matched doctors
+2. Doctors submit ratings via the review portal (web UI)
+3. Validator collects all doctor ratings received this tempo
+4. Validator software aggregates:
+   a. Compute weighted criterion scores (per-criterion, weighted by criterion importance)
+   b. Apply specialty weighting (in-specialty doctors weighted 2x)
+   c. Apply doctor reputation multiplier (explained below)
+   d. Blend with automated scoring signals:
+      - Guideline adherence check (automated, rule-based)
+      - Drug interaction safety check (automated, database lookup)
+      - Internal consistency check (does the opinion contradict itself?)
+5. Produce final score per miner: 0.0 → 1.0
+6. Normalize across all miners → weight vector → submit to chain
 
 Yuma Consensus then:
 - Clips outlier validator scores toward the median (penalizes collusion)
-- Distributes TAO emissions to miners (proportional to score)
-  and validators/doctors (proportional to stake × consensus alignment)
+- Distributes TAO emissions:
+  41% → miners (proportional to aggregated scores)
+  41% → validators (proportional to stake × consensus alignment)
+  18% → subnet owner (HealthMesh protocol)
+- Validators allocate a portion of their 41% to pay doctors
 ```
+
+**Automated vs. human scoring split:** Not every case needs a doctor. The validator runs automated checks on 100% of miner outputs (safety, guideline adherence, internal consistency). Only a sampled subset (10–30%) goes to human doctors for full rubric review. The sampling is biased toward: complex cases, cases where automated scores are ambiguous, and cases from miners with unstable score histories. This keeps doctor workload manageable while maintaining quality.
 
 ### Doctor Reputation and Grading
 
-Doctor ratings are themselves scored. A doctor who consistently rates well earns higher reputation — which multiplies their future TAO earnings and their influence on miner scores.
+Doctor ratings are themselves scored by the validator. A doctor who consistently rates well earns higher reputation — which multiplies their per-case compensation and their weight in score aggregation.
 
 **How doctor quality is measured:**
 
 | Signal | Timing | Weight |
 |--------|--------|--------|
-| Consensus with other credentialed doctors | Immediate | 40% |
-| Golden set accuracy (known-correct cases injected) | Immediate | 30% |
+| Consensus with other credentialed doctors reviewing the same case | Immediate | 40% |
+| Golden set accuracy (known-correct cases injected blind) | Immediate | 30% |
 | Proxy outcome alignment (did the recommended test confirm the hypothesis?) | Weeks–months | 20% |
 | Long-term retrospective outcome (patient trajectory) | Months–years | 10% |
 
-**Golden sets:** The HealthMesh subnet maintains a library of cases with physician-consensus ground truth (analogous to HealthBench's 48K rubric criteria). 10-20% of cases sent to doctors are golden sets — the doctor doesn't know which ones. This calibrates and audits every doctor in real time.
+**Golden sets:** The HealthMesh protocol maintains a curated library of cases with physician-consensus ground truth (analogous to HealthBench's 48K rubric criteria). 10–20% of cases sent to doctors are golden sets — the doctor doesn't know which ones. This calibrates and audits every doctor in real time. Golden sets are stratified by specialty and difficulty.
 
-**Consensus scoring:** Inter-doctor agreement is the primary short-term signal. A doctor who consistently agrees with the credentialed specialist majority earns high reputation; a doctor whose scores are outliers gets investigated. (Yuma Consensus already does this at the validator level — consensus alignment is rewarded, deviation penalized.)
+**Consensus scoring:** Each case is sent to 3–5 doctors in the same specialty. Inter-doctor agreement is the primary short-term signal. A doctor who consistently agrees with the credentialed specialist majority earns high reputation; a doctor whose scores are outliers triggers review. Importantly, consensus is measured across validators — if Validator A's doctors and Validator B's doctors consistently agree, both validators gain consensus alignment in Yuma Consensus.
 
-**The reputation score** gates earning potential:
+**The reputation score** gates per-case compensation:
 
 ```
-Effective TAO earnings = base_earnings × reputation_multiplier
+Effective compensation = base_rate × reputation_multiplier
 
 reputation_multiplier:
-  0.0–0.4 reputation: 0.5× (half pay — probation)
-  0.4–0.7 reputation: 1.0× (standard pay)
-  0.7–0.9 reputation: 1.5× (senior validator bonus)
-  0.9–1.0 reputation: 2.0× (expert validator bonus)
+  0.0–0.4 reputation: 0.5× (half pay — probation period)
+  0.4–0.7 reputation: 1.0× (standard rate)
+  0.7–0.9 reputation: 1.5× (senior reviewer bonus)
+  0.9–1.0 reputation: 2.0× (expert reviewer bonus)
+
+base_rate: set by each validator independently (market-driven)
+  estimated range: $10–50 per case review, depending on specialty and complexity
 ```
 
-Doctors below 0.3 reputation for 4 consecutive tempos are suspended and their SBT flagged.
+Doctors below 0.3 reputation for 30 consecutive days are suspended pending review.
 
 ### The Delayed Ground Truth Problem
 
-Not all medical opinions can be graded immediately — outcomes arrive weeks, months, or years later. The reward system is split into two tranches:
+Not all medical opinions can be graded immediately — outcomes arrive weeks, months, or years later. The system operates on **three time horizons**:
 
-```
-When doctor submits a rating:
-  → 70% of reward paid immediately (based on consensus + golden set)
-  → 30% held in time-locked escrow
+**Immediate (same-tempo) — 70% of validator reward allocation:**
+- Automated scoring: safety checks, guideline adherence, internal consistency
+- Doctor consensus: agreement across 3–5 reviewers on the same case
+- Golden set accuracy: performance on known-correct cases
 
-When ground truth arrives (patient uploads follow-up, outcome confirmed):
-  → Escrow is released, adjusted up or down based on retrospective accuracy
-  → Doctor who said "this eGFR trend needs nephrology in 3 months" and was
-    right (patient diagnosed with Stage 4 CKD 4 months later) gets full escrow
-  → Doctor who said "this is normal variation" gets 0 escrow
+**Medium-term (weeks to months) — 20% held by validator:**
+- Proxy outcome signals: did the recommended test confirm the hypothesis?
+- Example: agent recommended urine ACR test → patient uploads ACR result 6 weeks later → agent's prediction of albuminuria was confirmed
+- Validators that incorporated doctor ratings aligned with proxy outcomes earn retrospective reputation boost
 
-Ground truth sources (patient-controlled, never mandatory):
-  - Patient uploads subsequent lab results
-  - Patient marks "outcome confirmed" on a consilium case
-  - Patient's future agent opinions reference back to this case
-```
+**Long-term (months to years) — 10% reputation adjustment:**
+- Retrospective outcome tracking: did the patient trajectory match the agent's prediction?
+- This does NOT use escrow (too complex for a doctor payment system). Instead, it adjusts **doctor reputation scores** retrospectively, which affects future earning multipliers.
 
-If no ground truth ever arrives (patient doesn't upload follow-up), escrow is released at 12 months at the consensus rate — no penalty for unavailable outcomes.
+**Ground truth sources (patient-controlled, never mandatory):**
+- Patient uploads subsequent lab results
+- Patient marks "outcome confirmed" on a consilium case
+- Patient's future agent opinions reference back to this case
+
+**If no ground truth arrives:** medium-term allocation is released at the consensus rate after 6 months. No penalty for unavailable outcomes — the system accepts that most cases will never have confirmed outcomes.
 
 ### Prediction Market Layer (Advanced)
 
@@ -608,36 +698,43 @@ Prediction markets elicit calibrated probabilistic beliefs rather than forced bi
 
 | Attack | Defense |
 |--------|---------|
-| Doctor rates randomly to collect base pay | Golden set detection; low consensus → low reputation → lower earnings |
-| Doctor copies other validators' scores | Commit-Reveal: scores committed (hashed) before submission, revealed after tempo; copying after reveal is too late |
-| Doctor creates multiple accounts | SBT is non-transferable; one SBT per verified license; license oracle checks for duplicates |
-| Sybil attack via fake licenses | Oracle verifies against real medical board registries; ZK proof tied to verified credential; license number is checked for uniqueness |
-| Doctors collude to inflate a specific agent | Yuma Consensus clips outlier scores toward median; colluding validators lose consensus alignment → lose TAO |
-| Agent operator bribes doctors | Stake slashing for detected coordination patterns; identity of which doctor rated which agent is randomized within specialty pool |
-| Out-of-specialty doctor rates nephrology cases | SBT specialty field matched at routing; out-of-specialty ratings receive 0.5× weight and do not count toward miner's primary score |
+| Doctor rates randomly to collect base pay | Golden set detection; low consensus → low reputation → lower compensation |
+| Doctor creates multiple accounts | One credential per verified license; NPI/license number is unique; oracle checks for duplicates |
+| Sybil attack via fake licenses | Oracle verifies against real medical board registries; license number checked for uniqueness and active status |
+| Doctors collude to inflate a specific agent | Cases are randomly assigned; doctors don't know which miner produced the opinion; cross-validator consensus penalizes coordinated outliers |
+| Agent operator bribes doctors | Doctors don't know which miner produced the opinion they're reviewing; assignment is random per case |
+| Validator fabricates doctor ratings | Cross-validator consensus: if Validator A's scores consistently diverge from Validators B, C, D (each using independent doctor pools), Yuma Consensus clips Validator A |
+| Validator runs without real doctors (all automated) | Golden sets with known-tricky edge cases designed to fool automated scoring but not real physicians; validators whose golden set patterns look automated are flagged |
+| Out-of-specialty doctor reviews nephrology cases | Credential specialty field matched at routing; out-of-specialty ratings receive 0.5× weight |
 
 ### Incentive Flow Summary
 
 ```
-Patient node (miner) produces opinion
-    → Routed to 5–10 credentialed nephrologists (validators)
-    → Each doctor reviews anonymized case + agent opinion against rubric
-    → Scores submitted via Commit-Reveal to chain
-    → Yuma Consensus aggregates → weight vector
+Miner node produces clinical opinion
+    → Validator receives the opinion
+    → Validator runs automated scoring (safety, guidelines, consistency)
+    → Validator routes 10–30% of cases to credentialed doctors via review portal
+    → Doctors review anonymized case + agent opinion against rubric (web UI)
+    → Validator aggregates automated + doctor scores
+    → Validator submits weight vector via Commit-Reveal to chain
+    → Yuma Consensus runs across all validators
     → TAO emission this tempo:
-        41% → miner nodes (proportional to doctor scores)
-        41% → doctor validators (proportional to stake × consensus alignment)
+        41% → miner nodes (proportional to aggregated scores)
+        41% → validators (proportional to stake × consensus alignment)
+            └─ validators pay doctors from this allocation (variable %)
         18% → HealthMesh subnet (funds oracle, rubric library, development)
-    → 30% of doctor TAO held in escrow pending outcome confirmation
 ```
+
+**Validator economics:** A validator's main costs are (1) doctor compensation, (2) infrastructure, and (3) TAO stake opportunity cost. Validators compete for doctors by offering competitive per-case rates. Validators with higher-quality doctor pools produce weight vectors more aligned with consensus → earn more TAO → can afford to pay doctors more. This creates a virtuous cycle.
 
 ### Why Doctors Will Participate
 
-- **Revenue**: TAO rewards are real money. Senior validators (0.9+ reputation) earn 2× the base rate. A high-reputation specialist reviewing 20 cases/day at $50 equivalent per case = meaningful supplemental income.
-- **Low friction**: reviewing a pre-structured rubric for an anonymized case takes 5–10 minutes, not a full chart review.
-- **Compounding reputation**: reputation accrues over time; early participants in a growing subnet earn more as subnet emissions grow.
-- **No liability**: doctors are rating AI agent opinions on anonymized synthetic contexts — they are not treating patients and carry no clinical liability.
-- **Specialty impact**: cardiologists directly shape which cardiology agents survive and which die — the best agents for their specialty win, improving care globally.
+- **Revenue**: $10–50 per case review (set by the validator market). A high-reputation specialist reviewing 15–20 cases/day = $150–1000/day in supplemental income. Paid in fiat via Stripe — no crypto knowledge needed.
+- **CME credits**: partnership with CME accreditors means reviewing AI diagnostic opinions counts toward mandatory continuing education hours. Doctors already pay $500–2000/year for CME — HealthMesh makes it paid instead.
+- **Low friction**: reviewing a pre-structured rubric for an anonymized case takes 5–10 minutes. No scheduling, no patient contact, fully asynchronous. Works on mobile.
+- **No liability**: doctors are rating AI agent opinions on anonymized contexts — they are not treating patients and carry no clinical or malpractice liability.
+- **Specialty impact**: cardiologists directly shape which cardiology agents survive and which die. The best agents for their specialty win, improving care globally. This is meaningful for physicians who care about AI safety in medicine.
+- **Research opportunities**: the dataset of doctor-vs-AI agreement patterns is publishable. Academic physicians can co-author papers on AI diagnostic quality in their specialty.
 
 ---
 
@@ -649,6 +746,83 @@ Patient node (miner) produces opinion
 - TEE (Trusted Execution Environment) for mesh nodes — opinions computed in secure enclaves
 - Differential privacy on query patterns — prevent inference from query frequency
 - Zero-knowledge proofs for reputation scoring — prove a node gave good opinions without revealing what the opinion was about
+- k-anonymity enforcement on mesh queries (see re-identification risk in Phase 3)
+
+---
+
+## Regulatory Considerations
+
+**This section is critical. HealthMesh operates at the intersection of medical AI, decentralized networks, and personal health data — all heavily regulated domains.**
+
+### FDA / Software as a Medical Device (SaMD)
+
+HealthMesh agents provide clinical recommendations ("request urine albumin test", "consider nephrology referral within 3 months"). This likely makes it a **Software as a Medical Device (SaMD)** under FDA regulation and EU MDR.
+
+**Mitigation strategies:**
+
+| Strategy | Trade-off |
+|----------|-----------|
+| **Informational framing**: all agent outputs labeled "educational information, not medical advice" | Weakest defense; FDA has rejected this framing for AI tools that clearly influence clinical decisions |
+| **Clinical decision support (CDS) exemption**: if the system presents supporting data but the physician makes the decision, it may qualify for CDS exemption under 21st Century Cures Act | Requires careful design — agents must present evidence and reasoning, not direct recommendations |
+| **Wellness device classification**: if limited to wearable trend monitoring without diagnostic claims | Only works for Phase 1 (local health graph); breaks once agents make clinical assertions |
+| **Staged regulatory path**: launch Phase 1–2 as a wellness/data-organization tool (no regulatory burden); pursue FDA 510(k) or De Novo pathway before launching agent recommendations | Most realistic; delays agent features but avoids enforcement risk |
+
+**Recommendation:** Design Phase 1–3 to stay within the CDS exemption by presenting evidence and citations to the user's own physician, not direct treatment recommendations. Pursue formal FDA engagement (Pre-Submission meeting) before Phase 4+ mesh features.
+
+### HIPAA and Health Data Privacy
+
+- **Local-only data**: HIPAA applies to "covered entities" (providers, insurers) and their "business associates." A personal health tool running on a user's own device is generally NOT a covered entity. HealthMesh in local-only mode likely falls outside HIPAA.
+- **Mesh queries**: If anonymized contexts transit the network, they may constitute de-identified health information under the HIPAA Safe Harbor standard (18 identifiers removed). The k-anonymity enforcement in Phase 3 strengthens this position.
+- **Doctor review portal**: If doctors are reviewing clinical cases (even anonymized), the validator operating the portal may be a business associate depending on jurisdiction. Legal review needed.
+
+### International Regulations
+
+| Jurisdiction | Key regulation | Impact |
+|-------------|---------------|--------|
+| EU | MDR (Medical Device Regulation) + GDPR | MDR classification likely required for agent features; GDPR applies to any EU patient data even if processed locally |
+| UK | MHRA AI as Medical Device guidance | Similar to FDA SaMD; UK has a more flexible regulatory sandbox |
+| Canada | Health Canada SaMD guidance | Aligns with FDA framework |
+| Australia | TGA | Tiered risk classification |
+
+### Liability
+
+**Who is liable when an agent gives bad advice?**
+
+- The agent explicitly does NOT treat patients. It provides information to the patient's own consilium.
+- The mesh opinions are explicitly labeled as "opinions from AI agents, not medical advice."
+- Doctors reviewing AI outputs are rating quality, not treating patients — no doctor-patient relationship exists.
+- **Open question:** If a patient follows an agent's recommendation and is harmed, is the subnet owner liable? Is the miner operator? Is the LLM provider? This is uncharted legal territory for decentralized medical AI. Legal review required before mainnet launch.
+
+**Mitigation:** Prominent disclaimers, terms of service, and liability waivers. Design UI to direct patients to their own physicians rather than acting independently on agent recommendations.
+
+---
+
+## Economic Sustainability
+
+TAO emissions fund the network initially, but long-term sustainability requires real revenue.
+
+### Revenue Sources
+
+| Source | Model | Phase |
+|--------|-------|-------|
+| **Patient subscriptions** | Free tier (local-only, no mesh, no doctor validation) + Pro tier ($20–50/month for mesh consultations + doctor-validated agent opinions) | Phase 3+ |
+| **Enterprise API** | Hospitals, insurance companies, pharma companies pay for access to anonymized, aggregated health intelligence (population-level trends, not individual data) | Phase 5+ |
+| **Research partnerships** | Pharmaceutical companies pay for anonymized cohort queries ("how many nodes have patients on Drug X with biomarker Y trend?") — federated analytics, no raw data shared | Phase 5+ |
+| **CME accreditation fees** | CME accreditors pay HealthMesh (or vice versa) for the doctor review platform as a CME delivery mechanism | Phase 4+ |
+| **Doctor review marketplace** | Validators compete for doctor talent; HealthMesh takes a platform fee on doctor compensation | Phase 4+ |
+
+### Unit Economics (Estimated)
+
+```
+Per patient node per month:
+  Infrastructure cost: ~$5 (Neo4j + Ollama on modest hardware)
+  Mesh query cost:     ~$2 (10 queries × $0.20 per query in LLM inference)
+  Doctor validation:   ~$10 (2 doctor-reviewed cases × $5 per case)
+  Total cost:          ~$17/month
+
+Revenue needed per patient: $20–50/month subscription covers costs + margin
+Break-even at scale: ~1000 paying subscribers = $20K–50K/month revenue
+```
 
 ---
 
@@ -656,21 +830,20 @@ Patient node (miner) produces opinion
 
 | Component | Technology | Why |
 |-----------|-----------|-----|
-| Health graph | Neo4j (local) | Mature graph DB, excellent traversal, FHIR-compatible |
-| Body knowledge graph | Hetionet + SPOKE (Neo4j native) + Uberon/FMA | Pre-loaded anatomy/physiology, confidence-tiered |
-| Local LLM | Ollama + qwen3:14b | Runs on MacBook, no cloud, Metal GPU |
-| Specialist agents | Python + LangGraph or custom | Stateful agent orchestration |
+| Health graph | Neo4j (local, Community Edition) | Mature graph DB, excellent traversal, FHIR-compatible |
+| Body knowledge graph | Hetionet (Neo4j native, ~47K nodes) + Uberon/FMA (OWL→Cypher) | Pre-loaded anatomy/physiology, confidence-tiered. Note: SPOKE requires UCSF access — evaluate feasibility. Combined graph is large; may need separate Neo4j instance or lazy-loading for local deployments. |
+| Local LLM | Ollama + qwen3:14b (Q4_K_M quantization) | Runs on MacBook with 24GB RAM in quantized form. Full precision requires 32GB+. Performance impact of quantization on clinical reasoning needs benchmarking. |
+| Specialist agents | Python + LangGraph or custom (MiroFish agent framework) | Stateful agent orchestration, extends MiroFish/OASIS multi-agent architecture |
 | Agent memory | Written back to Neo4j | Persistent, queryable, part of the graph |
 | Data ingestion | Python (PyMuPDF, HL7, Apple Health parser) | PDF + standard medical formats |
 | Wearable sync | Oura API, Apple HealthKit, FHIR | Official APIs |
 | Mesh protocol | libp2p (same as IPFS) | Mature P2P networking, DHT built-in |
-| Bittensor subnet | bittensor SDK + Yuma Consensus | Incentive layer for doctor validation |
-| Doctor credentialing | Soulbound Tokens + ZK proofs + medical board oracle | On-chain credential without PII |
-| Doctor review UI | React (doctor-facing web dashboard) | Rubric-based case review, score submission |
-| Reward escrow | On-chain time-locked contract | Holds 30% of doctor rewards pending outcome confirmation |
-| Prediction markets | Lightweight on-chain market per contested case | Calibrates probabilistic physician beliefs |
-| Frontend | React + local web server | Patient dashboard on localhost |
-| Privacy (Phase 4) | SGX / TDX TEE, ZK-SNARKs | Industry standard for confidential compute |
+| Bittensor subnet | bittensor SDK + Yuma Consensus | Incentive layer; validators run automated scoring + doctor portal |
+| Doctor credentialing | Medical board oracle (NPPES/state APIs) + optional on-chain SBT | Verified credentials; doctor never needs crypto |
+| Doctor review portal | React web app hosted by validators | Rubric-based case review, Stripe payments, mobile-friendly |
+| Prediction markets | Lightweight on-chain market per contested case (Phase 12) | Calibrates probabilistic physician beliefs; opt-in for doctors |
+| Patient frontend | React + local web server | Dashboard on localhost |
+| Privacy (Phase 4) | SGX / TDX TEE, ZK-SNARKs, k-anonymity | Industry standard for confidential compute + re-identification prevention |
 
 ---
 
@@ -725,10 +898,50 @@ Your Health Consilium — Last updated 2 hours ago
 
 ## Key Difference From Everything Else
 
-| System | Data location | Memory | Multi-specialist | Privacy |
-|--------|--------------|--------|-----------------|---------|
-| ChatGPT / Gemini | Cloud | None | No | None |
-| Apple Health Intelligence | Apple's cloud | Limited | No | Partial |
-| MDAgents | Cloud API | None | Yes | None |
-| Your GP | Their EHR | Yes (fragmented) | Sometimes | HIPAA |
-| **HealthMesh** | **Your machine** | **Complete, lifelong** | **Yes, permanent** | **By design** |
+| System | Data location | Memory | Multi-specialist | Privacy | Doctor-validated | Incentive-aligned |
+|--------|--------------|--------|-----------------|---------|-----------------|-------------------|
+| ChatGPT / Gemini | Cloud | None | No | None | No | No |
+| Apple Health Intelligence | Apple's cloud | Limited | No | Partial | No | No |
+| MDAgents (paper) | Cloud API | None | Yes | None | No | No |
+| Your GP | Their EHR | Yes (fragmented) | Sometimes | HIPAA | Yes (1 doctor) | Fee-for-service |
+| Safe Scan (SN76) | Cloud | Model weights | No (single task) | Partial | No | TAO |
+| **HealthMesh** | **Your machine** | **Complete, lifelong** | **Yes, permanent** | **By design** | **Yes, multi-doctor consensus** | **TAO + fiat** |
+
+---
+
+## Open Questions and Risks
+
+Issues that need resolution before mainnet launch. Honest assessment of what's unsolved.
+
+### Technical Risks
+
+| Risk | Severity | Mitigation |
+|------|----------|-----------|
+| **LLM clinical reasoning quality**: Current open-source models (qwen3:14b quantized) may not match GPT-4-class clinical reasoning. If agent opinions are consistently poor, doctors will rate everything low and the incentive loop breaks. | High | Benchmark agent quality against HealthBench rubrics before launch. If quality is below threshold, consider using a larger model via API (Chutes/OpenRouter) for clinical reasoning while keeping data local. The local graph provides context the LLM wouldn't otherwise have — this may compensate for model size. |
+| **Body knowledge graph size**: Combined Hetionet + Uberon + FMA could be 100M+ edges. Running this on a consumer laptop alongside personal data may be impractical. | Medium | Lazy-load strategy: only import subgraphs relevant to the patient's conditions. A patient with CKD + diabetes loads renal + endocrine subgraphs, not the entire human anatomy. |
+| **Neo4j Community Edition limits**: No clustering, no role-based access control. Adequate for single-user local deployment but may need Enterprise for validator-scale operations. | Low | Local deployment uses Community Edition. Validators use Enterprise or switch to a different graph DB for aggregation. |
+
+### Product Risks
+
+| Risk | Severity | Mitigation |
+|------|----------|-----------|
+| **Doctor cold start**: Without doctors, validators can't produce quality weight vectors. Without quality weights, miners don't improve. Without good miners, patients don't get value. Without patients, there's no network. | Critical | CME credit partnership is the best lever. Target 50 doctors across 5 specialties before subnet launch. Run a closed beta with 20 patients + 10 doctors for 3 months before opening the network. |
+| **Patient data entry burden**: Most patients don't have their health data in digital form. Manual entry of lab results, conditions, and medications is tedious and error-prone. | High | Prioritize Apple Health and wearable integrations (automatic). For lab results, LLM-powered PDF parsing of lab reports (take a photo → structured data). Partner with patient health record platforms (e.g., Apple Health Records via FHIR) for automatic import. |
+| **"AI doctor" perception**: Media and regulators may frame HealthMesh as "replacing doctors with AI" regardless of the actual design. | High | Frame consistently as "health data organization + AI-assisted monitoring that helps you prepare for doctor visits." Never claim diagnostic or treatment capability. Doctor validation layer actually reinforces the message: real doctors are in the loop. |
+
+### Regulatory Risks
+
+| Risk | Severity | Mitigation |
+|------|----------|-----------|
+| **FDA SaMD classification**: Agent recommendations may trigger medical device classification, requiring years of regulatory approval. | High | Stay within CDS exemption for initial launch; pursue FDA Pre-Submission before agent recommendation features. |
+| **International medical licensing**: Doctors credentialed in one country rating AI opinions for patients in another country raises cross-border medical licensing questions. | Medium | Initial launch limited to US-licensed doctors reviewing anonymized cases (no patient-doctor relationship, no cross-border treatment). Legal review needed for international expansion. |
+| **Bittensor regulatory uncertainty**: The TAO token and subnet emissions may face securities regulation scrutiny. | Medium | Not unique to HealthMesh — affects all Bittensor subnets. Monitor SEC/CFTC guidance on utility tokens. |
+
+### Questions for Further Research
+
+1. **Model benchmarking**: What is the minimum model size / capability threshold for clinical reasoning quality that doctors would rate as "acceptable"? Is qwen3:14b-Q4 sufficient, or does this require 70B+ models?
+2. **Rubric scalability**: Can auto-generated rubric criteria achieve physician-level quality at scale, or will this always require human curation?
+3. **Doctor retention**: What per-case rate is needed to retain doctors long-term? How does this compare to telehealth moonlighting rates ($40–100/hour)?
+4. **Federated pattern detection**: Has anyone implemented the "pattern ballot + boolean attestation" protocol at scale? What are the failure modes?
+5. **Graph import engineering**: How much work is the Hetionet + Uberon → unified schema merge? Is this weeks or months of data engineering?
+6. **Patient willingness**: Will health-conscious consumers actually run Neo4j on their laptops? Or does this need a managed appliance / Raspberry Pi / home server product?
