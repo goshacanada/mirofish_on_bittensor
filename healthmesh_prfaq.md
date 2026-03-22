@@ -56,11 +56,21 @@ A: Every AI opinion produced by the mesh is subject to review by board-certified
 
 **Q: Do I need to be technical to use HealthMesh?**
 
-A: Phase 1 (local consilium) requires installing Docker and running a few commands — comparable to setting up a home media server. We are developing a one-click installer for macOS and a home-appliance version (pre-configured hardware) for non-technical users. The patient dashboard is a simple web interface running on localhost.
+A: No. On macOS, you download and install a single app — no terminal, no commands, no configuration. You open the app, link your health accounts (Apple Health, Oura, patient portal), upload lab PDFs, and the system does everything else. The dashboard shows your consilium opinions in plain language.
+
+In the future, we are developing the HealthMesh Home Unit — a dedicated appliance ($399–499) that you plug into power and Wi-Fi. It runs 24/7 in your home, monitoring your health continuously, with everything pre-configured. You access it from any browser on your home network.
+
+**Q: How do I add my health data?**
+
+A: Three ways, all simple:
+
+1. **Link an account**: Connect Apple Health, Oura Ring, or your hospital patient portal (Epic MyChart, Cerner). Data syncs automatically.
+2. **Upload a document**: Drag-and-drop a lab PDF or take a photo of a lab printout with your phone. The AI extracts the data and asks you to confirm: "We found: Creatinine 1.8, eGFR 52 — correct?"
+3. **Download a summary**: When preparing for a doctor visit, tap "Prepare for visit" to generate a 1-page PDF with your trends, flagged items, and suggested questions.
 
 **Q: How much does it cost?**
 
-A: The local consilium (your health graph + AI specialist team, no mesh) is free and open-source. The Pro tier ($29/month) adds mesh consultations, doctor-validated opinions, and priority case routing. The free tier is fully functional for personal health monitoring — the Pro tier adds collective intelligence.
+A: The local consilium (your health graph + AI specialist team, no mesh) is free and open-source. The Pro tier ($29/month) adds mesh consultations, doctor-validated opinions, and priority case routing. The HealthMesh Home Unit ($399–499, available later) includes the hardware appliance with 1 year of Pro subscription.
 
 **Q: What if I stop using HealthMesh? Can I export my data?**
 
@@ -134,5 +144,5 @@ A: In order of severity:
 1. **Clinical reasoning quality of local LLMs**: If open-source models running on consumer hardware cannot produce opinions that physicians rate as acceptable, the incentive loop breaks. Mitigation: benchmark rigorously; fall back to cloud-hosted models via privacy-preserving inference (TEE) if local models are insufficient.
 2. **Doctor adoption**: If we cannot recruit and retain 50+ credentialed physicians, the validation layer is too thin to be meaningful. Mitigation: CME credits, competitive pay, academic partnerships.
 3. **Regulatory action**: If the FDA classifies local-only health monitoring as SaMD before we have a regulatory pathway, early growth is blocked. Mitigation: strict CDS exemption compliance in initial phases; proactive FDA engagement.
-4. **Patient adoption**: Running Neo4j on a laptop is not mass-market. Mitigation: develop managed appliance (pre-configured hardware) and hosted option (encrypted, zero-knowledge cloud) for non-technical users.
+4. **Patient adoption**: Phase 1 targets MacBook users via a native app (one-click install, zero terminal interaction). Phase 2 introduces the HealthMesh Home Unit — a plug-and-play appliance ($399–499) for mass market. The user never sees a database or a config file; they link accounts, upload PDFs, and read their consilium dashboard.
 5. **Network effects may not materialize**: If mesh opinions don't add meaningful value beyond the local consilium, patients won't pay for Pro and the network collapses to local-only use. Mitigation: validate mesh value in closed beta before investing in network growth.

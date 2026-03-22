@@ -24,6 +24,7 @@ The separation is necessary because: (1) medical AI requires credentialed human 
 3. **Graph-native** — all health knowledge is modeled as a graph, enabling holistic reasoning across conditions, time, and body systems
 4. **Persistent consilium** — your specialist team remembers everything, forever
 5. **Open mesh** — anyone can run a node; more nodes = richer collective knowledge
+6. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add links to their medical records and download their data. Everything else is invisible.
 
 ---
 
@@ -858,6 +859,92 @@ Break-even at scale: ~1000 paying subscribers = $20K–50K/month revenue
 
 ---
 
+## Hardware & Deployment Strategy
+
+### Phase 1 Target: MacBook (developer + early adopter)
+
+The initial deployment target is a MacBook (Apple Silicon, 16GB+ RAM). All components — Neo4j, Ollama, the agent framework, and the patient dashboard — run locally via Docker Compose behind a native macOS app.
+
+**Minimum specs:**
+- Apple Silicon Mac (M1 or later)
+- 16 GB RAM (24 GB+ recommended for qwen3:14b quantized)
+- 50 GB free disk (Neo4j + body knowledge graph + model weights)
+- macOS 13+
+
+**User experience target:** The user downloads a `.dmg`, installs the app, and sees a dashboard. They never interact with Docker, Neo4j, Ollama, or a terminal. The app handles all infrastructure invisibly — similar to how the Docker Desktop app hides containers behind a GUI, or how Obsidian hides its data store behind a note-taking UI.
+
+### Phase 2 Target: HealthMesh Appliance (mass market)
+
+A pre-configured hardware appliance that plugs into the home network. The user connects it to power and Wi-Fi, opens a web dashboard on their phone or laptop, and starts adding health data.
+
+```
+HealthMesh Home Unit
+├── Hardware: ARM SBC (Raspberry Pi 5 / Orange Pi 5+) or Intel NUC
+│   - 8 GB+ RAM, 256 GB SSD, Wi-Fi + Ethernet
+│   - Estimated BOM cost: $150–250
+│   - Retail price: $399–499 (includes 1 year of Pro subscription)
+│
+├── Pre-installed software:
+│   - Neo4j Community Edition (health graph + body knowledge graph)
+│   - Ollama + quantized medical LLM (pre-downloaded)
+│   - Agent framework + all specialist agents
+│   - Patient dashboard (web UI on local network)
+│   - Mesh gateway + Bittensor miner (opt-in)
+│   - Auto-update service (pulls updates from HealthMesh repo)
+│
+├── User experience:
+│   - Plug in, connect to Wi-Fi (via phone app or display)
+│   - Open healthmesh.local in any browser on home network
+│   - Link medical accounts (Apple Health, Oura, patient portals)
+│   - Upload lab PDFs (drag-and-drop or phone camera)
+│   - View consilium dashboard
+│   - No terminal, no config, no Docker, no accounts to create
+│
+└── Privacy:
+    - All data stays on the box in the user's home
+    - Encrypted SSD — if stolen, data is inaccessible without passcode
+    - Mesh queries go through the box's network connection (anonymized)
+    - User can physically unplug the box to go fully offline
+```
+
+**Why an appliance, not just an app:**
+- Not everyone has a MacBook with 24GB RAM
+- A dedicated device can run 24/7 (proactive monitoring, mesh queries, background agent checks) without draining a laptop battery
+- Physical device in the home reinforces the "your data stays with you" message
+- Simpler support model — known hardware, known OS, known software versions
+- Potential for dedicated medical-grade hardware in later versions (TPM for key storage, cellular backup for mesh connectivity)
+
+### Data Input — The User's Actual Workflow
+
+The user's primary interaction is **adding links and uploading documents**. The system does the rest.
+
+```
+How a user adds data:
+
+1. LINK a health account
+   → "Connect Apple Health" → authorize in Apple Health app → done
+   → "Connect Oura Ring" → OAuth flow → done
+   → "Connect patient portal" → enter portal URL + credentials
+     → system uses FHIR/Smart-on-FHIR to pull records automatically
+     → supported: Epic MyChart, Cerner, Allscripts (cover ~80% of US patients)
+
+2. UPLOAD a document
+   → Drag-and-drop a lab PDF into the dashboard
+   → Or: take a photo of a lab printout with phone → upload
+   → AI extracts structured data → shows preview → user confirms
+   → "We found: Creatinine 1.8 mg/dL, eGFR 52, HbA1c 7.2% — correct?"
+
+3. DOWNLOAD information from the consilium
+   → Dashboard shows agent opinions, trends, alerts
+   → "Prepare for doctor visit" → generates a 1-page summary PDF
+     with flagged items, trends, and questions to ask
+   → Export full health history as FHIR JSON or PDF at any time
+```
+
+The user never sees a graph, a database query, or an agent prompt. They see: "Your nephrology specialist noticed your eGFR dropped. Here's what to discuss with your doctor."
+
+---
+
 ## Implementation Phases
 
 | Phase | What | Outcome |
@@ -874,7 +961,9 @@ Break-even at scale: ~1000 paying subscribers = $20K–50K/month revenue
 | **10** | Doctor review UI + rubric engine | Doctors review cases and submit scores |
 | **11** | Reward escrow + outcome confirmation | 30% of doctor rewards held until outcomes confirmed |
 | **12** | Prediction market layer | High-stakes probabilistic doctor validation |
-| **13** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
+| **13** | macOS native app — one-click install, no terminal | Non-technical MacBook users can onboard |
+| **14** | HealthMesh Appliance — hardware design, manufacturing, distribution | Mass-market plug-and-play device |
+| **15** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
 
 ---
 
@@ -955,4 +1044,4 @@ Issues that need resolution before mainnet launch. Honest assessment of what's u
 3. **Doctor retention**: What per-case rate is needed to retain doctors long-term? How does this compare to telehealth moonlighting rates ($40–100/hour)?
 4. **Federated pattern detection**: Has anyone implemented the "pattern ballot + boolean attestation" protocol at scale? What are the failure modes?
 5. **Graph import engineering**: How much work is the Hetionet + Uberon → unified schema merge? Is this weeks or months of data engineering?
-6. **Patient willingness**: Will health-conscious consumers actually run Neo4j on their laptops? Or does this need a managed appliance / Raspberry Pi / home server product?
+6. **Appliance hardware selection**: Raspberry Pi 5 (4/8GB) vs Intel NUC vs custom ARM board? Need to benchmark Neo4j + Ollama + quantized LLM on candidate hardware. Can a Pi 5 with 8GB run qwen3:8b quantized with acceptable latency for agent reasoning?
