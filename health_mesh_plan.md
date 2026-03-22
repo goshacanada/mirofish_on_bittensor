@@ -2,7 +2,18 @@
 
 **Vision:** Every person runs a permanent AI medical council on their own computer. Their complete health history lives in a local graph database. When a complex case needs broader input, the system consults a mesh of other instances — each running for other people — receiving medical opinions without ever sharing personal data. The result is a global network of AI specialists with knowledge from millions of cases, serving millions of individuals, where no one's data ever leaves their machine.
 
-**Relationship to MiroFish:** HealthMesh extends the MiroFish/OASIS multi-agent simulation framework (see `mirofish_bittensor_plan.md`). MiroFish provides the agent orchestration engine — persistent agent populations with graph-backed memory running opinion simulations. HealthMesh specializes this for medicine: the agents are medical specialists, the graph is a health knowledge graph, and the simulation is a clinical consilium rather than an opinion survey. The Bittensor subnet infrastructure (miner/validator/Axon) is shared between both plans.
+**Relationship to MiroFish:** HealthMesh is a **dedicated Bittensor subnet** — separate from the MiroFish opinion intelligence subnet (see `mirofish_bittensor_plan.md`). The two subnets share lineage: both extend the MiroFish/OASIS multi-agent simulation framework for persistent agent populations with graph-backed memory. But they are distinct networks with distinct incentive mechanisms, validators, and emission streams:
+
+| | MiroFish Subnet | HealthMesh Subnet |
+|---|---|---|
+| Domain | General opinion intelligence (finance, geopolitics, tech) | Medical health intelligence |
+| Miners | Agent populations running opinion simulations | Agent populations running clinical consiliums |
+| Validators | Automated scoring (diversity, consistency, calibration) | Automated scoring + credentialed physician review |
+| Graph | Topic-domain knowledge graph | Human body knowledge graph + personal health graph |
+| Regulation | Minimal | FDA SaMD, HIPAA, international medical regulation |
+| TAO registration | Separate subnet (own netuid) | Separate subnet (own netuid) |
+
+The separation is necessary because: (1) medical AI requires credentialed human validation that general opinion subnets don't, (2) regulatory obligations (FDA, HIPAA) would burden the general subnet unnecessarily, and (3) the incentive mechanism is fundamentally different — health opinions are scored by doctors against clinical rubrics, not by automated diversity metrics.
 
 ---
 
