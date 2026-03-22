@@ -433,6 +433,214 @@ The mesh effect: when that node's agents give opinions to other nodes' queries, 
 
 ---
 
+## Bittensor Integration — Doctor Validation Layer
+
+This is the economic engine of HealthMesh. AI agents (miners) produce health opinions. Credentialed doctors (validators) grade those opinions and earn TAO rewards. The quality of a doctor's grading is itself scored over time, creating a self-regulating market for medical expertise.
+
+### Roles in Bittensor Terms
+
+```
+Miners     = HealthMesh AI agent nodes
+             → produce clinical opinions in response to anonymized queries
+             → earn TAO proportional to how well doctors rate their opinions
+
+Validators = Credentialed medical doctors
+             → review anonymized cases + agent opinions
+             → submit quality scores (weight vectors) to the chain
+             → earn TAO proportional to their stake and consensus alignment
+
+Subnet owner = HealthMesh protocol
+             → defines the incentive mechanism
+             → earns 18% of emissions
+             → maintains the credentialing oracle and rubric library
+```
+
+### How Doctor Credentialing Works
+
+Doctors cannot participate anonymously — their opinions are worth money only if they are actually doctors. But credentials must be verified without storing PII on-chain.
+
+**Credentialing flow:**
+
+```
+1. Doctor submits license number + jurisdiction to a credentialing oracle
+   (off-chain; run by HealthMesh or a trusted third party)
+
+2. Oracle verifies against state/national medical board registries
+   (automated API checks where available; manual review otherwise)
+
+3. If valid: oracle issues a Soulbound Token (SBT) to the doctor's wallet
+   - SBT encodes: specialty, jurisdiction, license status, expiry
+   - SBT is non-transferable — cannot be sold or loaned
+   - ZK proof attached: "this wallet holds a valid active MD license
+     in cardiology, issued by a recognized authority" — no name or
+     license number exposed on-chain
+
+4. SBT is checked before any validator weight submission is accepted
+   - No SBT = weights rejected by the subnet
+
+5. License expiry monitoring: oracle re-checks annually; SBT revoked
+   if license lapses or is disciplinary action taken
+```
+
+**Specialty matching:** The SBT encodes the doctor's specialty. The subnet only routes cases to doctors whose specialty matches the agent being validated. A nephrologist validates nephrology agent opinions; a cardiologist validates cardiology agent opinions. Specialists earn more for their specialty than out-of-specialty review.
+
+### What Doctors Actually Review
+
+Doctors receive **anonymized opinion packages** — never the patient's identity:
+
+```json
+{
+  "case_id": "case_8f3a...",
+  "specialty": "nephrology",
+  "anonymized_context": {
+    "conditions": ["Type 2 Diabetes (8 years)", "Hypertension"],
+    "medications": ["Metformin 1000mg", "Lisinopril 10mg"],
+    "labs": { "eGFR_trend": "68→61→58→55→52 over 20 months", "creatinine": "1.8 mg/dL", "Hgb": "10.2" },
+    "wearables": { "avg_hrv": "38ms declining", "avg_sleep": "5.8h" }
+  },
+  "agent_opinion": "eGFR decline rate of ~4 pts/year in diabetic is concerning.
+                    Anemia of CKD likely. Recommend: urine ACR, iron studies, PTH.
+                    Metformin review at eGFR <45. Nephrology referral within 3 months.",
+  "rubric": [
+    { "criterion": "Correctly identified anemia of CKD as likely cause", "weight": 0.25 },
+    { "criterion": "Cited appropriate eGFR threshold for metformin review (45 mL/min)", "weight": 0.20 },
+    { "criterion": "Recommended appropriate next tests (ACR, iron, PTH)", "weight": 0.30 },
+    { "criterion": "Urgency framing appropriate (non-urgent but timely)", "weight": 0.15 },
+    { "criterion": "No unsafe recommendation included", "weight": 0.10 }
+  ]
+}
+```
+
+The rubric is pre-generated (from HealthBench-style physician-authored criteria) and specialty-specific. Doctors mark each criterion: met / partially met / not met, optionally adding a note. This produces a structured score vector, not just a free-text opinion.
+
+### How Doctor Scores Are Aggregated
+
+The subnet validator code aggregates individual doctor ratings and produces weight vectors for Yuma Consensus:
+
+```
+For each AI agent (miner):
+
+1. Collect all doctor ratings submitted this tempo
+2. Compute weighted criterion scores (per-criterion, weighted by criterion importance)
+3. Apply specialty weighting (in-specialty doctors weighted 2x out-of-specialty)
+4. Apply doctor reputation multiplier (explained below)
+5. Produce final score per agent: 0.0 → 1.0
+6. Normalize across all agents → weight vector → submit to chain
+
+Yuma Consensus then:
+- Clips outlier validator scores toward the median (penalizes collusion)
+- Distributes TAO emissions to miners (proportional to score)
+  and validators/doctors (proportional to stake × consensus alignment)
+```
+
+### Doctor Reputation and Grading
+
+Doctor ratings are themselves scored. A doctor who consistently rates well earns higher reputation — which multiplies their future TAO earnings and their influence on miner scores.
+
+**How doctor quality is measured:**
+
+| Signal | Timing | Weight |
+|--------|--------|--------|
+| Consensus with other credentialed doctors | Immediate | 40% |
+| Golden set accuracy (known-correct cases injected) | Immediate | 30% |
+| Proxy outcome alignment (did the recommended test confirm the hypothesis?) | Weeks–months | 20% |
+| Long-term retrospective outcome (patient trajectory) | Months–years | 10% |
+
+**Golden sets:** The HealthMesh subnet maintains a library of cases with physician-consensus ground truth (analogous to HealthBench's 48K rubric criteria). 10-20% of cases sent to doctors are golden sets — the doctor doesn't know which ones. This calibrates and audits every doctor in real time.
+
+**Consensus scoring:** Inter-doctor agreement is the primary short-term signal. A doctor who consistently agrees with the credentialed specialist majority earns high reputation; a doctor whose scores are outliers gets investigated. (Yuma Consensus already does this at the validator level — consensus alignment is rewarded, deviation penalized.)
+
+**The reputation score** gates earning potential:
+
+```
+Effective TAO earnings = base_earnings × reputation_multiplier
+
+reputation_multiplier:
+  0.0–0.4 reputation: 0.5× (half pay — probation)
+  0.4–0.7 reputation: 1.0× (standard pay)
+  0.7–0.9 reputation: 1.5× (senior validator bonus)
+  0.9–1.0 reputation: 2.0× (expert validator bonus)
+```
+
+Doctors below 0.3 reputation for 4 consecutive tempos are suspended and their SBT flagged.
+
+### The Delayed Ground Truth Problem
+
+Not all medical opinions can be graded immediately — outcomes arrive weeks, months, or years later. The reward system is split into two tranches:
+
+```
+When doctor submits a rating:
+  → 70% of reward paid immediately (based on consensus + golden set)
+  → 30% held in time-locked escrow
+
+When ground truth arrives (patient uploads follow-up, outcome confirmed):
+  → Escrow is released, adjusted up or down based on retrospective accuracy
+  → Doctor who said "this eGFR trend needs nephrology in 3 months" and was
+    right (patient diagnosed with Stage 4 CKD 4 months later) gets full escrow
+  → Doctor who said "this is normal variation" gets 0 escrow
+
+Ground truth sources (patient-controlled, never mandatory):
+  - Patient uploads subsequent lab results
+  - Patient marks "outcome confirmed" on a consilium case
+  - Patient's future agent opinions reference back to this case
+```
+
+If no ground truth ever arrives (patient doesn't upload follow-up), escrow is released at 12 months at the consensus rate — no penalty for unavailable outcomes.
+
+### Prediction Market Layer (Advanced)
+
+For complex or contested cases, the subnet runs a lightweight prediction market alongside standard validation:
+
+```
+Doctor A says: "eGFR will reach Stage 4 within 12 months" — stakes 10 TAO
+Doctor B says: "eGFR will stabilize with current treatment" — stakes 10 TAO
+Doctor C says: "Stage 4 within 18–24 months" — stakes 5 TAO
+
+Outcome (patient uploads eGFR 13 months later: 42 → Stage 3b, not Stage 4):
+  Doctor B partially right — recovered 8 TAO
+  Doctor C closest — recovered 9 TAO
+  Doctor A wrong — lost stake
+```
+
+Prediction markets elicit calibrated probabilistic beliefs rather than forced binary ratings. They are opt-in for doctors who want higher-stakes participation.
+
+### Anti-Gaming Mechanisms
+
+| Attack | Defense |
+|--------|---------|
+| Doctor rates randomly to collect base pay | Golden set detection; low consensus → low reputation → lower earnings |
+| Doctor copies other validators' scores | Commit-Reveal: scores committed (hashed) before submission, revealed after tempo; copying after reveal is too late |
+| Doctor creates multiple accounts | SBT is non-transferable; one SBT per verified license; license oracle checks for duplicates |
+| Sybil attack via fake licenses | Oracle verifies against real medical board registries; ZK proof tied to verified credential; license number is checked for uniqueness |
+| Doctors collude to inflate a specific agent | Yuma Consensus clips outlier scores toward median; colluding validators lose consensus alignment → lose TAO |
+| Agent operator bribes doctors | Stake slashing for detected coordination patterns; identity of which doctor rated which agent is randomized within specialty pool |
+| Out-of-specialty doctor rates nephrology cases | SBT specialty field matched at routing; out-of-specialty ratings receive 0.5× weight and do not count toward miner's primary score |
+
+### Incentive Flow Summary
+
+```
+Patient node (miner) produces opinion
+    → Routed to 5–10 credentialed nephrologists (validators)
+    → Each doctor reviews anonymized case + agent opinion against rubric
+    → Scores submitted via Commit-Reveal to chain
+    → Yuma Consensus aggregates → weight vector
+    → TAO emission this tempo:
+        41% → miner nodes (proportional to doctor scores)
+        41% → doctor validators (proportional to stake × consensus alignment)
+        18% → HealthMesh subnet (funds oracle, rubric library, development)
+    → 30% of doctor TAO held in escrow pending outcome confirmation
+```
+
+### Why Doctors Will Participate
+
+- **Revenue**: TAO rewards are real money. Senior validators (0.9+ reputation) earn 2× the base rate. A high-reputation specialist reviewing 20 cases/day at $50 equivalent per case = meaningful supplemental income.
+- **Low friction**: reviewing a pre-structured rubric for an anonymized case takes 5–10 minutes, not a full chart review.
+- **Compounding reputation**: reputation accrues over time; early participants in a growing subnet earn more as subnet emissions grow.
+- **No liability**: doctors are rating AI agent opinions on anonymized synthetic contexts — they are not treating patients and carry no clinical liability.
+- **Specialty impact**: cardiologists directly shape which cardiology agents survive and which die — the best agents for their specialty win, improving care globally.
+
+---
+
 ## Phase 4 — Privacy Layer (Future)
 
 *Designed from the start to support this — not required for local-only operation.*
@@ -449,13 +657,19 @@ The mesh effect: when that node's agents give opinions to other nodes' queries, 
 | Component | Technology | Why |
 |-----------|-----------|-----|
 | Health graph | Neo4j (local) | Mature graph DB, excellent traversal, FHIR-compatible |
+| Body knowledge graph | Hetionet + SPOKE (Neo4j native) + Uberon/FMA | Pre-loaded anatomy/physiology, confidence-tiered |
 | Local LLM | Ollama + qwen3:14b | Runs on MacBook, no cloud, Metal GPU |
 | Specialist agents | Python + LangGraph or custom | Stateful agent orchestration |
 | Agent memory | Written back to Neo4j | Persistent, queryable, part of the graph |
 | Data ingestion | Python (PyMuPDF, HL7, Apple Health parser) | PDF + standard medical formats |
 | Wearable sync | Oura API, Apple HealthKit, FHIR | Official APIs |
 | Mesh protocol | libp2p (same as IPFS) | Mature P2P networking, DHT built-in |
-| Frontend | React + local web server | Dashboard on localhost |
+| Bittensor subnet | bittensor SDK + Yuma Consensus | Incentive layer for doctor validation |
+| Doctor credentialing | Soulbound Tokens + ZK proofs + medical board oracle | On-chain credential without PII |
+| Doctor review UI | React (doctor-facing web dashboard) | Rubric-based case review, score submission |
+| Reward escrow | On-chain time-locked contract | Holds 30% of doctor rewards pending outcome confirmation |
+| Prediction markets | Lightweight on-chain market per contested case | Calibrates probabilistic physician beliefs |
+| Frontend | React + local web server | Patient dashboard on localhost |
 | Privacy (Phase 4) | SGX / TDX TEE, ZK-SNARKs | Industry standard for confidential compute |
 
 ---
@@ -465,13 +679,18 @@ The mesh effect: when that node's agents give opinions to other nodes' queries, 
 | Phase | What | Outcome |
 |-------|------|---------|
 | **1** | Health graph schema + Neo4j setup + manual data entry | Graph populated with your health data |
-| **2** | Data ingestors — Apple Health, Oura, PDF labs | Graph auto-updated from real sources |
-| **3** | Local specialist agents — query graph, write opinions | Working local consilium |
-| **4** | Consilium workflow — multi-round debate, synthesis | Agents consult each other on your data |
-| **5** | Proactive monitoring — scheduled agent checks, alerts | Agents watch your data continuously |
-| **6** | Mesh protocol — P2P consultation requests | Your node asks others for opinions |
-| **7** | Mesh opinions — other nodes respond anonymously | Full mesh consultation working |
-| **8** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
+| **2** | Body knowledge graph import — Hetionet/SPOKE + confidence tiers | Agents have physiological context to reason against |
+| **3** | Data ingestors — Apple Health, Oura, PDF labs | Graph auto-updated from real sources |
+| **4** | Local specialist agents — query graph, write opinions | Working local consilium |
+| **5** | Consilium workflow — multi-round debate, synthesis | Agents consult each other on your data |
+| **6** | Proactive monitoring — scheduled agent checks, alerts | Agents watch your data continuously |
+| **7** | Mesh protocol — P2P consultation requests | Your node asks others for opinions |
+| **8** | Bittensor subnet registration + miner interface | Agent nodes earn TAO for quality opinions |
+| **9** | Doctor credentialing oracle + SBT issuance | Verified doctors can join as validators |
+| **10** | Doctor review UI + rubric engine | Doctors review cases and submit scores |
+| **11** | Reward escrow + outcome confirmation | 30% of doctor rewards held until outcomes confirmed |
+| **12** | Prediction market layer | High-stakes probabilistic doctor validation |
+| **13** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
 
 ---
 
