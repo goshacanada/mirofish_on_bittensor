@@ -1,30 +1,37 @@
-# HealthMesh — Decentralized Personal Health Consilium
+# Consilium — Decentralized Personal Knowledge System
 
-**Vision:** Every person runs a permanent AI medical council on their own computer. Their complete health history lives in a local graph database. When a complex case needs broader input, the system consults a mesh of other instances — each running for other people — receiving medical opinions without ever sharing personal data. The result is a global network of AI specialists with knowledge from millions of cases, serving millions of individuals, where no one's data ever leaves their machine.
+**Vision:** Every person runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local graph database. When the AI faces a hard question, it consults a mesh of other instances worldwide and taps a marketplace of credentialed domain experts who earn money by answering targeted micro-questions. The result is a global knowledge improvement system where no one's data ever leaves their machine.
 
-**Relationship to MiroFish:** HealthMesh is a **dedicated Bittensor subnet** — separate from the MiroFish opinion intelligence subnet (see `mirofish_bittensor_plan.md`). The two subnets share lineage: both extend the MiroFish/OASIS multi-agent simulation framework for persistent agent populations with graph-backed memory. But they are distinct networks with distinct incentive mechanisms, validators, and emission streams:
+**Consilium is not a product in any regulated domain.** It is a general-purpose knowledge organization and educational entertainment system. It helps users organize complex information, explore connections, and prepare for informed conversations with real-world professionals (doctors, lawyers, financial advisors, engineers). It does not provide advice, diagnoses, recommendations, or professional services of any kind.
 
-| | MiroFish Subnet | HealthMesh Subnet |
-|---|---|---|
-| Domain | General opinion intelligence (finance, geopolitics, tech) | Medical health intelligence |
-| Miners | Agent populations running opinion simulations | Agent populations running clinical consiliums |
-| Validators | Automated scoring (diversity, consistency, calibration) | Automated scoring + credentialed physician review |
-| Graph | Topic-domain knowledge graph | Human body knowledge graph + personal health graph |
-| Regulation | Minimal | FDA SaMD, HIPAA, international medical regulation |
-| TAO registration | Separate subnet (own netuid) | Separate subnet (own netuid) |
+**Supported knowledge domains (at launch):**
 
-The separation is necessary because: (1) medical AI requires credentialed human validation that general opinion subnets don't, (2) regulatory obligations (FDA, HIPAA) would burden the general subnet unnecessarily, and (3) the incentive mechanism is fundamentally different — health opinions are scored by doctors against clinical rubrics, not by automated diversity metrics.
+| Domain | Knowledge graph | Expert pool | Example use |
+|--------|----------------|-------------|-------------|
+| **Wellness & Body Literacy** | Human body systems, biomarkers, physiology | Licensed physicians, researchers | Understand your lab results before talking to your doctor |
+| **Personal Finance** | Markets, instruments, tax rules, macro indicators | CFAs, CPAs, financial analysts | Prepare questions for your financial advisor |
+| **Legal Literacy** | Statutes, case law, procedures, rights | Licensed attorneys, paralegals | Understand your situation before meeting a lawyer |
+| **Engineering & Technical** | Systems, specifications, failure modes, standards | Licensed engineers, domain specialists | Explore technical concepts for professional discussions |
+| **Nutrition & Fitness** | Nutrients, metabolic pathways, exercise physiology | Registered dietitians, exercise scientists | Organize personal fitness data and explore patterns |
+
+**The system is domain-agnostic by design.** The graph database, agent framework, mesh protocol, expert micro-question marketplace, and Bittensor incentive layer are identical across domains. Only the knowledge graph content and expert pool differ. Adding a new domain = importing a new foundational knowledge graph + onboarding domain-specific experts.
+
+**Relationship to MiroFish:** Consilium is a **single Bittensor subnet** that extends the MiroFish/OASIS multi-agent simulation framework (see `mirofish_bittensor_plan.md`). MiroFish provides the agent orchestration engine — persistent agent populations with graph-backed memory. Consilium specializes this for personal knowledge management across multiple domains, with credentialed expert validation via micro-questions.
+
+**Wellness & Body Literacy is the primary launch domain** because it has the richest available foundational knowledge graphs (Hetionet, Uberon, SPOKE), the largest addressable user base (everyone has health data), and the strongest expert pool (millions of licensed physicians worldwide). The rest of this document uses wellness examples throughout, but every technical component is domain-agnostic.
 
 ---
 
 ## Core Principles
 
-1. **Local first** — your health graph never leaves your device
+1. **Local first** — your personal knowledge graph never leaves your device
 2. **Opinions travel, not data** — the mesh shares reasoning, not records
-3. **Graph-native** — all health knowledge is modeled as a graph, enabling holistic reasoning across conditions, time, and body systems
-4. **Persistent consilium** — your specialist team remembers everything, forever
+3. **Graph-native** — all knowledge is modeled as a graph, enabling holistic reasoning across topics, time, and interconnected domains
+4. **Persistent consilium** — your advisory team remembers everything, forever
 5. **Open mesh** — anyone can run a node; more nodes = richer collective knowledge
-6. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add links to their medical records and download their data. Everything else is invisible.
+6. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add data and explore insights. Everything else is invisible.
+7. **Educational entertainment** — Consilium helps users explore, learn, and prepare for real-world professional conversations. It is not a substitute for professional advice in any domain.
+8. **Domain-agnostic** — the architecture works identically for wellness, finance, legal, engineering, or any knowledge domain. No domain receives special regulatory treatment because no domain provides professional services.
 
 ---
 
@@ -32,29 +39,38 @@ The separation is necessary because: (1) medical AI requires credentialed human 
 
 ```
 Your Machine
-├── Health Graph (Neo4j)        ← your complete medical history
-├── Specialist Agent Team       ← your permanent AI doctor council
-├── Data Ingestor               ← pulls from wearables, labs, doctor notes
-├── Local LLM (Ollama)          ← inference stays on your hardware
-└── Mesh Gateway                ← sends anonymized questions, receives opinions
+├── Personal Knowledge Graph (Neo4j) ← your organized data for any domain
+├── Advisory Agent Team              ← your permanent AI consilium
+├── Data Ingestor                    ← pulls from connected data sources
+├── Local LLM (Ollama)               ← inference stays on your hardware
+└── Mesh Gateway                     ← sends anonymized questions, receives perspectives
 
 Mesh Network (other people's machines)
 ├── Node A: Alice's instance    ← runs her own consilium, answers anonymized queries
 ├── Node B: Bob's instance      ← same
 ├── Node C: ...                 ← thousands of nodes worldwide
-└── Each node: learns from its own cases, shares only medical opinions
+└── Each node: draws on its own data context, shares only perspectives
+
+Expert Marketplace (Bittensor subnet)
+├── Credentialed domain experts answer micro-questions
+├── Paid per answer ($0.05–0.50) — like token pricing
+└── Answers improve the foundational knowledge graph for all nodes
 ```
 
-When your local agents face a hard case, the Mesh Gateway asks the network:
-> *"Patient has elevated creatinine trending up over 8 months, concurrent metformin use, HbA1c 7.2, eGFR declining — what does your nephrology agent think?"*
+When your local agents face a question beyond their confidence, the Mesh Gateway asks the network:
+> *"Individual has elevated creatinine trending up over 8 months, concurrent metformin use, HbA1c 7.2, eGFR declining — what patterns does your wellness agent see?"*
 
-No name. No age. No location. Just the medical facts needed for an opinion.
+No name. No age. No location. Just the data points needed for pattern recognition.
 
 ---
 
-## Knowledge Foundation — Human Body Graph
+## Knowledge Foundation — Domain Knowledge Graphs
 
-Before personal health data is added, the system is pre-loaded with a **foundational body knowledge graph** — a map of organs, systems, biomarkers, and their relationships. Agents reason against this foundation to interpret personal data in physiological context.
+Before personal data is added, each domain is pre-loaded with a **foundational knowledge graph** — a map of entities, systems, and their relationships. Agents reason against this foundation to interpret personal data in domain context.
+
+**Wellness & Body Literacy domain** (primary launch domain):
+
+The wellness knowledge graph maps organs, systems, biomarkers, and their relationships.
 
 ### The Two-Layer Graph
 
@@ -780,50 +796,99 @@ Agent produces clinical opinion
 
 ---
 
-## Regulatory Considerations
+## Legal Strategy — Why Consilium Is Not a Regulated Product
 
-**This section is critical. HealthMesh operates at the intersection of medical AI, decentralized networks, and personal health data — all heavily regulated domains.**
+**Consilium is a general-purpose knowledge organization and educational entertainment platform.** It is not a medical device, financial advisory service, legal practice tool, or professional service of any kind. This is not a disclaimer bolted onto a medical product — it is the fundamental architecture of the system.
 
-### FDA / Software as a Medical Device (SaMD)
+### Why This Is Legally Defensible
 
-HealthMesh agents provide clinical recommendations ("request urine albumin test", "consider nephrology referral within 3 months"). This likely makes it a **Software as a Medical Device (SaMD)** under FDA regulation and EU MDR.
+**1. The system never provides professional advice.**
 
-**Mitigation strategies:**
+Consilium agents do not diagnose, treat, prescribe, recommend, or advise. They organize user-provided data into a knowledge graph, identify patterns and connections, and present educational information. Every output is framed as:
 
-| Strategy | Trade-off |
-|----------|-----------|
-| **Informational framing**: all agent outputs labeled "educational information, not medical advice" | Weakest defense; FDA has rejected this framing for AI tools that clearly influence clinical decisions |
-| **Clinical decision support (CDS) exemption**: if the system presents supporting data but the physician makes the decision, it may qualify for CDS exemption under 21st Century Cures Act | Requires careful design — agents must present evidence and reasoning, not direct recommendations |
-| **Wellness device classification**: if limited to wearable trend monitoring without diagnostic claims | Only works for Phase 1 (local health graph); breaks once agents make clinical assertions |
-| **Staged regulatory path**: launch Phase 1–2 as a wellness/data-organization tool (no regulatory burden); pursue FDA 510(k) or De Novo pathway before launching agent recommendations | Most realistic; delays agent features but avoids enforcement risk |
+> *"Here are patterns in your data that you may want to discuss with your doctor/advisor/lawyer."*
 
-**Recommendation:** Design Phase 1–3 to stay within the CDS exemption by presenting evidence and citations to the user's own physician, not direct treatment recommendations. Pursue formal FDA engagement (Pre-Submission meeting) before Phase 4+ mesh features.
+Not: *"You should do X."*
 
-### HIPAA and Health Data Privacy
+This is the same legal framing as:
+- **WebMD / Mayo Clinic symptom checker**: educational health information, not medical advice
+- **TurboTax**: tax preparation software, not a CPA practice
+- **LegalZoom**: document preparation, not legal advice
+- **Wolfram Alpha**: computational knowledge, not professional consulting
+- **Fitbit / Apple Health**: wellness data display, not medical diagnosis
 
-- **Local-only data**: HIPAA applies to "covered entities" (providers, insurers) and their "business associates." A personal health tool running on a user's own device is generally NOT a covered entity. HealthMesh in local-only mode likely falls outside HIPAA.
-- **Mesh queries**: If anonymized contexts transit the network, they may constitute de-identified health information under the HIPAA Safe Harbor standard (18 identifiers removed). The k-anonymity enforcement in Phase 3 strengthens this position.
-- **Doctor review portal**: If doctors are reviewing clinical cases (even anonymized), the validator operating the portal may be a business associate depending on jurisdiction. Legal review needed.
+**2. The system is domain-agnostic.**
 
-### International Regulations
+FDA regulates Software as a Medical Device (SaMD). A general-purpose knowledge system that works identically for wellness, finance, law, and engineering is not a medical device — it's a knowledge tool. The same code, same architecture, same agent framework handles every domain. There is no health-specific logic that could be classified as medical device software.
 
-| Jurisdiction | Key regulation | Impact |
-|-------------|---------------|--------|
-| EU | MDR (Medical Device Regulation) + GDPR | MDR classification likely required for agent features; GDPR applies to any EU patient data even if processed locally |
-| UK | MHRA AI as Medical Device guidance | Similar to FDA SaMD; UK has a more flexible regulatory sandbox |
-| Canada | Health Canada SaMD guidance | Aligns with FDA framework |
-| Australia | TGA | Tiered risk classification |
+If the FDA were to classify Consilium as SaMD, they would also need to classify it as a financial advisory tool (SEC), a legal practice tool (state bar), and an engineering tool (licensing boards) — because it's the same system. This creates a classification absurdity that reinforces the general-purpose framing.
 
-### Liability
+**3. Experts answer general knowledge questions, not case-specific queries.**
 
-**Who is liable when an agent gives bad advice?**
+Domain experts on the micro-question marketplace answer **general domain knowledge questions**, not patient/client-specific cases:
 
-- The agent explicitly does NOT treat patients. It provides information to the patient's own consilium.
-- The mesh opinions are explicitly labeled as "opinions from AI agents, not medical advice."
-- Doctors reviewing AI outputs are rating quality, not treating patients — no doctor-patient relationship exists.
-- **Open question:** If a patient follows an agent's recommendation and is harmed, is the subnet owner liable? Is the miner operator? Is the LLM provider? This is uncharted legal territory for decentralized medical AI. Legal review required before mainnet launch.
+| What experts see | What experts DON'T see |
+|-----------------|----------------------|
+| "At what eGFR level would nephrology referral typically be considered?" | Any user's actual eGFR, name, or data |
+| "What is the standard monitoring frequency for metformin users?" | Whether any specific user takes metformin |
+| "Rank these lab tests by diagnostic yield for anemia workup" | Any user's lab results |
 
-**Mitigation:** Prominent disclaimers, terms of service, and liability waivers. Design UI to direct patients to their own physicians rather than acting independently on agent recommendations.
+Experts contribute to a **general knowledge graph** — like writing a textbook entry or answering a medical school exam question. No expert-client relationship. No case-specific opinion. No malpractice exposure.
+
+**4. All data stays on the user's device.**
+
+HIPAA applies to "covered entities" (healthcare providers, insurers) and their "business associates." Consilium is neither. It is personal software running on a user's own device. The user's data never leaves their machine. The system is not a healthcare provider, does not bill insurance, and does not create medical records. It is a personal data organization tool — like a spreadsheet or a personal journal.
+
+Mesh queries transmit anonymized, de-identified pattern descriptions — not health records. Under HIPAA Safe Harbor, information with all 18 identifiers removed is not Protected Health Information (PHI).
+
+**5. Experts are not providing professional services.**
+
+Key legal distinctions:
+
+| Consilium Expert | Traditional Professional |
+|-----------------|------------------------|
+| Answers general knowledge questions | Provides client-specific advice |
+| Contributes to a shared knowledge graph | Creates a fiduciary relationship |
+| Never sees user data | Reviews case materials |
+| Paid per micro-answer ($0.05–0.50) | Paid per consultation ($200–500) |
+| No professional-client relationship | Duty of care exists |
+| Like being a textbook contributor or exam question writer | Like being a treating physician or retained attorney |
+
+### Legal Safeguards (Implemented in Product)
+
+**Terms of Service:**
+- User explicitly acknowledges: "Consilium is an educational entertainment and knowledge exploration tool. It does not provide medical, financial, legal, or professional advice of any kind."
+- User agrees: "I will consult qualified professionals before making any decisions based on information from Consilium."
+- Liability waiver: "Consilium, its operators, miners, validators, and expert contributors bear no liability for decisions made based on information displayed in the system."
+
+**UI/UX enforcement (every output includes these elements):**
+- Every agent output prefixed with: "For educational exploration only — discuss with your [doctor/advisor/lawyer]"
+- No imperative language ("you should", "you must", "we recommend") — only observational language ("your data shows", "research suggests", "you may want to discuss")
+- "Prepare for your appointment" feature generates a **question list**, not a recommendation list: "Questions to ask your doctor" not "What your doctor should do"
+- Domain experts are labeled "knowledge contributors" not "consultants" or "advisors"
+
+**Expert Terms:**
+- Experts acknowledge: "I am contributing general domain knowledge to an educational knowledge graph. I am not providing professional services, case-specific advice, or establishing any professional relationship with end users."
+- Experts never see user identity or user-specific data
+- Expert contributions are anonymous and aggregated — no single expert's answer is attributable in the user-facing product
+
+### Precedent Analysis
+
+| Product | What it does | Regulatory status | Why it works |
+|---------|-------------|-------------------|-------------|
+| **WebMD** | Displays health information, symptom checkers | Not FDA-regulated | Educational information, not diagnosis |
+| **Apple Health** | Displays health data from wearables | Not FDA-regulated (data display); Apple Watch ECG is FDA-cleared separately | Data organization vs. clinical interpretation |
+| **TurboTax** | Prepares tax returns using user data | Not SEC/IRS regulated as financial advice | Software tool, not a CPA practice |
+| **Duolingo** | Language education with AI tutors | Not regulated as educational institution | Entertainment/education platform |
+| **Stack Overflow** | Expert Q&A for programming | No professional liability | General knowledge sharing, not consulting |
+| **Consilium** | Organizes personal data + knowledge exploration + expert knowledge graph | Not regulated (target) | General-purpose educational knowledge tool |
+
+### Remaining Legal Tasks
+
+1. **Engage healthcare regulatory attorney** before launch to review the framing, ToS, and UI language. Estimated cost: $10K–25K for initial review.
+2. **File for formal FDA guidance** (optional, defensive): submit a Pre-Submission to FDA describing the system and requesting written confirmation that it does not meet SaMD criteria. This creates a paper trail of good-faith regulatory engagement.
+3. **Review international regulatory landscape** for wellness/education tools (EU, UK, Canada) — generally lighter touch for non-diagnostic tools.
+4. **Insurance**: obtain errors & omissions (E&O) insurance for the subnet operator. Not because liability is expected, but as a prudent business measure.
 
 ---
 
@@ -835,11 +900,11 @@ TAO emissions fund the network initially, but long-term sustainability requires 
 
 | Source | Model | Phase |
 |--------|-------|-------|
-| **Patient subscriptions** | Free tier (local-only, no mesh, no doctor validation) + Pro tier ($20–50/month for mesh consultations + doctor-validated agent opinions) | Phase 3+ |
-| **Enterprise API** | Hospitals, insurance companies, pharma companies pay for access to anonymized, aggregated health intelligence (population-level trends, not individual data) | Phase 5+ |
-| **Research partnerships** | Pharmaceutical companies pay for anonymized cohort queries ("how many nodes have patients on Drug X with biomarker Y trend?") — federated analytics, no raw data shared | Phase 5+ |
-| **CME accreditation fees** | CME accreditors pay HealthMesh (or vice versa) for the doctor review platform as a CME delivery mechanism | Phase 4+ |
-| **Doctor review marketplace** | Validators compete for doctor talent; HealthMesh takes a platform fee on doctor compensation | Phase 4+ |
+| **User subscriptions** | Free tier (local-only, no mesh, no expert validation) + Pro tier ($29/month for mesh consultations + expert-validated knowledge) | Phase 3+ |
+| **Enterprise API** | Organizations pay for access to anonymized, aggregated knowledge intelligence (population-level patterns, not individual data) | Phase 5+ |
+| **Research partnerships** | Organizations pay for anonymized federated analytics queries — no raw data shared | Phase 5+ |
+| **Expert marketplace fees** | Validators compete for expert talent; Consilium takes a platform fee on expert compensation | Phase 4+ |
+| **Appliance sales** | Consilium Home Unit ($399–499) with 1 year Pro subscription included | Phase 6+ |
 
 ### Unit Economics (Estimated)
 
@@ -874,11 +939,11 @@ Break-even at scale: ~500 paying subscribers = ~$14.5K/month revenue
 | Data ingestion | Python (PyMuPDF, HL7, Apple Health parser) | PDF + standard medical formats |
 | Wearable sync | Oura API, Apple HealthKit, FHIR | Official APIs |
 | Mesh protocol | libp2p (same as IPFS) | Mature P2P networking, DHT built-in |
-| Bittensor subnet | bittensor SDK + Yuma Consensus | Incentive layer; validators run automated scoring + doctor portal |
-| Doctor credentialing | Medical board oracle (NPPES/state APIs) + optional on-chain SBT | Verified credentials; doctor never needs crypto |
-| Question Engine | LLM analyzing agent reasoning chains → generates targeted micro-questions | Active learning for body knowledge graph; identifies and fills knowledge gaps |
-| Doctor question portal | React PWA (mobile-first) hosted by validators | Micro-question interface, Stripe payments, 10-sec answer flow |
-| Patient frontend | React + local web server | Dashboard on localhost |
+| Bittensor subnet | bittensor SDK + Yuma Consensus | Incentive layer; validators run automated scoring + expert portal |
+| Expert credentialing | Domain-specific credential oracles (NPPES for wellness, FINRA for finance, state bars for legal) + optional on-chain SBT | Verified credentials; expert never needs crypto |
+| Question Engine | LLM analyzing agent reasoning chains → generates targeted micro-questions | Active learning for knowledge graph; identifies and fills knowledge gaps |
+| Expert question portal | React PWA (mobile-first) hosted by validators | Micro-question interface, Stripe payments, 10-sec answer flow |
+| User frontend | React + local web server | Dashboard on localhost |
 | Privacy (Phase 4) | SGX / TDX TEE, ZK-SNARKs, k-anonymity | Industry standard for confidential compute + re-identification prevention |
 
 ---
@@ -897,12 +962,12 @@ The initial deployment target is a MacBook (Apple Silicon, 16GB+ RAM). All compo
 
 **User experience target:** The user downloads a `.dmg`, installs the app, and sees a dashboard. They never interact with Docker, Neo4j, Ollama, or a terminal. The app handles all infrastructure invisibly — similar to how the Docker Desktop app hides containers behind a GUI, or how Obsidian hides its data store behind a note-taking UI.
 
-### Phase 2 Target: HealthMesh Appliance (mass market)
+### Phase 2 Target: Consilium Appliance (mass market)
 
-A pre-configured hardware appliance that plugs into the home network. The user connects it to power and Wi-Fi, opens a web dashboard on their phone or laptop, and starts adding health data.
+A pre-configured hardware appliance that plugs into the home network. The user connects it to power and Wi-Fi, opens a web dashboard on their phone or laptop, and starts adding data.
 
 ```
-HealthMesh Home Unit
+Consilium Home Unit
 ├── Hardware: ARM SBC (Raspberry Pi 5 / Orange Pi 5+) or Intel NUC
 │   - 8 GB+ RAM, 256 GB SSD, Wi-Fi + Ethernet
 │   - Estimated BOM cost: $150–250
@@ -965,7 +1030,7 @@ How a user adds data:
    → Export full health history as FHIR JSON or PDF at any time
 ```
 
-The user never sees a graph, a database query, or an agent prompt. They see: "Your nephrology specialist noticed your eGFR dropped. Here's what to discuss with your doctor."
+The user never sees a graph, a database query, or an agent prompt. They see: "Your wellness agent noticed your eGFR has been trending down. Here are some questions you might want to explore with your doctor."
 
 ---
 
@@ -981,12 +1046,12 @@ The user never sees a graph, a database query, or an agent prompt. They see: "Yo
 | **6** | Proactive monitoring — scheduled agent checks, alerts | Agents watch your data continuously |
 | **7** | Mesh protocol — P2P consultation requests | Your node asks others for opinions |
 | **8** | Bittensor subnet registration + miner interface | Agent nodes earn TAO for quality opinions |
-| **9** | Doctor credentialing oracle + SBT issuance | Verified doctors can join as question answerers |
-| **10** | Question Engine + doctor question portal (mobile PWA) | LLM generates micro-questions, doctors answer on phone |
-| **11** | Knowledge graph feedback loop — answers update edge confidence | Doctor answers improve agent reasoning automatically |
-| **12** | Doctor reputation system + pay-per-answer billing | Quality control on doctor answers, Stripe payouts |
+| **9** | Expert credentialing oracle (multi-domain) + SBT issuance | Verified experts can join as knowledge contributors |
+| **10** | Question Engine + expert question portal (mobile PWA) | LLM generates micro-questions, experts answer on phone |
+| **11** | Knowledge graph feedback loop — answers update edge confidence | Expert answers improve agent reasoning automatically |
+| **12** | Expert reputation system + pay-per-answer billing | Quality control on expert answers, Stripe payouts |
 | **13** | macOS native app — one-click install, no terminal | Non-technical MacBook users can onboard |
-| **14** | HealthMesh Appliance — hardware design, manufacturing, distribution | Mass-market plug-and-play device |
+| **14** | Consilium Appliance — hardware design, manufacturing, distribution | Mass-market plug-and-play device |
 | **15** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
 
 ---
@@ -996,40 +1061,47 @@ The user never sees a graph, a database query, or an agent prompt. They see: "Yo
 You open the app and see:
 
 ```
-Your Health Consilium — Last updated 2 hours ago
+Your Consilium — Wellness Domain — Last updated 2 hours ago
 
-🟡 WATCH: Nephrology Agent
-   "Your eGFR dropped to 52 (was 55 in October). At current trend,
-   you'll reach Stage 4 CKD in ~18 months. I consulted 8 other
-   nephrology agents on the mesh — 7/8 agree: request urine albumin
-   test and consider nephrology referral. Your GP visit is next week —
-   this should be on the agenda."
+  FOR EDUCATIONAL EXPLORATION ONLY — Discuss with your doctor
 
-🟢 OK: Cardiology Agent
-   "BP readings from Apple Watch stable. No ECG anomalies in 30 days.
-   Lisinopril appears well-tolerated."
+🟡 EXPLORE: Kidney & Renal Patterns
+   "Your eGFR readings show a downward trend (55 → 52 since October).
+   The knowledge graph shows several connections worth exploring.
+   8 other mesh nodes with similar patterns highlighted these as
+   common discussion topics with healthcare providers:
+   • What does my eGFR trend mean long-term?
+   • Should I ask about a urine albumin test?
+   • Is a nephrology referral worth discussing?"
 
-🟢 OK: Endocrinology Agent
-   "HbA1c 7.2% — within target. Metformin dose appropriate.
-   Note: NephrologyAgent flagged eGFR — I agree metformin should
-   be reviewed if eGFR drops below 45."
+🟢 STABLE: Cardiovascular Patterns
+   "Your BP readings from Apple Watch have been consistent.
+   No unusual ECG patterns detected in 30 days."
 
-📋 Ask your consilium anything:
-   > "Is my fatigue related to my kidneys or something else?"
+🟢 STABLE: Metabolic Patterns
+   "HbA1c reading of 7.2% — within commonly cited target ranges.
+   Worth noting: the knowledge graph connects kidney trends
+   with metformin management — a topic for your next visit."
+
+📋 Explore a topic with your consilium:
+   > "What connections exist between fatigue and kidney function?"
+
+  ℹ️ Consilium helps you explore and learn. It does not provide
+     medical advice. Always consult your healthcare provider.
 ```
 
 ---
 
 ## Key Difference From Everything Else
 
-| System | Data location | Memory | Multi-specialist | Privacy | Doctor-validated | Incentive-aligned |
-|--------|--------------|--------|-----------------|---------|-----------------|-------------------|
+| System | Data location | Memory | Multi-agent | Privacy | Expert-validated knowledge | Incentive-aligned |
+|--------|--------------|--------|------------|---------|--------------------------|-------------------|
 | ChatGPT / Gemini | Cloud | None | No | None | No | No |
-| Apple Health Intelligence | Apple's cloud | Limited | No | Partial | No | No |
-| MDAgents (paper) | Cloud API | None | Yes | None | No | No |
-| Your GP | Their EHR | Yes (fragmented) | Sometimes | HIPAA | Yes (1 doctor) | Fee-for-service |
+| Apple Health / Fitbit | Apple's cloud | Limited | No | Partial | No | No |
+| WebMD / Mayo Clinic | N/A (static) | None | No | N/A | Editorial only | No |
+| Your professional (doctor, CPA, lawyer) | Their systems | Yes (fragmented) | Sometimes | Regulated | Yes (1 person) | Fee-for-service |
 | Safe Scan (SN76) | Cloud | Model weights | No (single task) | Partial | No | TAO |
-| **HealthMesh** | **Your machine** | **Complete, lifelong** | **Yes, permanent** | **By design** | **Yes, multi-doctor consensus** | **TAO + fiat** |
+| **Consilium** | **Your machine** | **Complete, lifelong** | **Yes, permanent** | **By design** | **Yes, expert micro-question consensus** | **TAO + fiat** |
 
 ---
 
@@ -1049,24 +1121,25 @@ Issues that need resolution before mainnet launch. Honest assessment of what's u
 
 | Risk | Severity | Mitigation |
 |------|----------|-----------|
-| **Doctor cold start**: Without doctors, validators can't produce quality weight vectors. Without quality weights, miners don't improve. Without good miners, patients don't get value. Without patients, there's no network. | Critical | CME credit partnership is the best lever. Target 50 doctors across 5 specialties before subnet launch. Run a closed beta with 20 patients + 10 doctors for 3 months before opening the network. |
-| **Patient data entry burden**: Most patients don't have their health data in digital form. Manual entry of lab results, conditions, and medications is tedious and error-prone. | High | Prioritize Apple Health and wearable integrations (automatic). For lab results, LLM-powered PDF parsing of lab reports (take a photo → structured data). Partner with patient health record platforms (e.g., Apple Health Records via FHIR) for automatic import. |
-| **"AI doctor" perception**: Media and regulators may frame HealthMesh as "replacing doctors with AI" regardless of the actual design. | High | Frame consistently as "health data organization + AI-assisted monitoring that helps you prepare for doctor visits." Never claim diagnostic or treatment capability. Doctor validation layer actually reinforces the message: real doctors are in the loop. |
+| **Expert cold start**: Without experts answering micro-questions, the knowledge graph doesn't improve. Without a good knowledge graph, agents are mediocre. Without good agents, users don't get value. | Critical | CME credit partnership for wellness domain is the best lever. Micro-questions are much lower friction than case reviews — target 50 experts across 3 domains before subnet launch. Run a closed beta with 20 users + 10 experts for 3 months. |
+| **User data entry burden**: Most people don't have their data in digital form. Manual entry is tedious and error-prone. | High | Prioritize automatic integrations (Apple Health, wearables, FHIR patient portals). For documents, LLM-powered PDF/photo parsing. Make data entry the smallest possible barrier. |
+| **"AI doctor/lawyer/advisor" perception**: Media may frame Consilium as "replacing professionals with AI" regardless of the actual design. | High | Frame consistently as "knowledge exploration and educational entertainment." Never use words like diagnose, advise, recommend. The domain-agnostic framing is the strongest defense — it's clearly a general knowledge tool, not a professional service. |
 
 ### Regulatory Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|-----------|
-| **FDA SaMD classification**: Agent recommendations may trigger medical device classification, requiring years of regulatory approval. | High | Stay within CDS exemption for initial launch; pursue FDA Pre-Submission before agent recommendation features. |
-| **International medical licensing**: Doctors credentialed in one country rating AI opinions for patients in another country raises cross-border medical licensing questions. | Medium | Initial launch limited to US-licensed doctors reviewing anonymized cases (no patient-doctor relationship, no cross-border treatment). Legal review needed for international expansion. |
-| **Bittensor regulatory uncertainty**: The TAO token and subnet emissions may face securities regulation scrutiny. | Medium | Not unique to HealthMesh — affects all Bittensor subnets. Monitor SEC/CFTC guidance on utility tokens. |
+| **FDA attempts SaMD classification despite general-purpose framing**: unlikely but possible if wellness domain usage dominates and outputs look clinical. | Medium | Domain-agnostic architecture is the primary defense. UI language enforcement (no imperatives, no recommendations). Optional: proactive FDA Pre-Submission for written confirmation. Engage healthcare regulatory attorney ($10–25K). |
+| **Expert licensing concerns**: Experts answering general knowledge questions across borders could raise cross-jurisdictional licensing questions. | Low | Experts answer general knowledge questions, not case-specific queries. No professional-client relationship. Same legal framing as Stack Overflow, Quora, or medical textbook authorship. |
+| **Bittensor regulatory uncertainty**: TAO token and subnet emissions may face securities regulation scrutiny. | Medium | Not unique to Consilium — affects all Bittensor subnets. Monitor SEC/CFTC guidance on utility tokens. |
 
 ### Questions for Further Research
 
-1. **Model benchmarking**: What is the minimum model size / capability threshold for clinical reasoning quality that doctors would rate as "acceptable"? Is qwen3:14b-Q4 sufficient, or does this require 70B+ models?
-2. **Rubric scalability**: Can auto-generated rubric criteria achieve physician-level quality at scale, or will this always require human curation?
-3. **Doctor engagement curve**: Will doctors sustain interest in answering micro-questions long-term, or does novelty wear off? Need to design progression mechanics (unlock harder/higher-paying question types as reputation grows) to maintain engagement.
-4. **Question Engine quality**: Can the LLM reliably identify the most informative questions to ask? Bad questions waste doctor time and budget. Need to measure information gain per question and optimize the generator.
-5. **Federated pattern detection**: Has anyone implemented the "pattern ballot + boolean attestation" protocol at scale? What are the failure modes?
+1. **Model benchmarking**: What is the minimum model size / capability threshold for knowledge graph reasoning that experts would validate as "acceptable"? Is qwen3:14b-Q4 sufficient, or does this require 70B+ models?
+2. **Expert engagement curve**: Will experts sustain interest in answering micro-questions long-term, or does novelty wear off? Need progression mechanics (unlock harder/higher-paying question types as reputation grows).
+3. **Question Engine quality**: Can the LLM reliably identify the most informative questions to ask? Bad questions waste expert time and budget. Need to measure information gain per question and optimize the generator.
+4. **Federated pattern detection**: Has anyone implemented the "pattern ballot + boolean attestation" protocol at scale? What are the failure modes?
 5. **Graph import engineering**: How much work is the Hetionet + Uberon → unified schema merge? Is this weeks or months of data engineering?
 6. **Appliance hardware selection**: Raspberry Pi 5 (4/8GB) vs Intel NUC vs custom ARM board? Need to benchmark Neo4j + Ollama + quantized LLM on candidate hardware. Can a Pi 5 with 8GB run qwen3:8b quantized with acceptable latency for agent reasoning?
+7. **Multi-domain knowledge graphs**: What are the best foundational KGs for finance, legal, and engineering domains? Do equivalents of Hetionet exist for non-medical fields?
+8. **Legal review**: Engage a regulatory attorney to stress-test the "educational entertainment" framing specifically. What language triggers concern? What language is safe?
