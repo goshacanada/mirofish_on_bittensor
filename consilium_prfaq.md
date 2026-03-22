@@ -4,15 +4,15 @@
 
 ## Press Release
 
-### Consilium Launches Decentralized Personal Knowledge System — Experts Earn by Sharing Expertise Through Micro-Questions
+### Consilium — Open-Source Personal Knowledge System Where Domain Experts Earn by Sharing Expertise
 
-*A permanent AI advisory council on every person's device — powered by Bittensor, improved by credentialed domain experts*
+*A permanent AI advisory council on every person's device — a peer-to-peer mesh improved by credentialed domain experts*
 
-**San Francisco, CA** — Consilium today announced the launch of its Bittensor subnet for decentralized personal knowledge management. Consilium gives every person a permanent team of AI advisory agents running on their own computer, backed by a knowledge graph that organizes complex information and helps users prepare for informed conversations with real-world professionals.
+Consilium is a new open-source system for decentralized personal knowledge management. It gives every person a permanent team of AI advisory agents running on their own computer, backed by a knowledge graph that organizes complex information and helps users prepare for informed conversations with real-world professionals.
 
-Consilium is a general-purpose knowledge organization and educational entertainment platform. It supports multiple domains — wellness & body literacy, personal finance, legal literacy, engineering, and more — using the same domain-agnostic architecture. Credentialed domain experts earn money by answering targeted micro-questions that continuously improve the knowledge graphs all agents reason against.
+Consilium is a general-purpose knowledge organization and educational entertainment system. The platform is free and open-source. It supports multiple domains — wellness & body literacy, personal finance, legal literacy, engineering, and more — using the same domain-agnostic architecture. Credentialed domain experts, including retirees who want to stay active and share their lifetime of knowledge, earn micro-payments through the Consilium Expert Portal by answering targeted questions that continuously improve the knowledge graphs all agents reason against.
 
-"People face complex decisions every day — about their health, finances, legal situations — and they walk into professional appointments unprepared because the information is scattered and hard to understand," said [Founder]. "Consilium organizes your personal data, helps you see connections, and generates the right questions to ask your doctor, advisor, or attorney. It doesn't replace professionals — it makes every conversation with them more productive."
+"People face complex decisions every day — about their health, finances, legal situations — and they walk into professional appointments unprepared because the information is scattered and hard to understand. Consilium organizes your personal data, helps you see connections, and generates the right questions to ask your doctor, advisor, or attorney. It doesn't replace professionals — it makes every conversation with them more productive. And for retired doctors, lawyers, and engineers, it's a way to keep contributing their expertise — on their own schedule, from their phone, with real impact."
 
 **How it works:**
 
@@ -24,11 +24,11 @@ Consilium is a general-purpose knowledge organization and educational entertainm
 
 4. **The mesh**: When your local consilium faces a question beyond its confidence, it sends an anonymized query to the Consilium network — thousands of other instances. Each node has different plugins installed depending on what data its owner loaded. Your consilium aggregates mesh perspectives alongside its own analysis. No data is shared — only reasoning.
 
-5. **Expert knowledge marketplace**: The knowledge graphs that plugins provide are continuously improved by credentialed domain experts answering targeted micro-questions on their phone — 10–30 seconds each, paid $0.05–0.50 per answer. An LLM-powered Question Engine identifies gaps in the knowledge graph and generates the most informative questions to fill them.
+5. **Expert knowledge network**: The knowledge graphs that plugins provide are continuously improved by credentialed domain experts answering targeted micro-questions on their phone — 10–30 seconds each, earning $0.05–0.50 per answer through the Consilium Expert Portal. Pro subscribers ($20/month or less) fund these questions — the portal handles routing, quality control, and expert payments. Retired professionals find this especially rewarding — it keeps their expertise active and benefits people, with zero scheduling or liability. An LLM-powered Question Engine identifies gaps in the knowledge graph and generates the most informative questions to fill them.
 
 **Consilium does not provide professional advice of any kind.** It is an educational entertainment and knowledge exploration tool that helps users organize information and prepare for conversations with qualified professionals.
 
-**Consilium is available for early access starting [date]. The local consilium is free and open-source. Mesh consultations and expert-validated knowledge require a Pro subscription ($29/month).**
+**Consilium is available for early access starting [date]. The platform is free and open-source — local consilium and mesh consultations cost nothing. Expert-validated knowledge is available through Consilium Pro at $20/month or less — the same price as ChatGPT Plus, but with your data, persistent memory, a knowledge graph, mesh consultation, and human expert validation included.**
 
 ---
 
@@ -54,7 +54,7 @@ A: Consilium itself is domain-agnostic — it's a blank canvas. Domains are adde
 
 **Q: Do I need to be technical to use Consilium?**
 
-A: No. On macOS, you download and install a single app. You open it, link your data sources (Apple Health, Oura, patient portal), upload documents, and the system does everything else. In the future, the Consilium Home Unit ($399–499) is a dedicated appliance you plug into power and Wi-Fi — access it from any browser.
+A: No. On macOS, you download and install a single app. You open it, link your data sources (Apple Health, Oura, patient portal), upload documents, and the system does everything else. In the future, the Consilium Home Unit is an open-source hardware design — a dedicated appliance you plug into power and Wi-Fi, accessible from any browser. Anyone can build one from the published design, or get a pre-assembled unit from the community.
 
 **Q: How do I add my data?**
 
@@ -62,7 +62,7 @@ A: Three ways: (1) Link an account — Apple Health, Oura Ring, patient portals.
 
 **Q: How much does it cost?**
 
-A: The local consilium (your knowledge graph + AI advisory team, no mesh) is free and open-source. The Pro tier ($29/month) adds mesh consultations and expert-validated knowledge. The Consilium Home Unit ($399–499, available later) includes the hardware appliance with 1 year of Pro subscription.
+A: The platform is free and open-source — local consilium, mesh consultations, and the base knowledge graphs from domain plugins are all free. Consilium Pro (≤$20/month) adds expert-validated knowledge: your system can route micro-questions to credentialed human experts who improve the knowledge graph. That's the same price as ChatGPT Plus — but Consilium runs on your data, remembers everything, consults a mesh of other instances, and has real human experts validating the knowledge. Free users still benefit from knowledge improvements funded by Pro users. The Consilium Home Unit hardware design is also open-source — you can build one yourself for ~$150–250 in parts.
 
 **Q: Can I export my data?**
 
@@ -74,15 +74,15 @@ A: Yes. Your knowledge graph is a standard database on your device. Export as JS
 
 **Q: How do I earn money on Consilium?**
 
-A: You answer targeted micro-questions in your domain of expertise — on your phone, during downtime. Each question takes 10–30 seconds: multiple choice, yes/no, threshold sliders, or short rankings. Pay is $0.05–0.50 per answer depending on question type. You earn more as your reputation score increases.
+A: You answer targeted micro-questions in your domain of expertise — on your phone, during downtime. Each question takes 10–30 seconds: multiple choice, yes/no, threshold sliders, or short rankings. Pay is $0.05–0.50 per answer depending on question type, funded by Pro user subscriptions. You earn more as your reputation score increases — like Uber, high-rated experts get more questions and better pay rates. For retired professionals, this is a way to stay active, share your lifetime of expertise, and earn supplemental income — all on your own schedule, with no scheduling, no commute, and no liability.
 
 **Q: What kind of questions will I see?**
 
 A: General domain knowledge questions — never case-specific or tied to an individual user. Examples for a physician: "At what eGFR level would nephrology referral typically be considered? [slider]" or "Rank these lab tests by diagnostic yield for anemia workup." You are contributing to a knowledge graph, like writing a textbook entry — not providing patient care.
 
-**Q: Do I need crypto knowledge?**
+**Q: How do I sign up?**
 
-A: No. You sign up on a web portal, verify your credentials, and answer questions. Payment is in dollars via Stripe. You never need a wallet, TAO, or any cryptocurrency knowledge.
+A: You sign up on the Consilium Expert Portal, verify your credentials (license number, certification, etc.), and start answering questions. Payment is in dollars via Stripe — weekly payouts. No cryptocurrency, no special software, no scheduling.
 
 **Q: What about liability?**
 
@@ -94,33 +94,33 @@ A: Agreement with other credentialed experts on the same question (50%), accurac
 
 ---
 
-### Stakeholder FAQ
+### Community & Contributor FAQ
 
-**Q: How does Consilium make money?**
+**Q: How does Consilium sustain itself?**
 
-A: Three revenue streams:
+A: Two layers:
 
-1. **User subscriptions** ($29/month Pro tier) for mesh consultations and expert-validated knowledge. Target: 10,000 subscribers within 18 months = $3.5M ARR.
-2. **Enterprise API** for organizations seeking anonymized, aggregated knowledge intelligence via federated analytics — no raw data leaves user devices. Pricing: $5K–50K/month.
-3. **TAO emissions** from the Bittensor subnet (18% of subnet emissions to the subnet owner).
+1. **The platform** (mesh software, agent framework, domain plugins) is free and open-source. It sustains itself through community contributions — developers, domain experts, and plugin authors contributing because they believe in the mission.
+2. **The Expert Portal** is a company-operated service that routes micro-questions to credentialed experts and handles payments. It is funded by Pro subscriptions (≤$20/month). The subscription revenue covers expert payouts + portal operations.
 
-Future: Consilium Home Unit appliance sales ($399–499, includes 1 year Pro subscription).
+The platform is free with no paywalls. Pro adds expert-validated knowledge for ≤$20/month — the same price people already pay for ChatGPT Plus, but with persistent agents on your own data, a knowledge graph, mesh consultation, and real human experts.
 
-**Q: What is the competitive landscape?**
+**Q: What makes Consilium different from existing tools?**
 
-A: No direct competitor combines: (1) local-first data storage, (2) persistent multi-agent AI, (3) decentralized mesh consultation, and (4) expert-validated knowledge graphs. Adjacent products are all narrower: ChatGPT (stateless, cloud, no experts), WebMD (static, no personalization), TurboTax (single domain, no AI agents), Fitbit (data display only).
+A: No existing tool combines: (1) local-first data storage, (2) persistent multi-agent AI, (3) decentralized mesh consultation, and (4) expert-validated knowledge graphs — all free and open-source. Adjacent tools are all narrower: ChatGPT (stateless, cloud, no experts), WebMD (static, no personalization), TurboTax (single domain, no AI agents), Fitbit (data display only).
 
-Consilium's moat is the network effect: more user nodes = richer mesh perspectives = more expert engagement = better knowledge graphs = more users.
+Consilium's strength is the network effect: more user nodes = richer mesh perspectives = more expert engagement = better knowledge graphs = more users.
 
 **Q: How do you solve the expert cold-start problem?**
 
 A: The micro-question model dramatically lowers the bar:
 
-1. **CME credits** (wellness domain): Partner with an ACCME accreditor. Answering clinical knowledge questions counts toward continuing education. Doctors currently pay for CME — Consilium pays them instead.
+1. **CME credits** (wellness domain): Partner with an ACCME accreditor. Answering clinical knowledge questions counts toward continuing education. Doctors currently pay for CME — Consilium provides it as a benefit.
 2. **Near-zero friction**: 10-second answers on a phone. No case review, no context, no scheduling.
-3. **Pay-per-answer**: $0.05–0.50. Not life-changing, but zero-effort passive income.
-4. **Academic partnerships**: Residency programs use the question portal as a clinical reasoning training tool.
-5. **Target**: 50 credentialed experts across 3 domains before subnet launch. 3-month closed beta.
+3. **Retired professionals**: A retired physician, attorney, or engineer can contribute their lifetime of expertise in 10-second increments. The income is supplemental; the sense of purpose and continued relevance is the real draw. Self-worth matters, especially after leaving full-time work.
+4. **Pay-per-answer**: $0.05–0.50, funded by Pro subscriptions. Zero-effort income for active and retired professionals alike.
+5. **Academic partnerships**: Residency programs use the question portal as a clinical reasoning training tool.
+6. **Target**: 50 credentialed experts across 3 domains before launch. 3-month closed beta.
 
 **Q: Why is Consilium not a regulated product?**
 
@@ -147,23 +147,20 @@ Critically: the platform never auto-installs plugins, never pre-loads domain cap
 
 Existing open-source projects serve as plugin foundations: MDAgents and Hetionet for wellness, FinGPT for finance, LegalBench for legal reasoning.
 
-**Q: How does the Bittensor integration work?**
+**Q: How does the mesh work?**
 
-A: Bittensor is a decentralized network that pays AI systems for producing useful outputs. In Consilium:
+A: Consilium uses a BitTorrent-style peer-to-peer mesh. When your local agents face a question beyond their confidence, they query other nodes on the network. Mesh queries are free — they use a credit-based barter system: you earn credits by serving queries to others, and spend credits by querying others. No money, no crypto, no central server. You configure how many queries your node serves per day. The more you contribute, the more you can ask.
 
-- **AI agent nodes** (miners) earn TAO for producing high-quality knowledge perspectives.
-- **Validators** run infrastructure: a Question Engine that identifies knowledge gaps, a question portal for experts, and automated scoring of agent outputs against the expert-validated knowledge graph.
-- **Experts** answer micro-questions on their phone and get paid in dollars via Stripe. Zero crypto knowledge needed.
-- Yuma Consensus ensures honest scoring across validators.
+**Q: How does the Expert Portal work?**
 
-The result: the knowledge graphs that all agents reason against get continuously refined by real domain experts, creating a self-improving system funded by the value it creates.
+A: The Expert Portal is a company-operated service that connects users with credentialed domain experts. When your local agents identify a knowledge gap, the system generates a targeted micro-question. If you have funds deposited, the question is sent to matched experts via the portal. Experts answer on their phone (10–30 seconds), get paid via Stripe, and the answer improves the shared knowledge graph for everyone. The portal charges a transparent service fee (e.g., 15%) on each transaction. The portal is domain-agnostic — it routes by competence tags, not by domain labels. Expert quality is managed through an Uber-style reputation system: high-rated experts get more questions and better pay; low-rated experts naturally receive fewer questions.
 
 **Q: What are the biggest risks?**
 
 A: In order of severity:
 
 1. **Knowledge graph quality**: If open-source models on consumer hardware can't reason well against the knowledge graph, expert micro-questions can't fix a fundamentally weak AI. Mitigation: benchmark rigorously; fall back to cloud models via privacy-preserving inference if needed.
-2. **Expert adoption**: 50 experts across 3 domains before launch. Micro-questions are lower friction than case review, but still need initial momentum. CME credits are the strongest lever.
-3. **Regulatory reclassification**: Low probability given the general-purpose framing, but if a regulator targets Consilium specifically, it could slow growth. Mitigation: proactive regulatory engagement, healthcare attorney review ($10–25K).
-4. **User adoption**: Running a local database on a laptop isn't mass-market yet. The Consilium Home Unit appliance is the path to mainstream — but requires hardware design and manufacturing.
-5. **Network effects may not materialize**: If mesh perspectives don't add meaningful value beyond local consilium, users won't pay for Pro. Validate in closed beta before scaling.
+2. **Expert adoption**: 50 experts across 3 domains before launch. Micro-questions are lower friction than case review, but still need initial momentum. CME credits and the retired-expert angle are the strongest levers.
+3. **Regulatory reclassification**: Low probability given the general-purpose framing, but if a regulator targets Consilium specifically, it could slow adoption. Mitigation: proactive regulatory engagement, healthcare attorney review.
+4. **User adoption**: Running a local database on a laptop isn't mass-market yet. The Consilium Home Unit appliance (open-source hardware design) is the path to mainstream — but requires community hardware effort.
+5. **Network effects may not materialize**: If mesh perspectives don't add meaningful value beyond local consilium, users won't engage with the mesh. Validate in closed beta before scaling.

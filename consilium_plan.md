@@ -1,6 +1,8 @@
 # Consilium — Decentralized Personal Knowledge System
 
-**Vision:** Every person runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local graph database. When the AI faces a hard question, it consults a mesh of other instances worldwide and taps a marketplace of credentialed domain experts who earn money by answering targeted micro-questions. The result is a global knowledge improvement system where no one's data ever leaves their machine.
+**Vision:** Every person runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local graph database. When the AI faces a hard question, it consults a mesh of other instances worldwide and taps a network of credentialed domain experts who earn micro-payments by answering targeted knowledge questions. The result is a global knowledge improvement system where no one's data ever leaves their machine.
+
+**This is an open-source project built for the common good.** Consilium is not a company and not a product. It is free software that anyone can run, modify, and share. The goal is to give every person — regardless of means — the ability to organize complex information and walk into professional appointments prepared. Domain experts, including retirees who want to stay active and contribute their lifetime of knowledge, earn income by improving the knowledge graphs that make this possible. If it helps people have better conversations with their doctors, advisors, and attorneys, that is the reward.
 
 **Consilium is not a product in any regulated domain.** It is a general-purpose knowledge organization and educational entertainment system. It helps users organize complex information, explore connections, and prepare for informed conversations with real-world professionals (doctors, lawyers, financial advisors, engineers). It does not provide advice, diagnoses, recommendations, or professional services of any kind.
 
@@ -14,9 +16,9 @@
 | **Engineering & Technical** | Systems, specifications, failure modes, standards | Licensed engineers, domain specialists | Explore technical concepts for professional discussions |
 | **Nutrition & Fitness** | Nutrients, metabolic pathways, exercise physiology | Registered dietitians, exercise scientists | Organize personal fitness data and explore patterns |
 
-**The system is domain-agnostic by design.** The graph database, agent framework, mesh protocol, expert micro-question marketplace, and Bittensor incentive layer are identical across domains. Only the knowledge graph content and expert pool differ. Adding a new domain = importing a new foundational knowledge graph + onboarding domain-specific experts.
+**The system is domain-agnostic by design.** The graph database, agent framework, mesh protocol, and expert micro-question network are identical across domains. Only the knowledge graph content and expert pool differ. Adding a new domain = importing a new foundational knowledge graph + onboarding domain-specific experts.
 
-**Relationship to MiroFish:** Consilium is a **single Bittensor subnet** that extends the MiroFish/OASIS multi-agent simulation framework (see `mirofish_bittensor_plan.md`). MiroFish provides the agent orchestration engine — persistent agent populations with graph-backed memory. Consilium specializes this for personal knowledge management across multiple domains, with credentialed expert validation via micro-questions.
+**Relationship to MiroFish:** Consilium extends the MiroFish/OASIS multi-agent simulation framework (see `mirofish_bittensor_plan.md`). MiroFish provides the agent orchestration engine — persistent agent populations with graph-backed memory. Consilium specializes this for personal knowledge management across multiple domains, with credentialed expert validation via micro-questions.
 
 **Wellness & Body Literacy is the primary launch domain** because it has the richest available foundational knowledge graphs (Hetionet, Uberon, SPOKE), the largest addressable user base (everyone has health data), and the strongest expert pool (millions of licensed physicians worldwide). The rest of this document uses wellness examples throughout, but every technical component is domain-agnostic.
 
@@ -24,15 +26,17 @@
 
 ## Core Principles
 
-1. **Local first** — your personal knowledge graph never leaves your device
-2. **Opinions travel, not data** — the mesh shares reasoning, not records
-3. **Graph-native** — all knowledge is modeled as a graph, enabling holistic reasoning across topics, time, and interconnected domains
-4. **Persistent consilium** — your advisory team remembers everything, forever
-5. **Open mesh** — anyone can run a node; more nodes = richer collective knowledge
-6. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add data and explore insights. Everything else is invisible.
-7. **Educational entertainment** — Consilium helps users explore, learn, and prepare for real-world professional conversations. It is not a substitute for professional advice in any domain.
-8. **Domain-agnostic** — the platform contains zero domain-specific code. All domain knowledge — agents, graphs, schemas — lives in external open-source repos and is loaded on-demand only when the user's data triggers it.
-9. **User-driven domains** — the platform never suggests or pre-installs domain capabilities. The user loads their own data; the system classifies it and asks permission to install the relevant domain plugin. If a user never loads medical records, no medical code ever runs on their machine.
+1. **Open source, common good** — all code is free and open-source. This is not a company. It is infrastructure for people, built by people.
+2. **Local first** — your personal knowledge graph never leaves your device
+3. **Opinions travel, not data** — the mesh shares reasoning, not records
+4. **Graph-native** — all knowledge is modeled as a graph, enabling holistic reasoning across topics, time, and interconnected domains
+5. **Persistent consilium** — your advisory team remembers everything, forever
+6. **Open mesh** — anyone can run a node; more nodes = richer collective knowledge
+7. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add data and explore insights. Everything else is invisible.
+8. **Educational entertainment** — Consilium helps users explore, learn, and prepare for real-world professional conversations. It is not a substitute for professional advice in any domain.
+9. **Domain-agnostic** — the platform contains zero domain-specific code. All domain knowledge — agents, graphs, schemas — lives in external open-source repos and is loaded on-demand only when the user's data triggers it.
+10. **User-driven domains** — the platform never suggests or pre-installs domain capabilities. The user loads their own data; the system classifies it and asks permission to install the relevant domain plugin. If a user never loads medical records, no medical code ever runs on their machine.
+11. **Expert dignity** — domain experts, including retirees, earn income and stay engaged by contributing their knowledge. Retirement doesn't mean your expertise stops mattering.
 
 ---
 
@@ -45,6 +49,7 @@ Your Machine
 │   ├── Graph Database (Neo4j)          ← empty until you add data
 │   ├── Agent Framework                 ← runs agents from installed domain plugins
 │   ├── Local LLM (Ollama)              ← inference stays on your hardware
+│   ├── External LLM (optional)         ← user's API key for harder questions
 │   └── Mesh Gateway                    ← sends anonymized questions, receives perspectives
 │
 ├── Domain Plugins (installed on-demand from GitHub repos)
@@ -63,9 +68,9 @@ Mesh Network (other people's machines)
 ├── Node C: runs wellness + legal plugins      ← her data drove those installs
 └── Each node is different — shaped by its owner's data
 
-Expert Marketplace (Bittensor subnet)
+Expert Portal (company-operated service)
 ├── Credentialed domain experts answer micro-questions
-├── Paid per answer ($0.05–0.50) — like token pricing
+├── Earn micro-payments per answer ($0.05–0.50) funded by user deposits
 └── Answers improve domain knowledge graphs for all nodes using that domain
 ```
 
@@ -159,10 +164,10 @@ Domain plugins can wrap existing open-source projects. The platform doesn't re-i
 
 ```
 Traditional medical AI product:
-  Company ships code that processes health data → FDA says "that's SaMD"
+  Vendor ships code that processes health data → FDA says "that's SaMD"
 
 Consilium:
-  1. Company ships a generic platform with ZERO health code
+  1. Open-source project ships a generic platform with ZERO health code
   2. User loads their own health data into the platform
   3. Platform (generic LLM) says "this looks like health data"
   4. User chooses to install an open-source community plugin (e.g. MDAgents)
@@ -354,7 +359,7 @@ Any node can query the DHT and aggregate attestations:
 
 This is **federated analytics** — each node computes locally, shares only the boolean result, and aggregation happens client-side. No coordinator ever sees individual patient data. The protocol is similar to how federated learning works in Google's Gboard keyboard (local training, shared gradients only), but simpler: boolean pattern attestations instead of model weights.
 
-**Limitations:** This only works for pre-defined pattern queries. The subnet owner publishes a periodic "pattern ballot" — a list of hypothesized relationships to test. Nodes that have relevant data attest; nodes without relevant data abstain. New pattern hypotheses can be proposed by any node and added to the ballot by the subnet owner after review.
+**Limitations:** This only works for pre-defined pattern queries. The network publishes a periodic "pattern ballot" — a list of hypothesized relationships to test. Nodes that have relevant data attest; nodes without relevant data abstain. New pattern hypotheses can be proposed by any node and added to the ballot after community review.
 
 ---
 
@@ -716,124 +721,170 @@ The responding node's agent draws on its *own patient's graph* to inform its opi
 
 **Volume:** a single consultation might query 5–20 nodes. Perspectives are aggregated by the local GeneralistAgent (or equivalent coordinator from the plugin).
 
+### 3.5 Mesh Credit System — BitTorrent-Style Barter
+
+Mesh queries are free — no money changes hands. Instead, the mesh uses a **credit-based barter system** inspired by BitTorrent's tit-for-tat protocol:
+
+```
+You serve queries to other nodes  → earn query credits
+You send queries to other nodes   → spend query credits
+You configure your capacity       → "serve up to N queries/day"
+```
+
+**How it works:**
+- Each node tracks its own balance with each peer (peer-to-peer, no central ledger)
+- Serving a query for another node earns 1 credit with that peer
+- Sending a query to another node costs 1 credit with that peer
+- New nodes start with a small free credit allowance to bootstrap
+- Nodes that only consume and never serve eventually run out of credits and can't query the mesh — the system self-balances
+
+**Configurable capacity:** Users configure how many mesh queries their node will serve per day. A user with a powerful machine and rich data might serve 100 queries/day and accumulate credits quickly. A user with a laptop might serve 10 queries/day. The more you give, the more you can ask.
+
+**No money, no crypto, no tokens.** The mesh is pure barter. Credits are tracked locally between peers — no blockchain, no central accounting, no financial infrastructure. This is how BitTorrent has scaled to billions of users without any payment system.
+
+**Relationship to the Expert Portal:** The mesh (free, barter-based) and the Expert Portal (paid, company-operated) are completely separate systems. A user with zero money can still use the mesh to query other nodes' agents. The Expert Portal is only needed when the user wants to fund expert micro-questions to fill specific knowledge gaps.
+
+### 3.6 External AI Escalation
+
+If the user configures an external LLM API key (OpenAI, Anthropic, Google, etc.), the system can escalate to more powerful AI models when the local LLM and mesh perspectives aren't sufficient. This is entirely user-controlled:
+
+```
+Reasoning escalation chain:
+1. Local LLM (Ollama, free, private)        ← default, handles most queries
+2. Mesh consultation (credit-based, free)    ← other nodes' agents weigh in
+3. External AI API (user's API key, paid)    ← more powerful model for hard questions
+4. Expert Portal (user's deposit, paid)      ← human expert for knowledge gaps
+```
+
+**How it works:**
+- User adds an API key in settings (e.g., OpenAI, Anthropic, OpenRouter)
+- When an agent's confidence on a reasoning chain falls below a configurable threshold and mesh perspectives don't resolve it, the system can send the anonymized question context to the external API
+- The same privacy rules apply — no personal identifiers, only anonymized patterns and knowledge graph context
+- The user controls: which API to use, spending limits, which confidence threshold triggers escalation, and whether escalation is automatic or requires confirmation
+
+**Why this matters:** A local qwen3:14b quantized model may struggle with complex multi-system reasoning that GPT-4 or Claude handles well. Rather than compromising on reasoning quality, the user can opt into more powerful models for the hardest questions — at their own cost, under their own API key. The local system remains the default; external AI is a power-user option.
+
 ### 3.4 Collective Context Without Sharing Data
 
 **Important distinction:** agents don't "become smarter" from following one person's data — the underlying LLM's reasoning doesn't improve from longitudinal exposure. What improves is **context richness**. A node that has tracked someone's data for 10 years has a deeply populated graph: complete history, every trend, every agent opinion and whether it held up. When that node's agent answers a mesh query matching its competence tags, it draws on that deep longitudinal context — because it actually happened in its graph.
 
 The mesh effect: each node contributes **data-grounded context**, not generic LLM reasoning. A single node's context is one person's data. A thousand nodes' aggregated responses across matching competence tags represent a thousand real longitudinal cases. The LLM is the same everywhere; the graph data is what differentiates nodes.
 
-Node quality varies significantly. A node with 10 years of comprehensive data produces richer perspectives than a node with 6 months of sparse data. The Bittensor scoring mechanism accounts for this via the `data_richness` signal advertised on the DHT.
+Node quality varies significantly. A node with 10 years of comprehensive data produces richer perspectives than a node with 6 months of sparse data. The mesh protocol accounts for this via the `data_richness` signal advertised on the DHT.
 
 ---
 
-## Bittensor Integration — Doctor Validation Layer
+## Expert Portal — Company-Operated Knowledge Validation Service
 
-This is the economic engine of HealthMesh. AI agents (miners) produce health opinions. Validators run infrastructure that routes cases to credentialed doctors, collects their ratings, and submits weight vectors on-chain. Doctors are a **new role** — human raters compensated from validator emissions — not validators themselves.
+The Expert Portal is the economic engine of Consilium. It connects users who need knowledge graph improvements with credentialed domain experts who answer micro-questions. The portal is **operated by Consilium as a company** — domain-agnostic, handling routing, payments, quality control, and reporting. The company earns revenue through a transparent service fee on each transaction.
 
-### Roles in Bittensor Terms
+**The company does not differentiate by domain.** It does not market itself as providing health experts, financial experts, or legal experts. It operates a domain-agnostic expert routing platform — like Uber doesn't differentiate between "airport drivers" and "grocery drivers." Experts self-declare their competence tags. The system routes questions to matched experts based on tags and reputation. The company never hires or fires experts — it routes work to them based on quality, like Uber rewards high-rated drivers with more rides.
 
-```
-Miners       = HealthMesh AI agent nodes
-               → produce clinical opinions in response to anonymized queries
-               → earn TAO proportional to quality scores from validators
-
-Validators   = Infrastructure operators (similar to Tensorplex Dojo model)
-               → run automated scoring pipeline + doctor review portal
-               → route anonymized cases to credentialed doctors
-               → aggregate doctor ratings into weight vectors
-               → submit weights to chain via Yuma Consensus
-               → earn TAO proportional to stake × consensus alignment
-               → pay doctors from their validator emissions
-
-Doctors      = Human expert raters (NOT Bittensor validators)
-               → log into validator's review portal (web UI, no crypto needed)
-               → review anonymized cases + agent opinions against rubrics
-               → submit structured scores
-               → compensated in fiat (Stripe) or TAO (opt-in)
-               → never need to stake TAO, run nodes, or touch wallets
-
-Subnet owner = HealthMesh protocol
-               → defines the incentive mechanism and rubric standards
-               → earns 18% of emissions
-               → maintains the credentialing oracle and rubric library
-```
-
-**Why doctors cannot be validators directly:** Bittensor validators must stake TAO (capital barrier), run infrastructure 24/7 (operational barrier), and submit weight vectors every tempo (~72 min) (continuous commitment). Doctors don't do any of this. Asking a nephrologist to buy crypto, run a node, and submit on-chain transactions every 72 minutes is a product-killing friction. Instead, validators are infrastructure operators who run the review portal as a service, and doctors interact with a simple web UI — just like reviewing cases on UpToDate or a CME platform.
-
-This mirrors the Tensorplex Dojo (SN52) architecture: validators generate tasks, route them to human raters, and aggregate human feedback into weight vectors. The innovation here is that the human raters are **credentialed medical professionals**, not general crowdworkers.
-
-### How Doctor Credentialing Works
-
-Doctors' opinions are only valuable if they are actually doctors. Credentials must be verified, but the system should not require doctors to interact with crypto at all.
-
-**Credentialing flow:**
+### How It Works
 
 ```
-1. Doctor signs up on the HealthMesh Review Portal (standard web registration)
-   → provides: license number, jurisdiction, specialty, NPI (US) or equivalent
+User's local system detects a knowledge gap
+    → Question Engine generates a micro-question
+    → Question sent to Expert Portal with competence tags + payment authorization
+    → Portal routes question to matched, high-rated experts
+    → Expert answers on phone (10–30 seconds)
+    → Portal validates answer (golden sets, consensus, pattern checks)
+    → Answer flows back to update the shared knowledge graph
+    → User's balance is charged; expert is paid minus service fee
 
-2. HealthMesh credentialing oracle verifies against medical board registries
-   → US: NPPES (NPI lookup), state medical board APIs
-   → EU: national medical registers
+Money flow:
+    Pro user pays ≤$20/month subscription (Stripe)
+    → User's system generates micro-question from knowledge gap
+    → Question sent to Expert Portal
+    → Expert answers → validated
+    → Expert paid from subscription pool (e.g., $0.10 per answer)
+    → Consilium retains service fee for operations
+    → Expert payments batched weekly to minimize Stripe transaction fees
+```
+
+### Expert Onboarding — The Uber Model
+
+Experts sign up, verify credentials, and start answering. No interview, no hiring process, no employment relationship. The platform routes questions to them based on competence tags and reputation score.
+
+**Onboarding flow:**
+
+```
+1. Expert signs up on the Consilium Expert Portal (standard web registration)
+   → provides: credential type, license/certification number, jurisdiction
+   → self-declares competence tags (e.g., renal_function, eGFR, electrolytes)
+
+2. Credential verification against public registries
+   → Wellness: NPPES (NPI lookup), state medical board APIs
+   → Finance: FINRA BrokerCheck, CPA license databases
+   → Legal: state bar association records
+   → Engineering: PE license databases
    → Automated where APIs exist; manual review otherwise
    → Estimated verification time: 24–72 hours
 
-3. If valid: oracle records a credential attestation on-chain
-   → Option A (SBT): Soulbound Token to a validator-managed wallet
-     (doctor never touches a wallet — validator holds the SBT on their behalf)
-   → Option B (off-chain): credential stored in the oracle database,
-     referenced by validator when submitting weights (simpler, less decentralized)
-   → Attestation encodes: specialty, jurisdiction, license status, expiry
-   → ZK proof option: validator can prove "this weight vector includes
-     ratings from N verified nephrologists" without revealing identities
+3. Expert starts in "calibration mode"
+   → First 50 questions are heavily weighted toward golden sets
+   → Establishes baseline accuracy before earning full pay
+   → Expert sees this as normal — they don't know which are golden sets
 
-4. Doctor's portal account is activated — they can start reviewing cases
-   → No wallet, no TAO, no crypto needed from the doctor's side
-
-5. License expiry monitoring: oracle re-checks every 6 months; credential
-   revoked if license lapses or disciplinary action taken
+4. Expert account activated at full pay rate
+   → Questions routed based on competence tags + reputation
+   → License expiry monitoring: re-check every 6 months
+   → Credential revoked if license lapses or disciplinary action taken
 ```
 
-**Competence matching:** The credential encodes the expert's competence areas (mapped to the same tag system agents use). A nephrologist is tagged `[renal_function, eGFR, electrolytes, dialysis]`. A CFA is tagged `[portfolio, asset_allocation, risk_management]`. The validator portal routes micro-questions to experts whose competence tags match the question's topic tags. In-competence reviews are weighted 2x. This is fully dynamic — no hardcoded domain routing.
+**Competence matching:** The credential encodes the expert's competence areas (mapped to the same tag system agents use). A nephrologist is tagged `[renal_function, eGFR, electrolytes, dialysis]`. A CFA is tagged `[portfolio, asset_allocation, risk_management]`. The portal routes micro-questions to experts whose competence tags match the question's topic tags. This is fully dynamic — no hardcoded domain routing. The portal doesn't know or care what "nephrology" means — it matches tags.
 
-**Doctor onboarding — solving the cold start:**
+### Expert Reputation — The Uber Rating System
 
-Getting the first 50 doctors is the hardest problem. Concrete strategies:
+Every expert answer is graded. High-rated experts get more questions and higher pay. Low-rated experts get fewer questions and eventually stop receiving them — the system phases them out naturally, without anyone being "fired."
 
-| Strategy | Target | How |
-|----------|--------|-----|
-| CME credits | All doctors | Partner with a CME accreditor (ACCME). Reviewing AI diagnostic opinions qualifies as continuing medical education. Doctors already spend money on CME — HealthMesh makes it paid instead. |
-| Medical school partnerships | Residents, fellows | Offer as a teaching tool. Residents review AI opinions and learn from the rubric feedback loop. Partner initially with 2–3 academic medical centers. |
-| Telehealth moonlighting | Early-career physicians | Position as flexible, asynchronous work. 5–10 min per case, no patient liability, no scheduling constraints. Compete with telehealth moonlighting platforms on flexibility. |
-| Specialty society outreach | Board-certified specialists | Present at society meetings (ASN for nephrology, ACC for cardiology). Frame as "shape the AI that will assist your specialty." |
-| Research collaborators | Academic physicians | Offer co-authorship on publications analyzing doctor-vs-AI agreement patterns. Academic currency. |
+**How answer quality is measured:**
 
-**Target: 50 credentialed doctors across 5 specialties before subnet launch.**
+| Signal | Timing | Weight |
+|--------|--------|--------|
+| Agreement with other experts on the same question | Immediate | 50% |
+| Golden set accuracy (questions with known textbook answers) | Immediate | 30% |
+| Downstream knowledge graph improvement (did the updated edge improve agent reasoning?) | Weeks | 20% |
 
-### What Doctors Actually Do — Micro-Questions, Not Full Diagnoses
+**Golden sets are easy with micro-questions:** "What is the normal range for serum creatinine in adult males?" has a definitive answer. 15–20% of questions are golden sets — the expert never knows which ones.
 
-**Key design principle:** Doctors are never asked to review a full case or provide a diagnosis. Instead, the system asks them **small, targeted questions** — each answerable in 10–30 seconds. Doctors are paid per answer at a nominal rate, like paying for tokens. The system uses an LLM to generate questions that will maximally improve the body knowledge graph and agent reasoning.
+**Reputation gates question volume and pay multiplier:**
+
+```
+reputation_score → routing priority + pay multiplier:
+  0.0–0.3: no questions routed (effectively phased out)
+  0.3–0.5: 0.5× pay, limited question volume (probation — chance to improve)
+  0.5–0.7: 1.0× pay, standard volume
+  0.7–0.9: 1.5× pay, priority routing, access to higher-value questions
+  0.9–1.0: 2.0× pay, free-text questions unlocked, influence on question generation
+```
+
+**Nobody is fired.** Low-reputation experts simply receive fewer and fewer questions — the system naturally routes work to better experts. If their accuracy improves, their reputation recovers and questions resume. Exactly like Uber: low-rated drivers don't get deactivated immediately, they just get fewer ride requests.
+
+### What Experts Actually Do — Micro-Questions, Not Full Diagnoses
+
+**Key design principle:** Experts are never asked to review a full case or provide a diagnosis. Instead, the system asks them **small, targeted questions** — each answerable in 10–30 seconds. Experts are paid per answer at a nominal rate, like paying for tokens. The system uses an LLM to generate questions that will maximally improve the knowledge graph.
 
 **Why micro-questions instead of full case review:**
 - A full case review takes 5–10 minutes, costs $10–50, and requires understanding context
-- A micro-question takes 10–30 seconds, costs $0.05–0.50, and requires only specialty knowledge
-- Micro-questions scale: 1000 questions/day across 50 doctors = massive knowledge acquisition
-- Doctors can answer between patients, in an elevator, on a phone — zero context switching
-- No risk of the doctor accidentally providing a diagnosis (regulatory/liability win)
+- A micro-question takes 10–30 seconds, costs $0.05–0.50, and requires only domain knowledge
+- Micro-questions scale: 1000 questions/day across 50 experts = massive knowledge acquisition
+- Experts can answer between appointments, in an elevator, on a phone — zero context switching
+- No risk of the expert accidentally providing case-specific advice (regulatory/liability win)
 - Easier to golden-set test — simple questions have clearer right/wrong answers
 
 ### The Question Engine
 
-The heart of the system. An LLM examines the body knowledge graph and agent reasoning chains, identifies **where uncertainty lives**, and generates targeted questions to resolve it.
+The heart of the system. An LLM examines the knowledge graph and agent reasoning chains, identifies **where uncertainty lives**, and generates targeted questions to resolve it.
 
 **How questions are generated:**
 
 ```
-1. Agent produces an opinion on a patient case
-   → e.g. "eGFR declining at 4pts/year, recommend nephrology referral"
+1. Agent produces an opinion based on user's data
+   → e.g. "eGFR declining at 4pts/year — pattern worth discussing with your doctor"
 
 2. The Question Engine LLM analyzes the agent's reasoning chain:
-   → What edges in the body knowledge graph did the agent traverse?
+   → What edges in the knowledge graph did the agent traverse?
    → Which edges have low confidence or missing evidence?
    → Where did the agent make an assumption vs. follow established knowledge?
    → Where do different agents in the consilium disagree?
@@ -843,14 +894,15 @@ The heart of the system. An LLM examines the body knowledge graph and agent reas
    Question types:
 
    MULTIPLE CHOICE (most common, fastest to answer):
-   "For a diabetic patient with eGFR 52 on metformin 1000mg:
+   "For a diabetic patient with eGFR 52 on metformin 1000mg, what is
+    the most commonly recommended next step?
     a) Continue current dose
     b) Reduce to 500mg
     c) Switch to alternative
     d) Depends on other factors (which?)"
 
    THRESHOLD (numeric, calibrates decision boundaries):
-   "At what eGFR would you refer a diabetic patient to nephrology?
+   "At what eGFR would you typically refer a diabetic patient to nephrology?
     [slider: 30 ─── 45 ─── 60]"
 
    YES/NO WITH CONFIDENCE (fast, binary signal):
@@ -874,64 +926,59 @@ The heart of the system. An LLM examines the body knowledge graph and agent reas
 
 **Question targeting — active learning for the knowledge graph:**
 
-The Question Engine doesn't generate random medical trivia. It specifically targets **edges in the body knowledge graph that would change agent behavior if updated**. This is active learning — the system identifies what it doesn't know and asks the most informative question to fill the gap.
+The Question Engine doesn't generate random trivia. It specifically targets **edges in the knowledge graph that would change agent behavior if updated**. This is active learning — the system identifies what it doesn't know and asks the most informative question to fill the gap.
 
 ```
-Example: improving the decision graph
+Example: improving the knowledge graph
 
-Current state in body knowledge graph:
+Current state:
   [eGFR < 45] ──REQUIRES──► [Metformin dose review]
   confidence_tier: inferred
   evidence_count: 12
 
 Question Engine identifies:
-  - This edge drives a key agent recommendation
+  - This edge drives a key agent observation
   - Confidence is "inferred" (not established)
   - The threshold (45) is uncertain — some guidelines say 30, others say 45
-  - If the threshold is wrong, thousands of agent opinions are miscalibrated
+  - If the threshold is wrong, agent reasoning is miscalibrated
 
 Generated question:
   "At what eGFR would you begin reducing metformin dose?
    [slider: 20 ─── 30 ─── 45 ─── 60]"
-   Sent to: 20 nephrologists + 20 endocrinologists
+   Sent to: 20 experts tagged [renal_function, endocrinology]
 
 Results: median answer = 30, IQR = 25–45
   → Edge updated: [eGFR < 30] ──REQUIRES──► [Metformin discontinuation]
                   [eGFR 30–45] ──REQUIRES──► [Metformin dose reduction]
   → confidence_tier upgraded: inferred → established
-  → evidence_count: 40 (physician responses)
+  → evidence_count: 40 (expert responses)
   → All agents using this edge now have better calibration
 ```
 
-### How Doctor Answers Flow to the Chain
+### How Expert Answers Improve the Knowledge Graph
 
 ```
 Question Engine generates questions from agent reasoning gaps
-    → Questions routed to matched doctors via validator portals
-    → Each question sent to 3–10 doctors in the relevant specialty
-    → Doctors answer on phone/web (10–30 seconds each)
-    → Validator collects answers, computes consensus:
+    → Questions routed to 3–10 matched experts via Expert Portal
+    → Each question sent to experts with matching competence tags
+    → Experts answer on phone/web (10–30 seconds each)
+    → Portal collects answers, computes consensus:
         - Multiple choice: majority vote + agreement %
         - Threshold: median + IQR
         - Yes/No: proportion + confidence-weighted average
         - Ranking: Borda count or similar aggregation
-    → Consensus answers fed back into body knowledge graph:
+    → Consensus answers fed back into knowledge graph:
         - Update edge confidence tiers
         - Adjust decision thresholds
-        - Add new edges if doctor answers reveal missing relationships
-    → Validator scores each miner's agent opinions against
-       the updated knowledge graph:
-        - Agents whose reasoning aligned with doctor consensus → higher score
-        - Agents whose reasoning contradicted doctor consensus → lower score
-    → Weight vector submitted to chain via Commit-Reveal
-    → Yuma Consensus distributes emissions
+        - Add new edges if expert answers reveal missing relationships
+    → Updated knowledge graph published to all nodes via plugin update
 ```
 
-**The key insight:** Doctors don't score agents directly. They answer knowledge questions. The system uses those answers to update the knowledge graph, and then agents are scored automatically against the improved graph. This separates the doctor's contribution (medical knowledge) from the scoring mechanism (automated, deterministic).
+**The key insight:** Experts don't score agents directly. They answer knowledge questions. The system uses those answers to update the knowledge graph, and then agents reason against the improved graph automatically. This separates the expert's contribution (domain knowledge) from the agent improvement mechanism (automated, deterministic).
 
-### Pricing — Doctors as Tokens
+### Expert Micro-Payments — Knowledge as Tokens
 
-Doctors are paid per answer, not per case. The pricing model mirrors LLM token pricing:
+Experts are paid per answer, not per case. The payment model mirrors LLM token pricing — small, frequent, zero-friction:
 
 ```
 Question type         Estimated time    Pay per answer
@@ -943,81 +990,107 @@ Ranking               20 sec            $0.15–0.25
 Free text             30–60 sec         $0.25–0.50
 ```
 
-**At scale:**
-- A doctor answering questions during downtime: 100 questions/day × $0.10 avg = $10/day
-- A doctor doing a focused 30-min session: 60–100 questions = $6–10/session
-- A motivated doctor doing 2 sessions/day: $12–20/day supplemental income
+**What this means for experts:**
+- An expert answering questions during downtime: 100 questions/day × $0.10 avg = $10/day
+- A focused 30-min session: 60–100 questions = $6–10/session
 - Not life-changing money, but **zero-friction** — no scheduling, no context, no liability
-- The real draw for early adopters: CME credits + shaping the AI that will define their specialty
+- For retired professionals: meaningful engagement with their field, supplemental income, and the knowledge that their expertise is helping people navigate complex decisions
+- For active professionals: CME credits (wellness domain) + shaping the knowledge graphs their future patients/clients will benefit from
 
-**Cost to the network:**
-- 1000 questions/day × $0.10 avg = $100/day = $3K/month in doctor payments
-- This is paid from validator emissions (41% of subnet TAO)
-- At current TAO prices and moderate subnet emissions, this is sustainable
-- Compare to: one traditional medical consultation costs $200–500
-
-### Doctor Reputation — Graded on Answer Quality
-
-Every doctor answer is graded. Doctors who answer well see more questions and higher pay. Doctors who answer poorly or randomly get fewer questions.
-
-**How answer quality is measured:**
-
-| Signal | Timing | Weight |
-|--------|--------|--------|
-| Agreement with other doctors on the same question | Immediate | 50% |
-| Golden set accuracy (questions with known textbook answers) | Immediate | 30% |
-| Downstream agent improvement (did the updated edge improve agent performance?) | Weeks | 20% |
-
-**Golden sets are easy with micro-questions:** "What is the normal range for serum creatinine in adult males?" has a definitive answer. 15–20% of questions are golden sets — the doctor never knows which ones.
-
-**Reputation gates question volume and pay multiplier:**
-
-```
-reputation_multiplier:
-  0.0–0.3: suspended (too many wrong answers)
-  0.3–0.5: 0.5× pay, limited question volume (probation)
-  0.5–0.7: 1.0× pay, standard volume
-  0.7–0.9: 1.5× pay, priority access to high-value questions
-  0.9–1.0: 2.0× pay, free-text questions unlocked, influence on question generation
-```
+**Funded by Pro subscriptions:**
+- Pro users pay ≤$20/month — expert micro-questions are included, no per-question billing
+- Consilium allocates subscription revenue to expert payouts + operations
+- At scale: 1,000 Pro users × $20 = $20K/month; ~$12K to experts, ~$8K to operations
+- Free users still get the full platform — they benefit from knowledge graph improvements funded by Pro users
 
 ### Anti-Gaming for Micro-Questions
 
 | Attack | Defense |
 |--------|---------|
-| Doctor answers randomly to farm volume | Golden sets catch this immediately; random answers on multiple-choice have ~25% accuracy, golden set threshold is 70% |
-| Doctor always picks the same answer (e.g., always "a") | Pattern detection; questions are randomized in option order |
-| Bot answers questions (no real doctor) | Golden sets + CAPTCHA on suspicious patterns + credential re-verification |
-| Doctor creates multiple accounts | One credential per NPI/license; duplicate detection |
-| Doctors collude on answers | Questions are randomized across doctors; answer order shuffled; same question sent to doctors across different validators |
+| Expert answers randomly to farm volume | Golden sets catch this immediately; random answers on multiple-choice have ~25% accuracy, golden set threshold is 70% |
+| Expert always picks the same answer (e.g., always "a") | Pattern detection; questions are randomized in option order |
+| Bot answers questions (no real expert) | Golden sets + CAPTCHA on suspicious patterns + credential re-verification |
+| Expert creates multiple accounts | One credential per license number; duplicate detection across registries |
+| Experts collude on answers | Questions randomized across experts; answer order shuffled; same question sent to experts on different schedules |
+| User generates excessive questions to consume quota | Rate limiting per user; Question Engine prioritizes high-information-gain questions |
+| Portal operator inflates costs | Service fee is published and auditable; transaction log is append-only and public (amounts + question IDs, no content) |
+
+### User and Expert Reporting
+
+**User dashboard (Pro tier):**
+
+```
+Your Consilium Pro
+├── Plan: Pro ($20/month)
+├── This month: 23 expert questions answered
+├── Knowledge gaps filled: 12 (renal function: 5, metabolic: 4, cardiology: 3)
+├── Mesh queries: 47 sent, 89 served (credit balance: +42)
+└── Expert question log: [expandable, exportable]
+```
+
+**Expert dashboard:**
+
+```
+Your Expert Profile
+├── Earnings this month: $47.50 (312 questions answered)
+├── Reputation score: 94/100
+├── Accuracy on calibration questions: 96%
+├── Peer agreement rate: 91%
+├── Payout schedule: Weekly via Stripe
+└── Answer history: [expandable, exportable]
+```
+
+**Company transparency report (published monthly):**
+
+```
+Consilium Expert Portal — March 2027
+├── Total questions routed: 31,400
+├── Total expert payouts: $3,140
+├── Total service fees collected: $471
+├── Active experts: 127 (across all domains)
+├── Average expert reputation: 0.74
+├── Average response time: 14 seconds
+└── Golden set accuracy (network-wide): 89%
+```
 
 ### Incentive Flow Summary
 
 ```
-Agent produces clinical opinion
-    → Question Engine LLM identifies uncertainty in agent's reasoning
+User loads data → agent reasons against knowledge graph
+    → Question Engine identifies uncertainty in agent's reasoning
     → Generates 2–5 targeted micro-questions
-    → Questions routed to 3–10 matched doctors via validator portals
-    → Doctors answer (10–30 sec each, $0.05–0.50 per answer)
-    → Validator aggregates answers → consensus
-    → Consensus updates body knowledge graph (edge confidence, thresholds)
-    → Agents re-scored against improved knowledge graph
-    → Validator submits weight vector to chain
-    → TAO emissions:
-        41% → miners (agents aligned with doctor-validated knowledge earn more)
-        41% → validators (consensus-aligned validators earn more)
-            └─ validators pay doctors per answer from their allocation
-        18% → HealthMesh subnet (funds Question Engine, oracle, development)
+    → Questions sent to Expert Portal with payment authorization
+    → Portal routes to 3–10 matched experts (by competence tags + reputation)
+    → Experts answer (10–30 sec each, $0.05–0.50 per answer)
+    → Portal validates answers (golden sets, consensus, pattern checks)
+    → Consensus updates shared knowledge graph
+    → Updated graph distributed to all nodes via plugin updates
+    → User charged from balance; expert paid minus service fee
 ```
 
-### Why Doctors Will Participate
+### Why Experts Will Participate
 
 - **Zero friction**: answer questions on your phone while waiting for coffee. 10 seconds per question. No case review, no context loading, no documentation.
-- **Paid per answer**: like a medical trivia game that pays. $0.05–0.50 per answer, accumulating passively throughout the day.
-- **CME credits**: partnership with CME accreditors. Answering clinical micro-questions counts toward continuing education hours. Doctors already pay for CME — this pays them instead.
-- **No liability**: doctors answer general medical knowledge questions, not patient-specific cases. No doctor-patient relationship. No diagnosis. No malpractice exposure.
-- **Shape the AI**: high-reputation doctors directly influence which knowledge edges the AI relies on. For physicians who care about AI safety in medicine, this is a way to ensure the AI in their specialty gets it right.
-- **Research value**: aggregate question-answer patterns across specialties are publishable. Academic physicians can co-author papers on clinical knowledge consensus.
+- **Paid per answer**: like a domain trivia game that pays. $0.05–0.50 per answer, accumulating passively throughout the day.
+- **Retired professionals**: stay active, contribute your lifetime of expertise, earn supplemental income. Self-worth matters — retirement doesn't mean your knowledge stops being valuable.
+- **CME credits**: for wellness domain — partnership with CME accreditors. Answering clinical micro-questions counts toward continuing education hours.
+- **No liability**: experts answer general domain knowledge questions, not case-specific queries. No professional-client relationship. No malpractice exposure.
+- **Shape the knowledge**: high-reputation experts directly influence the knowledge graph that millions of agents reason against. For professionals who care about AI accuracy in their field, this is meaningful work.
+- **Research value**: aggregate question-answer patterns across domains are publishable. Academic professionals can co-author papers on knowledge consensus patterns.
+
+### Expert Cold-Start Strategy
+
+Getting the first 50 experts is the hardest problem. Concrete strategies:
+
+| Strategy | Target | How |
+|----------|--------|-----|
+| CME credits | Licensed physicians | Partner with a CME accreditor (ACCME). Answering clinical knowledge questions counts toward continuing education. Doctors currently pay for CME — Consilium provides it as a benefit. |
+| Retired professionals | Retirees across all domains | Position as meaningful post-retirement engagement. "Your 30 years of expertise shouldn't retire when you do." Zero-friction, phone-based, own-schedule. |
+| Academic partnerships | Residents, fellows, students | Offer as a teaching/training tool. Answer questions and learn from the feedback loop. Partner initially with 2–3 academic institutions. |
+| Professional society outreach | Board-certified specialists | Present at society meetings. Frame as "shape the AI knowledge graph in your specialty." |
+| Research collaborators | Academic professionals | Offer co-authorship on publications analyzing expert consensus patterns. Academic currency. |
+
+**Target: 50 credentialed experts across 3+ domains before launch. 3-month closed beta.**
 
 ---
 
@@ -1064,7 +1137,7 @@ All domain intelligence lives in **external open-source GitHub repositories** (e
 
 **3. Experts answer general knowledge questions, not case-specific queries.**
 
-Domain experts on the micro-question marketplace answer **general domain knowledge questions**, not patient/client-specific cases:
+Domain experts on the micro-question network answer **general domain knowledge questions**, not patient/client-specific cases:
 
 | What experts see | What experts DON'T see |
 |-----------------|----------------------|
@@ -1098,7 +1171,7 @@ Key legal distinctions:
 **Terms of Service:**
 - User explicitly acknowledges: "Consilium is an educational entertainment and knowledge exploration tool. It does not provide medical, financial, legal, or professional advice of any kind."
 - User agrees: "I will consult qualified professionals before making any decisions based on information from Consilium."
-- Liability waiver: "Consilium, its operators, miners, validators, and expert contributors bear no liability for decisions made based on information displayed in the system."
+- Liability waiver: "Consilium, its operators, and expert contributors bear no liability for decisions made based on information displayed in the system."
 
 **UI/UX enforcement (every output includes these elements):**
 - Every agent output prefixed with: "For educational exploration only — discuss with your [doctor/advisor/lawyer]"
@@ -1129,42 +1202,47 @@ Key legal distinctions:
 1. **Engage healthcare regulatory attorney** before launch to review the framing, ToS, and UI language. Estimated cost: $10K–25K for initial review.
 2. **File for formal FDA guidance** (optional, defensive): submit a Pre-Submission to FDA describing the system and requesting written confirmation that it does not meet SaMD criteria. This creates a paper trail of good-faith regulatory engagement.
 3. **Review international regulatory landscape** for wellness/education tools (EU, UK, Canada) — generally lighter touch for non-diagnostic tools.
-4. **Insurance**: obtain errors & omissions (E&O) insurance for the subnet operator. Not because liability is expected, but as a prudent business measure.
+4. **Insurance**: obtain errors & omissions (E&O) insurance for the company operating the Expert Portal. Not because liability is expected, but as a prudent measure.
 
 ---
 
-## Economic Sustainability
+## Funding Model
 
-TAO emissions fund the network initially, but long-term sustainability requires real revenue.
+The Consilium platform (mesh software, agent framework, domain plugins) is free and open-source. The Expert Portal is a company-operated service that earns revenue through a transparent service fee.
 
-### Revenue Sources
+**Two tiers:**
 
-| Source | Model | Phase |
-|--------|-------|-------|
-| **User subscriptions** | Free tier (local-only, no mesh, no expert validation) + Pro tier ($29/month for mesh consultations + expert-validated knowledge) | Phase 3+ |
-| **Enterprise API** | Organizations pay for access to anonymized, aggregated knowledge intelligence (population-level patterns, not individual data) | Phase 5+ |
-| **Research partnerships** | Organizations pay for anonymized federated analytics queries — no raw data shared | Phase 5+ |
-| **Expert marketplace fees** | Validators compete for expert talent; Consilium takes a platform fee on expert compensation | Phase 4+ |
-| **Appliance sales** | Consilium Home Unit ($399–499) with 1 year Pro subscription included | Phase 6+ |
+| Tier | What you get | Price |
+|------|-------------|-------|
+| **Free** | Local consilium + mesh consultations + base knowledge graphs from plugins | $0 |
+| **Pro** | Everything in Free + expert-validated knowledge (micro-questions routed to credentialed human experts) | ≤$20/month |
 
-### Unit Economics (Estimated)
+### Why $20/Month or Less
 
-```
-Per patient node per month:
-  Infrastructure cost: ~$5 (Neo4j + Ollama on modest hardware)
-  Mesh query cost:     ~$2 (10 queries × $0.20 per query in LLM inference)
-  Doctor micro-questions: ~$1 (20 questions generated × $0.05 avg per answer)
-  Question Engine LLM:  ~$0.50 (generating questions from reasoning gaps)
-  Total cost:          ~$8.50/month
+The price ceiling is set by what people already pay for AI services:
 
-Revenue needed per patient: $29/month subscription covers costs with healthy margin
-Break-even at scale: ~500 paying subscribers = ~$14.5K/month revenue
-```
+| Service | Price | What you get |
+|---------|-------|-------------|
+| ChatGPT Plus | $20/month | AI chat — no your data, no memory, no knowledge graph, no human experts |
+| Claude Pro | $20/month | Same — stateless, cloud-only, no domain expertise |
+| Gemini Advanced | $20/month | Same |
+| **Consilium Pro** | **≤$20/month** | AI agents on **your** data + persistent memory + knowledge graph + mesh consultation + **human expert** knowledge validation |
 
-**Doctor costs are dramatically lower with micro-questions:**
-- Old model: $10–50 per full case review → ~$10/patient/month
-- New model: $0.05–0.50 per micro-question → ~$1/patient/month
-- 10× cheaper per unit of doctor knowledge acquired
+Consilium does strictly more than any AI chat subscription — and costs the same or less. This is possible because:
+
+1. **The heavy compute happens on the user's machine.** ChatGPT runs massive GPU clusters for every inference. Consilium's local LLM runs on the user's hardware. The company only operates a lightweight routing service (Expert Portal), not an AI inference fleet.
+2. **Knowledge graph improvements are shared.** When one Pro user funds a question about eGFR thresholds, the improved edge benefits every user — free and paid. The per-user cost of knowledge improvement decreases as the network grows.
+3. **Expert micro-questions are cheap.** At $0.10 average per question, $20/month funds ~170 expert answers (after service fee). Most users' systems won't generate that many — knowledge gaps are filled once and stay filled.
+
+**Revenue model:** The Pro subscription covers expert micro-payments + service fee + portal operations. At scale:
+- 1,000 Pro subscribers × $20/month = $20K/month revenue
+- Expert payouts: ~$12K (assuming 60% goes to experts)
+- Service fee + operations: ~$8K
+- As the knowledge graph matures, fewer new questions are needed per user → margins improve
+
+**Users on the free tier** still get a genuinely useful product — local agents, mesh consultations, base knowledge graphs. They benefit from knowledge improvements funded by Pro users. The free tier is not crippled — it's the full platform minus expert escalation.
+
+**Why retired experts are uniquely valuable:** A retired physician, attorney, or engineer has decades of pattern recognition and judgment. Micro-questions let them contribute that expertise in 10-second increments from their phone — no commute, no scheduling, no liability. It's meaningful work that keeps their knowledge active and benefits people. The income is supplemental; the sense of purpose is the real draw.
 
 ---
 
@@ -1175,15 +1253,15 @@ Break-even at scale: ~500 paying subscribers = ~$14.5K/month revenue
 | Health graph | Neo4j (local, Community Edition) | Mature graph DB, excellent traversal, FHIR-compatible |
 | Body knowledge graph | Hetionet (Neo4j native, ~47K nodes) + Uberon/FMA (OWL→Cypher) | Pre-loaded anatomy/physiology, confidence-tiered. Note: SPOKE requires UCSF access — evaluate feasibility. Combined graph is large; may need separate Neo4j instance or lazy-loading for local deployments. |
 | Local LLM | Ollama + qwen3:14b (Q4_K_M quantization) | Runs on MacBook with 24GB RAM in quantized form. Full precision requires 32GB+. Performance impact of quantization on clinical reasoning needs benchmarking. |
+| External LLM (optional) | OpenAI / Anthropic / Google / OpenRouter via user's API key | Escalation for hard reasoning tasks; user-controlled, user-funded |
 | Specialist agents | Python + LangGraph or custom (MiroFish agent framework) | Stateful agent orchestration, extends MiroFish/OASIS multi-agent architecture |
 | Agent memory | Written back to Neo4j | Persistent, queryable, part of the graph |
 | Data ingestion | Python (PyMuPDF, HL7, Apple Health parser) | PDF + standard medical formats |
 | Wearable sync | Oura API, Apple HealthKit, FHIR | Official APIs |
 | Mesh protocol | libp2p (same as IPFS) | Mature P2P networking, DHT built-in |
-| Bittensor subnet | bittensor SDK + Yuma Consensus | Incentive layer; validators run automated scoring + expert portal |
-| Expert credentialing | Domain-specific credential oracles (NPPES for wellness, FINRA for finance, state bars for legal) + optional on-chain SBT | Verified credentials; expert never needs crypto |
+| Expert credentialing | Domain-specific credential verification (NPPES for wellness, FINRA for finance, state bars for legal) | Verified credentials via public registries |
 | Question Engine | LLM analyzing agent reasoning chains → generates targeted micro-questions | Active learning for knowledge graph; identifies and fills knowledge gaps |
-| Expert question portal | React PWA (mobile-first) hosted by validators | Micro-question interface, Stripe payments, 10-sec answer flow |
+| Expert Portal | React PWA (mobile-first), company-operated | Micro-question routing, Stripe Connect escrow, reputation system |
 | User frontend | React + local web server | Dashboard on localhost |
 | Privacy (Phase 4) | SGX / TDX TEE, ZK-SNARKs, k-anonymity | Industry standard for confidential compute + re-identification prevention |
 
@@ -1203,28 +1281,27 @@ The initial deployment target is a MacBook (Apple Silicon, 16GB+ RAM). All compo
 
 **User experience target:** The user downloads a `.dmg`, installs the app, and sees a dashboard. They never interact with Docker, Neo4j, Ollama, or a terminal. The app handles all infrastructure invisibly — similar to how the Docker Desktop app hides containers behind a GUI, or how Obsidian hides its data store behind a note-taking UI.
 
-### Phase 2 Target: Consilium Appliance (mass market)
+### Phase 2 Target: Consilium Appliance (DIY or pre-assembled)
 
-A pre-configured hardware appliance that plugs into the home network. The user connects it to power and Wi-Fi, opens a web dashboard on their phone or laptop, and starts adding data.
+A pre-configured hardware appliance that plugs into the home network. Open-source hardware design — anyone can build one from the published BOM, or community members may offer pre-assembled units. The user connects it to power and Wi-Fi, opens a web dashboard on their phone or laptop, and starts adding data.
 
 ```
 Consilium Home Unit
 ├── Hardware: ARM SBC (Raspberry Pi 5 / Orange Pi 5+) or Intel NUC
 │   - 8 GB+ RAM, 256 GB SSD, Wi-Fi + Ethernet
-│   - Estimated BOM cost: $150–250
-│   - Retail price: $399–499 (includes 1 year of Pro subscription)
+│   - Estimated BOM cost: $150–250 (community can self-build or buy pre-assembled)
 │
 ├── Pre-installed software:
 │   - Neo4j Community Edition (health graph + body knowledge graph)
 │   - Ollama + quantized medical LLM (pre-downloaded)
 │   - Agent framework + all specialist agents
 │   - Patient dashboard (web UI on local network)
-│   - Mesh gateway + Bittensor miner (opt-in)
-│   - Auto-update service (pulls updates from HealthMesh repo)
+│   - Mesh gateway (P2P query serving, configurable capacity)
+│   - Auto-update service (pulls updates from Consilium repo)
 │
 ├── User experience:
 │   - Plug in, connect to Wi-Fi (via phone app or display)
-│   - Open healthmesh.local in any browser on home network
+│   - Open consilium.local in any browser on home network
 │   - Link medical accounts (Apple Health, Oura, patient portals)
 │   - Upload lab PDFs (drag-and-drop or phone camera)
 │   - View consilium dashboard
@@ -1286,13 +1363,13 @@ The user never sees a graph, a database query, or an agent prompt. They see: "Yo
 | **5** | Consilium workflow — multi-round debate, synthesis | Agents consult each other on your data |
 | **6** | Proactive monitoring — scheduled agent checks, alerts | Agents watch your data continuously |
 | **7** | Mesh protocol — P2P consultation requests | Your node asks others for opinions |
-| **8** | Bittensor subnet registration + miner interface | Agent nodes earn TAO for quality opinions |
-| **9** | Expert credentialing oracle (multi-domain) + SBT issuance | Verified experts can join as knowledge contributors |
+| **8** | Expert Portal MVP — question routing, Stripe Connect, credential verification | Experts can answer micro-questions and get paid |
+| **9** | Expert credential verification (multi-domain) via public registries | Verified experts can join as knowledge contributors |
 | **10** | Question Engine + expert question portal (mobile PWA) | LLM generates micro-questions, experts answer on phone |
 | **11** | Knowledge graph feedback loop — answers update edge confidence | Expert answers improve agent reasoning automatically |
 | **12** | Expert reputation system + pay-per-answer billing | Quality control on expert answers, Stripe payouts |
 | **13** | macOS native app — one-click install, no terminal | Non-technical MacBook users can onboard |
-| **14** | Consilium Appliance — hardware design, manufacturing, distribution | Mass-market plug-and-play device |
+| **14** | Consilium Appliance — open-source hardware design, build guides, community assembly | Plug-and-play device anyone can build |
 | **15** | Privacy layer — TEE, pseudonymous IDs, ZK proofs | Production-grade privacy |
 
 ---
@@ -1348,8 +1425,7 @@ Installed plugins: Wellness & Body Literacy · Personal Finance
 | Apple Health / Fitbit | Apple's cloud | Limited | No | Partial | No | No |
 | WebMD / Mayo Clinic | N/A (static) | None | No | N/A | Editorial only | No |
 | Your professional (doctor, CPA, lawyer) | Their systems | Yes (fragmented) | Sometimes | Regulated | Yes (1 person) | Fee-for-service |
-| Safe Scan (SN76) | Cloud | Model weights | No (single task) | Partial | No | TAO |
-| **Consilium** | **Your machine** | **Complete, lifelong** | **Yes, permanent** | **By design** | **Yes, expert micro-question consensus** | **TAO + fiat** |
+| **Consilium** | **Your machine** | **Complete, lifelong** | **Yes, permanent** | **By design** | **Yes, expert micro-question consensus** | **Pay-per-question** |
 
 ---
 
@@ -1363,13 +1439,13 @@ Issues that need resolution before mainnet launch. Honest assessment of what's u
 |------|----------|-----------|
 | **LLM clinical reasoning quality**: Current open-source models (qwen3:14b quantized) may not match GPT-4-class clinical reasoning. If agent opinions are consistently poor, doctors will rate everything low and the incentive loop breaks. | High | Benchmark agent quality against HealthBench rubrics before launch. If quality is below threshold, consider using a larger model via API (Chutes/OpenRouter) for clinical reasoning while keeping data local. The local graph provides context the LLM wouldn't otherwise have — this may compensate for model size. |
 | **Body knowledge graph size**: Combined Hetionet + Uberon + FMA could be 100M+ edges. Running this on a consumer laptop alongside personal data may be impractical. | Medium | Lazy-load strategy: only import subgraphs relevant to the patient's conditions. A patient with CKD + diabetes loads renal + endocrine subgraphs, not the entire human anatomy. |
-| **Neo4j Community Edition limits**: No clustering, no role-based access control. Adequate for single-user local deployment but may need Enterprise for validator-scale operations. | Low | Local deployment uses Community Edition. Validators use Enterprise or switch to a different graph DB for aggregation. |
+| **Neo4j Community Edition limits**: No clustering, no role-based access control. Adequate for single-user local deployment. | Low | Local deployment uses Community Edition. Expert Portal backend uses a separate database for aggregation. |
 
-### Product Risks
+### Adoption Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|-----------|
-| **Expert cold start**: Without experts answering micro-questions, the knowledge graph doesn't improve. Without a good knowledge graph, agents are mediocre. Without good agents, users don't get value. | Critical | CME credit partnership for wellness domain is the best lever. Micro-questions are much lower friction than case reviews — target 50 experts across 3 domains before subnet launch. Run a closed beta with 20 users + 10 experts for 3 months. |
+| **Expert cold start**: Without experts answering micro-questions, the knowledge graph doesn't improve. Without a good knowledge graph, agents are mediocre. Without good agents, users don't get value. | Critical | CME credit partnership for wellness domain is the best lever. Retired professionals as a target segment. Micro-questions are much lower friction than case reviews — target 50 experts across 3 domains before launch. Run a closed beta with 20 users + 10 experts for 3 months. |
 | **User data entry burden**: Most people don't have their data in digital form. Manual entry is tedious and error-prone. | High | Prioritize automatic integrations (Apple Health, wearables, FHIR patient portals). For documents, LLM-powered PDF/photo parsing. Make data entry the smallest possible barrier. |
 | **"AI doctor/lawyer/advisor" perception**: Media may frame Consilium as "replacing professionals with AI" regardless of the actual design. | High | Frame consistently as "knowledge exploration and educational entertainment." Never use words like diagnose, advise, recommend. The domain-agnostic framing is the strongest defense — it's clearly a general knowledge tool, not a professional service. |
 
@@ -1379,7 +1455,7 @@ Issues that need resolution before mainnet launch. Honest assessment of what's u
 |------|----------|-----------|
 | **FDA attempts SaMD classification despite general-purpose framing**: unlikely but possible if wellness domain usage dominates and outputs look clinical. | Medium | Domain-agnostic architecture is the primary defense. UI language enforcement (no imperatives, no recommendations). Optional: proactive FDA Pre-Submission for written confirmation. Engage healthcare regulatory attorney ($10–25K). |
 | **Expert licensing concerns**: Experts answering general knowledge questions across borders could raise cross-jurisdictional licensing questions. | Low | Experts answer general knowledge questions, not case-specific queries. No professional-client relationship. Same legal framing as Stack Overflow, Quora, or medical textbook authorship. |
-| **Bittensor regulatory uncertainty**: TAO token and subnet emissions may face securities regulation scrutiny. | Medium | Not unique to Consilium — affects all Bittensor subnets. Monitor SEC/CFTC guidance on utility tokens. |
+| **Expert Portal as single point of failure**: If the company-operated portal goes down, no expert questions can be answered. | Medium | Portal code is open-source — if the company fails, community can fork and operate. User funds in Stripe Connect escrow are protected. |
 
 ### Questions for Further Research
 
