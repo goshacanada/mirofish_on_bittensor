@@ -38,6 +38,115 @@ No name. No age. No location. Just the medical facts needed for an opinion.
 
 ---
 
+## Knowledge Foundation — Human Body Graph
+
+Before personal health data is added, the system is pre-loaded with a **foundational body knowledge graph** — a map of organs, systems, biomarkers, and their relationships. Agents reason against this foundation to interpret personal data in physiological context.
+
+### The Two-Layer Graph
+
+```
+Layer 1: Body Knowledge Graph (shared, pre-loaded, updated from research)
+├── Organs, tissues, systems (anatomy)
+├── Physiological relationships (how things connect)
+├── Biomarker meanings (what creatinine rising means for kidneys)
+├── Known disease mechanisms (how CKD progresses)
+└── Drug effects and interactions (known mechanism of action)
+
+Layer 2: Personal Health Graph (private, per-person)
+├── Your lab results, conditions, symptoms
+├── Your medications and doses
+├── Your wearable data
+└── Agent opinions about your case
+```
+
+Agents traverse both layers simultaneously. When NephrologyAgent sees your eGFR declining, it already knows (from Layer 1) that: kidney → filters creatinine → declining eGFR → tubular damage → anemia of CKD → fatigue. It connects your personal data to established physiology automatically.
+
+### Epistemic Confidence Tiers
+
+Not all knowledge is equal. Every relationship in the body knowledge graph carries an explicit confidence tier:
+
+| Tier | Label | Meaning | Source |
+|------|-------|---------|--------|
+| 1 | `established` | Textbook, high-quality RCTs, clinical consensus | Guidelines, meta-analyses |
+| 2 | `inferred` | Well-replicated observational, epidemiological association | Large cohort studies |
+| 3 | `exploratory` | Emerging research, mechanistic hypothesis, small studies | Preprints, pilot studies |
+| 4 | `unknown` | Plausible connection, no good data yet | Reasoning from mechanism |
+
+**Example — eGFR and fatigue:**
+```
+[Kidney] ──FILTERS──► [Creatinine]          confidence: established
+[CKD]    ──CAUSES───► [Anemia]              confidence: established
+[Anemia] ──CAUSES───► [Fatigue]             confidence: established
+[CKD]    ──CAUSES───► [Sleep disruption]    confidence: inferred
+[HRV decline] ──PRECEDES──► [CKD onset]    confidence: exploratory
+[Gut microbiome] ──MODULATES──► [CKD progression]  confidence: exploratory
+```
+
+Agents cite confidence when giving opinions:
+> *"Your fatigue is likely explained by anemia of CKD — this connection is well-established. There is also an emerging association between HRV decline and early renal stress, but this is based on limited studies."*
+
+### Existing Foundations to Import
+
+Rather than building from scratch, the system imports established biomedical knowledge graphs and maps them into the two-layer schema:
+
+| Source | Content | Format | Confidence |
+|--------|---------|--------|-----------|
+| **Uberon** | Multi-species anatomy ontology — organs, tissues, part-of, connected-to, develops-from (~75k entities) | OWL/RDF | established |
+| **FMA** (Foundational Model of Anatomy) | Detailed human anatomy spatial relationships — most comprehensive human-specific | OWL | established |
+| **Hetionet** | 20+ biomedical databases merged — anatomy, disease, gene, drug relationships with evidence scores | Neo4j native | established → inferred |
+| **SPOKE** (UCSF) | 4M+ nodes from 40+ sources — anatomy, protein, disease, compound | Neo4j native | mixed, tiered |
+| **OpenBioLink** | Quality-filtered biomedical KG — explicitly separates high-confidence from low-confidence edges | TSV | explicitly tiered |
+
+**Import strategy:** Hetionet and SPOKE are Neo4j-native and import directly. Uberon/FMA require OWL→Cypher conversion. OpenBioLink provides the confidence filtering logic. The import pipeline maps all into the unified schema with confidence tiers preserved.
+
+### Body Knowledge Graph Schema Extension
+
+The foundational layer adds node types that the personal layer connects to:
+
+**Additional Node Types (body knowledge layer):**
+
+| Node | Description | Example |
+|------|-------------|---------|
+| `Organ` | Anatomical organ | Kidney, Heart, Liver |
+| `System` | Body system | Renal system, Cardiovascular system |
+| `Tissue` | Tissue type | Glomerular endothelium, Myocardium |
+| `Pathway` | Biological pathway | Renin-angiotensin-aldosterone system |
+| `Gene` | Gene with function | APOL1 (kidney disease risk) |
+| `Protein` | Protein with role | Erythropoietin (EPO) |
+| `Mechanism` | Known disease mechanism | Hyperfiltration injury in diabetic nephropathy |
+
+**Additional Edge Types (body knowledge layer):**
+
+| Edge | Connects | Confidence | Meaning |
+|------|----------|-----------|---------|
+| `PART_OF` | Organ → System | established | Anatomical containment |
+| `FILTERS` | Organ → Biomarker | established | Kidney filters creatinine |
+| `PRODUCES` | Organ → Protein | established | Kidney produces EPO |
+| `REGULATES` | Pathway → Biomarker | established/inferred | RAAS regulates blood pressure |
+| `DAMAGES` | Condition → Tissue | established/inferred | Diabetes damages glomeruli |
+| `PRECEDES` | Biomarker → Condition | inferred/exploratory | HRV decline precedes CKD |
+| `MODULATES` | Gene → Condition | inferred | APOL1 modulates CKD risk |
+| `ASSOCIATED_WITH` | Biomarker ↔ Biomarker | inferred/exploratory | HRV ↔ eGFR correlation |
+
+All edges carry: `confidence_tier`, `evidence_count`, `primary_source`, `last_reviewed_date`.
+
+### Mesh Contributes to the Knowledge Graph
+
+Over time the mesh itself becomes a source of `exploratory` and `inferred` knowledge:
+
+```
+1000 nodes each see: HRV declined before creatinine rose
+→ Mesh coordinator observes this pattern across anonymized cases
+→ Edge [HRV decline] ──PRECEDES──► [eGFR decline]
+  upgraded from exploratory → inferred
+  evidence_count: 847 cases
+  confidence: 0.71
+```
+
+This is federated learning without sharing data — the *pattern* is the shared artifact, not the cases.
+
+---
+
 ## Phase 1 — Local Health Graph
 
 ### 1.1 Graph Schema
