@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Environment — NEVER commit secrets
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Bittensor wallets — NEVER commit private keys
+~/.bittensor/
+wallets/
+*.json.bak
+
+# Data / simulation state
+data/groups/*.json
+data/simulations/
+backend/uploads/
+
+# Node
+node_modules/
+.next/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.tar
