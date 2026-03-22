@@ -487,129 +487,184 @@ Raw data (PDF, API, XML)
 
 ---
 
-## Phase 2 — Local Agent Team (Plugin-Provided)
+## Phase 2 — Dynamic Agent Swarms
 
-### 2.1 Agent Roles Are Defined by Domain Plugins
+### 2.1 Agents Are Spawned by Data, Not Pre-Installed
 
-The platform provides the agent framework — the ability to run persistent LLM agents with graph access. **Which agents exist is determined by the installed domain plugins**, not by the platform.
+The platform does not come with a fixed roster of agents. **Agents are spawned dynamically based on what data the user loads and what domain plugins are installed.** The plugin provides agent templates; the platform instantiates only the agents relevant to the user's actual data.
 
-**Example: Wellness plugin agents** (from `consilium-wellness/agents/`):
+```
+User loads a lab panel containing: creatinine, eGFR, HbA1c, hemoglobin
+    │
+    ▼
+Platform detects: wellness domain data (via classifier)
+User confirms: install wellness plugin
+    │
+    ▼
+Plugin examines the graph and spawns ONLY relevant agents:
+    ├── NephrologyAgent  ← because creatinine + eGFR are present
+    ├── EndocrinologyAgent ← because HbA1c is present
+    ├── HematologyAgent  ← because hemoglobin is present
+    └── GeneralistAgent  ← always spawned as coordinator
 
-| Agent | Specialty | Watches for |
-|-------|-----------|-------------|
-| `GeneralistAgent` | Primary care patterns | Overall trends, flags for specialists |
-| `CardiologyAgent` | Heart, vascular | ECG anomalies, BP trends |
-| `NephrologyAgent` | Kidneys | eGFR patterns, creatinine, electrolytes |
-| `EndocrinologyAgent` | Hormones, metabolism | HbA1c, thyroid, glucose patterns |
-| `NeurologyAgent` | Brain, nervous system | Sleep quality, HRV |
-| `HematologyAgent` | Blood | CBC trends, hemoglobin |
-| `PharmacologyAgent` | Drug interactions | Monitors all medications for known conflicts |
+NOT spawned (no relevant data in graph):
+    ├── CardiologyAgent  ← no ECG or BP data loaded yet
+    ├── PulmonologyAgent ← no SpO2 data loaded yet
+    └── NeurologyAgent   ← no sleep/HRV data loaded yet
 
-**Example: Finance plugin agents** (from `consilium-finance/agents/`):
+Later, user connects Apple Watch → BP + ECG data flows in
+    → CardiologyAgent is spawned automatically
+    → CardiologyAgent joins the existing consilium
+```
 
-| Agent | Specialty | Watches for |
-|-------|-----------|-------------|
-| `PortfolioAgent` | Asset allocation | Concentration risk, sector exposure |
-| `TaxAgent` | Tax implications | Unrealized gains, wash sale patterns |
-| `MacroAgent` | Economic trends | Rate sensitivity, inflation exposure |
+**Agents are identified by competence tags, not hardcoded roles.** Each agent declares what graph node types and edge patterns it can reason about:
 
-**The platform doesn't know what these agents do.** It just runs them against the graph and collects their outputs. The domain-specific intelligence lives entirely in the plugin code — which is open-source, community-maintained, and user-installed.
+```yaml
+# From wellness plugin: agents/nephrology_agent.yaml
+competence_tags:
+  - renal_function
+  - creatinine
+  - eGFR
+  - electrolytes
+  - kidney_disease
+  - dialysis
+watches_node_types: [LabResult, Biomarker]
+watches_patterns:
+  - "Biomarker.name IN ['eGFR', 'creatinine', 'BUN', 'potassium']"
+```
 
-### 2.2 Agent Memory via Graph
+The platform uses these tags for swarm formation, mesh routing, and expert question targeting — without understanding what they mean.
+
+### 2.2 Swarm Formation — Agents Find Each Other by Competence
+
+When a consilium is triggered (new data, user question, scheduled review), agents don't follow a pre-defined workflow. They **self-organize into a swarm** based on competence overlap with the data involved.
+
+```
+Trigger: new lab panel uploaded containing eGFR, HbA1c, hemoglobin
+
+Platform identifies which graph nodes were created/updated:
+  → [LabResult: eGFR=52], [LabResult: HbA1c=7.2], [LabResult: Hgb=10.2]
+
+Platform queries: "which agents have competence tags matching these nodes?"
+  → NephrologyAgent: matches eGFR         ← invited to swarm
+  → EndocrinologyAgent: matches HbA1c     ← invited to swarm
+  → HematologyAgent: matches hemoglobin   ← invited to swarm
+  → PharmacologyAgent: matches (cross-cuts all medications) ← invited
+  → GeneralistAgent: always invited       ← moderator
+
+Swarm forms: { Nephro, Endo, Hemato, Pharma, Generalist }
+  → Round 1: each agent analyzes independently, writes preliminary opinion
+  → Round 2: agents read each other's opinions, comment, agree/disagree
+  → Round 3: GeneralistAgent synthesizes, dissenters note objections
+  → Result: written to graph as linked [AgentOpinion] nodes
+```
+
+**Cross-domain swarms:** If a user has both wellness and finance plugins installed, and loads data that touches both (e.g., medical expenses in a financial plan), agents from different domains can be invited to the same swarm. A FinanceAgent and a WellnessAgent might both have opinions on a pattern — the platform doesn't care what domain they come from, only that their competence tags match the data.
+
+### 2.3 Agent Memory via Graph
 
 Unlike MDAgents (stateless), every agent opinion is written back to the graph:
 
 ```
-[CardiologyAgent] analyzes ECG + BP trends
+[NephrologyAgent] analyzes eGFR pattern
     → creates [AgentOpinion] node
-    → links to: [ECG result], [BP readings], [Condition: Hypertension]
-    → tags: specialty=cardiology, date=2026-03-22, confidence=0.82
-    → conclusion: "BP control adequate, recommend reducing lisinopril dose"
+    → links to: [LabResult: eGFR=52], [LabResult: creatinine=1.8]
+    → tags: competence=renal_function, date=2026-03-22, confidence=0.82
+    → text: "eGFR shows a consistent downward pattern over 18 months"
 ```
 
-Next time CardiologyAgent runs, it reads its own prior opinions and the subsequent data to see if its predictions were right. Agents learn from their own track record.
-
-### 2.3 Consilium Workflow
-
-**Triggered by:** new lab result, wearable anomaly, scheduled review (weekly), or user question.
-
-```
-1. Trigger detected (e.g. new lab panel uploaded)
-
-2. GeneralistAgent reads new data + full graph context
-   → determines which specialists are relevant
-   → complexity assessment: simple / moderate / complex
-
-3. Relevant agents are activated
-   → each queries the graph independently
-   → each writes a preliminary opinion
-
-4. Consilium round:
-   → agents see each other's preliminary opinions
-   → can agree, disagree, or request more data
-   → GeneralistAgent moderates disagreements
-   → up to 3 rounds of debate
-
-5. Final synthesis:
-   → GeneralistAgent writes consolidated summary
-   → Each specialist confirms or notes dissent
-   → Written to graph as [AgentOpinion] nodes
-
-6. Patient notification:
-   → Summary presented in plain language
-   → Flagged items: urgent / watch / informational
-   → "Your nephrologist agent noticed your eGFR dropped another 3 points.
-      Combined with your fatigue and low hemoglobin, it recommends
-      requesting an anemia workup at your next GP visit."
-```
+Next time NephrologyAgent runs, it reads its own prior opinions and the subsequent data to see if its observations held up. Agents track their own accuracy over time.
 
 ### 2.4 Proactive Monitoring
 
-Agents don't only respond to queries — they watch for patterns:
+Agents don't only respond to triggers — they watch for patterns in the background:
 
-```python
-# Example: NephrologyAgent scheduled check
-- Runs weekly
-- Queries: eGFR trend over 12 months
-- If slope < -3 points/year: flag for consilium
-- If slope < -6 points/year: urgent alert + mesh consultation
+```yaml
+# Each agent defines its own watch rules (from plugin config)
+NephrologyAgent:
+  schedule: weekly
+  watch_query: "eGFR trend over 12 months"
+  alert_if: "slope < -3 points/year"
+  escalate_if: "slope < -6 points/year → request mesh consultation"
+
+PortfolioAgent:
+  schedule: daily
+  watch_query: "sector concentration in portfolio"
+  alert_if: "any sector > 40% of total allocation"
 ```
 
-Agents that find nothing noteworthy write a brief "all clear" note to the graph so there's a record of monitoring.
+Agents that find nothing noteworthy write a brief "all clear" note to the graph so there's a record of monitoring. Watch rules are defined by plugins, not by the platform.
 
 ---
 
 ## Phase 3 — Mesh Network (Federated Consultation)
 
-### 3.1 How the Mesh Works
+### 3.1 How the Mesh Works — Dynamic Domain Discovery
 
-When your local consilium faces a case beyond its confidence threshold, it reaches out to the mesh — other instances running on other people's machines.
+When your local consilium faces a question beyond its confidence threshold, it reaches out to the mesh — other instances running on other people's machines. **The mesh does not use hardcoded domains or specialties.** It routes by competence tags — the same tags agents use locally to form swarms.
+
+**How mesh routing works:**
+
+```
+1. Local agent swarm debates a pattern and reaches low consensus
+   → e.g. NephrologyAgent is 60% confident, wants more perspectives
+
+2. The swarm generates a mesh query with competence tags:
+   → required_tags: [renal_function, eGFR, diabetes_comorbidity]
+   → These tags were derived from the data, not pre-defined
+
+3. Query is published to the DHT (distributed hash table)
+   → Other nodes advertise which competence tags their agents cover
+   → Node A has: [renal_function, eGFR, cardiology, electrolytes]  ← MATCH
+   → Node B has: [portfolio, tax, macro_economics]                  ← no match
+   → Node C has: [renal_function, hematology]                       ← partial match
+
+4. Matched nodes' agents form a REMOTE SWARM for this query
+   → Node A's NephrologyAgent + Node C's HematologyAgent
+   → They each analyze the anonymized context independently
+   → Each returns a perspective
+
+5. Local consilium integrates remote perspectives into its swarm debate
+```
 
 **What gets sent (the consultation request):**
 ```json
 {
   "query_id": "q_a3f7...",
-  "specialty": "nephrology",
+  "competence_tags": ["renal_function", "eGFR", "diabetes_comorbidity"],
   "anonymized_context": {
-    "conditions": ["Type 2 Diabetes (8 years)", "Hypertension"],
-    "medications": ["Metformin 1000mg", "Lisinopril 10mg"],
-    "trend": "eGFR: 68→61→58→55→52 over 20 months",
-    "labs": {
-      "creatinine": "1.8 mg/dL",
-      "hemoglobin": "10.2 g/dL",
-      "HbA1c": "7.2%"
-    },
-    "wearables": {
-      "avg_hrv": "38ms (declining)",
-      "avg_sleep": "5.8h"
+    "data_patterns": ["declining_trend:eGFR:18_months", "elevated:creatinine", "stable:HbA1c"],
+    "co_occurring_tags": ["diabetes", "hypertension", "anemia"],
+    "values": {
+      "eGFR_latest": 52,
+      "creatinine": 1.8,
+      "HbA1c": 7.2,
+      "hemoglobin": 10.2
     }
   },
-  "question": "Is this eGFR decline rate concerning given the full picture? What would you watch next?",
+  "question": "What patterns do agents with renal_function competence see in this data?",
   "requesting_node": "node_hash_xyz"
 }
 ```
 
-No name. No age. No location. No dates. Just the medical picture.
+No domain labels. No specialty names. No medical terminology in the protocol layer. Just competence tags and anonymized data patterns. The protocol is domain-agnostic — the same mesh message format works for renal function queries, portfolio allocation queries, and contract clause queries. The mesh doesn't know what domain it's routing.
+
+**Nodes advertise competence, not identity:**
+
+```
+Each node publishes to the DHT (updated whenever plugins change):
+{
+  "node_hash": "abc123...",
+  "competence_tags": ["renal_function", "eGFR", "cardiology", "electrolytes",
+                       "hematology", "pharmacology"],
+  "data_richness": 847,    // number of data points in graph
+  "agent_count": 6,
+  "uptime_hours": 4320,
+  "reputation": 0.78
+}
+
+No domain name. No "I'm a medical node." Just tags and stats.
+```
 
 **Re-identification risk (honest assessment):** Removing demographics is necessary but not sufficient. Rare condition combinations can be uniquely identifying — a patient with Fabry disease + pheochromocytoma + a specific medication list may be one of a handful of people worldwide. Mitigation strategies:
 - **k-anonymity enforcement**: before sending a mesh query, the local node checks whether the condition combination is shared by at least k patients in the body knowledge graph. If not, the query is generalized (e.g., "rare lysosomal storage disease" instead of "Fabry disease").
@@ -622,8 +677,8 @@ No name. No age. No location. No dates. Just the medical picture.
 {
   "query_id": "q_a3f7...",
   "responding_node": "node_hash_abc",
-  "specialty": "nephrology",
-  "opinion": "eGFR decline of ~4 points/year in a diabetic on metformin warrants attention.
+  "matched_tags": ["renal_function", "eGFR", "diabetes_comorbidity"],
+  "perspective": "eGFR decline of ~4 points/year in a diabetic on metformin warrants attention.
                Metformin should be reviewed at eGFR < 45 (you're approaching this).
                The concurrent anemia is significant — likely anemia of CKD.
                Recommend: urine albumin/creatinine ratio, iron studies, PTH level.
@@ -647,24 +702,27 @@ The responding node's agent draws on its *own patient's graph* to inform its opi
 
 ### 3.3 Mesh Protocol
 
-**Node discovery:** nodes advertise available specialties on a DHT (distributed hash table) — similar to BitTorrent. No central registry.
+**Node discovery:** nodes advertise competence tags on a DHT (distributed hash table) — similar to BitTorrent. No central registry. No domain labels.
 
-**Routing:** consultation requests are routed to nodes that have:
-- The requested specialty agent
-- Relevant case history (e.g. nodes with diabetic nephrology experience)
-- Available compute
+**Routing:** consultation requests are matched by competence tag overlap:
+- Minimum 2 matching tags required for a node to be eligible
+- More tag overlap = higher routing priority
+- Data richness (how much relevant data the node has) is a secondary ranking signal
+- Available compute and uptime are tertiary signals
 
-**Reputation:** nodes that give useful opinions (judged by whether local agents found them helpful) accumulate reputation score. Low-reputation nodes are queried less.
+**Remote swarm formation:** When a mesh query is published, matching nodes' agents form a temporary remote swarm. Each agent in the remote swarm analyzes the anonymized context independently and returns a perspective. The remote swarm dissolves after the query is answered.
 
-**Volume:** a single consultation might query 5-20 nodes. Opinions are aggregated by the local GeneralistAgent.
+**Reputation:** nodes whose perspectives are rated useful by the requesting node's swarm accumulate reputation score. Low-reputation nodes are queried less. Reputation is per-competence-tag, not global — a node can have high reputation for `renal_function` and low reputation for `hematology`.
+
+**Volume:** a single consultation might query 5–20 nodes. Perspectives are aggregated by the local GeneralistAgent (or equivalent coordinator from the plugin).
 
 ### 3.4 Collective Context Without Sharing Data
 
-**Important distinction:** agents don't "become smarter" from following one patient — the underlying LLM's medical reasoning doesn't improve from longitudinal exposure. What improves is **context richness**. A node that has tracked a diabetic patient for 10 years has a deeply populated graph: complete medication history, every lab trend, every wearable anomaly, every agent opinion and whether it proved correct. When that node's agent answers a mesh query about diabetic nephropathy, it can say *"in a case with a similar trajectory, eGFR stabilized after switching from metformin to an SGLT2 inhibitor at eGFR 48"* — because that actually happened in its graph.
+**Important distinction:** agents don't "become smarter" from following one person's data — the underlying LLM's reasoning doesn't improve from longitudinal exposure. What improves is **context richness**. A node that has tracked someone's data for 10 years has a deeply populated graph: complete history, every trend, every agent opinion and whether it held up. When that node's agent answers a mesh query matching its competence tags, it draws on that deep longitudinal context — because it actually happened in its graph.
 
-The mesh effect: each node contributes **case-grounded context**, not generic LLM reasoning. A single node's context is one patient. A thousand nodes' aggregated responses represent a thousand real longitudinal cases — approaching the experience base of a specialist who has managed thousands of patients over decades. The LLM is the same everywhere; the graph data is what differentiates nodes.
+The mesh effect: each node contributes **data-grounded context**, not generic LLM reasoning. A single node's context is one person's data. A thousand nodes' aggregated responses across matching competence tags represent a thousand real longitudinal cases. The LLM is the same everywhere; the graph data is what differentiates nodes.
 
-This also means node quality varies significantly. A node with 10 years of comprehensive data (labs, wearables, genomics, imaging) produces richer opinions than a node with 6 months of Apple Watch data. The validator scoring mechanism (see Bittensor Integration) must account for this.
+Node quality varies significantly. A node with 10 years of comprehensive data produces richer perspectives than a node with 6 months of sparse data. The Bittensor scoring mechanism accounts for this via the `data_richness` signal advertised on the DHT.
 
 ---
 
@@ -736,7 +794,7 @@ Doctors' opinions are only valuable if they are actually doctors. Credentials mu
    revoked if license lapses or disciplinary action taken
 ```
 
-**Specialty matching:** The credential encodes the doctor's specialty. The validator portal routes cases only to doctors whose specialty matches the agent being reviewed. A nephrologist reviews nephrology agent opinions; a cardiologist reviews cardiology agent opinions. In-specialty reviews are weighted 2x in the score aggregation.
+**Competence matching:** The credential encodes the expert's competence areas (mapped to the same tag system agents use). A nephrologist is tagged `[renal_function, eGFR, electrolytes, dialysis]`. A CFA is tagged `[portfolio, asset_allocation, risk_management]`. The validator portal routes micro-questions to experts whose competence tags match the question's topic tags. In-competence reviews are weighted 2x. This is fully dynamic — no hardcoded domain routing.
 
 **Doctor onboarding — solving the cold start:**
 
@@ -1244,33 +1302,40 @@ The user never sees a graph, a database query, or an agent prompt. They see: "Yo
 You open the app and see:
 
 ```
-Your Consilium — Wellness Domain — Last updated 2 hours ago
+Your Consilium — Last updated 2 hours ago
 
-  FOR EDUCATIONAL EXPLORATION ONLY — Discuss with your doctor
+  FOR EDUCATIONAL EXPLORATION ONLY — Discuss with qualified professionals
 
-🟡 EXPLORE: Kidney & Renal Patterns
+Active agent swarms: Renal · Metabolic · Hematology
+Installed plugins: Wellness & Body Literacy · Personal Finance
+
+━━━ WELLNESS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🟡 EXPLORE: Renal Function Patterns
    "Your eGFR readings show a downward trend (55 → 52 since October).
-   The knowledge graph shows several connections worth exploring.
-   8 other mesh nodes with similar patterns highlighted these as
-   common discussion topics with healthcare providers:
-   • What does my eGFR trend mean long-term?
-   • Should I ask about a urine albumin test?
-   • Is a nephrology referral worth discussing?"
-
-🟢 STABLE: Cardiovascular Patterns
-   "Your BP readings from Apple Watch have been consistent.
-   No unusual ECG patterns detected in 30 days."
+   A swarm of 3 local agents (renal, metabolic, hematology) and
+   8 mesh nodes with matching competence tags explored this pattern:
+   • What does an eGFR trend like this typically indicate?
+   • Is a urine albumin test commonly ordered in similar situations?
+   • At what point do people typically discuss nephrology referrals?"
 
 🟢 STABLE: Metabolic Patterns
    "HbA1c reading of 7.2% — within commonly cited target ranges.
-   Worth noting: the knowledge graph connects kidney trends
-   with metformin management — a topic for your next visit."
+   The knowledge graph connects kidney trends with metformin
+   management — a topic for your next visit."
+
+━━━ FINANCE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🟢 STABLE: Portfolio Allocation
+   "Sector exposure is diversified. No concentration alerts."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📋 Explore a topic with your consilium:
    > "What connections exist between fatigue and kidney function?"
 
   ℹ️ Consilium helps you explore and learn. It does not provide
-     medical advice. Always consult your healthcare provider.
+     professional advice. Always consult qualified professionals.
 ```
 
 ---
