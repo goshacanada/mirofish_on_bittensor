@@ -2,9 +2,9 @@
 
 **Vision:** Every person — including domain experts themselves — runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local knowledge graph that grows smarter every day as users discover, curate, and share research through a peer-to-peer mesh. When one user anywhere finds and verifies a paper, every interested node benefits. No one knows everything: a cardiologist needs nephrology insight, a tax attorney needs immigration law context. The result is a global knowledge dissemination and organization system — a living, community-curated knowledge network where experts and non-experts alike discover non-obvious connections, and no one's data ever leaves their machine.
 
-**The patient advocacy problem:** With large patient-to-doctor ratios, a doctor's attention per patient is measured in minutes, not hours. They see today's labs, not the trend over 18 months. They see a medication list but don't have time to cross-check every interaction against every comorbidity across multiple specialists. Important information gets missed — not because doctors are careless, but because the system gives them too many patients and too little time. The patient is the only person who has ALL their data across ALL providers over ALL time. Consilium organizes that data so the patient can surface the information that matters — not opinions, not recommendations, but the facts, trends, and connections that help the doctor develop critical insights in the time they have. Patients must advocate for themselves. Consilium makes that advocacy informed.
+**Why a knowledge graph — not notes, not ChatGPT:** The value of Consilium is discovery. A note-taking app stores your creatinine value. ChatGPT can tell you what it means. But neither can traverse a 50,000-node knowledge network to find the 4-hop chain connecting your ACE inhibitor → potassium elevation ← impaired renal clearance ← CKD Stage 3b ← worsened by → your other medication — a chain that crosses three specialties and lives in the intersection of relationships that no single doctor is tracking. A structured knowledge graph with AI agents traversing it finds these connections in seconds. And when millions of graphs share verified knowledge through a peer-to-peer mesh, the collective system discovers patterns that no institution, no database, and no single AI can match.
 
-**What Consilium gives the doctor — information, not opinion:** The preparation report is not "Consilium thinks you should do X." It is structured, factual data the doctor needs but may not have time to assemble: complete medication list with all prescribers, lab trends across multiple providers over months/years, drug interactions checked against current conditions, threshold violations flagged with guideline citations. The doctor brings the clinical judgment. Consilium brings the organized information. A 15-minute appointment where the doctor gets a complete picture is worth more than a 30-minute appointment where they're assembling the picture from scratch.
+**Patient advocacy through discovery:** With large patient-to-doctor ratios, a doctor's attention per patient is measured in minutes. They see today's labs, not 18 months of trends. They see a medication list but can't cross-check every interaction against every comorbidity across multiple specialists. The patient is the only person with ALL their data across ALL providers over ALL time. Consilium doesn't just organize that data — it reasons about it through graph traversal, finding the connections that matter. Not opinions, not recommendations — graph-derived insights with evidence chains. The doctor brings clinical judgment. Consilium brings the connections they don't have time to find.
 
 **This is an open-source project built for the common good.** The Consilium platform is free software that anyone can run, modify, and share. The Expert Portal — a company-operated service that routes micro-questions to credentialed experts — is the only paid component, funded by an optional Pro subscription (≤$20/month). The goal is to give every person — regardless of means — the ability to organize complex information and walk into professional appointments prepared. Domain experts, including retirees who want to stay active and contribute their lifetime of knowledge, earn income by improving the knowledge graphs that make this possible. If it helps people have better conversations with their doctors, advisors, and attorneys, that is the reward.
 
@@ -30,12 +30,13 @@
 
 ## Core Principles
 
-1. **Open source, common good** — the platform is free and open-source. The Expert Portal is a company-operated service with a transparent fee. Infrastructure for people, built by people.
-2. **Local first** — your personal knowledge graph never leaves your device
-3. **Information, not opinion** — the system surfaces facts, trends, and connections. It does not tell the user or the doctor what to do. The doctor brings clinical judgment. Consilium brings the organized, complete picture. This is both a design principle and a legal requirement.
-4. **Patient advocacy** — with high patient-to-doctor ratios, patients must advocate for themselves. Consilium makes that advocacy informed by organizing ALL their data across ALL providers over ALL time and extracting the key information that helps doctors develop critical insights in the minutes they have.
-5. **Opinions travel, not data** — the mesh shares reasoning, not records
-6. **Graph-native** — all knowledge is modeled as a graph, enabling holistic reasoning across topics, time, and interconnected domains
+1. **Graph-native discovery** — the graph is the product. All knowledge is modeled as structured relationships in a graph database, enabling multi-hop traversal that finds connections across specialties, time periods, and thousands of research papers. This is what makes Consilium more than a record-keeping system — it discovers what humans miss.
+2. **Distributed growing knowledge** — the knowledge graph grows smarter with every paper ingested, every expert validation, and every mesh node that contributes verified findings. A graph with 500,000 edges finds connections a graph with 1,000 edges cannot. More users = richer knowledge = better for everyone. This is viral by design.
+3. **Open source, common good** — the platform is free and open-source. The code is auditable by anyone. Users own their data. They share only domain knowledge — verified facts about how conditions and medications relate — never personal data. Trust requires transparency.
+4. **Local first** — your personal data never leaves your device
+5. **Information, not opinion** — the system surfaces graph-derived connections with evidence chains. It does not tell the user or the doctor what to do. The doctor brings clinical judgment. Consilium brings the connections they don't have time to find. This is both a design principle and a legal requirement.
+6. **Patient advocacy** — with high patient-to-doctor ratios, patients must advocate for themselves. Consilium makes that advocacy informed through graph-based discovery, not just data organization.
+7. **Opinions travel, not data** — the mesh shares verified domain knowledge, not personal records
 7. **Persistent consilium** — your advisory team remembers everything, forever
 8. **Open mesh** — anyone can run a node; more nodes = richer collective knowledge
 9. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add data and explore insights. Everything else is invisible.
@@ -59,7 +60,7 @@ The minimum system that delivers the core value proposition: **an individual nav
 |-----------|----------------|---------------------|
 | **Local data store** | Per-person folders, structured JSON, audit/delete | Backup integrations, FHIR export |
 | **Data ingestion** | PDF upload (LLM extraction), Apple Health XML export | Oura/Whoop/CGM APIs, patient portal FHIR |
-| **Knowledge graph** | Hand-curated wellness subset (CKD+Diabetes+Hypertension, ~200 nodes, ~500 edges) | Hetionet/SPOKE/OpenBioLink import |
+| **Knowledge graph** | Hand-curated wellness subset (CKD+Diabetes+Hypertension, ~200 nodes, ~500 edges) + confidence propagation algorithm (AMG-RAG pattern) for scoring multi-hop discoveries | Hetionet/SPOKE/OpenBioLink import |
 | **Domain plugin** | Wellness plugin only, bundled (not pulled from GitHub) | Multi-domain, dynamic plugin discovery |
 | **Agent** | Single generalist agent (not a swarm) | Multi-agent swarms, agent memory, proactive monitoring |
 | **LLM** | Local Ollama only | External LLM escalation |
@@ -71,7 +72,7 @@ The minimum system that delivers the core value proposition: **an individual nav
 | **Legal framing** | Dual framing, ToS, UI language rules | FDA pre-submission, international review |
 | **UI** | Local web dashboard, single-user | QR code sharing, multi-device |
 
-**Phase 0 validates:** Do users actually upload their data? Do they find the preparation report useful? Do they take it to their doctor? Is the single-agent + threshold approach sufficient, or do they need more?
+**Phase 0 validates:** Does graph-based discovery produce insights people act on? Do the multi-hop traversals find connections users didn't know about? Do users take the report to their doctor? Does the doctor find the graph-derived connections useful? **If Phase 0 just organizes data into a spreadsheet, it fails — that's what notes already do.** The MVP must demonstrate discovery: "here is a connection in your data that you didn't know about, that your doctor might not catch, and that a note-taking app could never find."
 
 ### Phase 1: Validated Expansion (After Phase 0 Proves Value)
 
@@ -435,6 +436,82 @@ Not all knowledge is equal. Every relationship in the body knowledge graph carri
 Agents cite confidence when giving opinions:
 > *"Your fatigue is likely explained by anemia of CKD — this connection is well-established. There is also an emerging association between HRV decline and early renal stress, but this is based on limited studies."*
 
+**Confidence propagation for multi-hop discoveries (AMG-RAG pattern):**
+
+The real power of a knowledge graph is multi-hop traversal — finding connections that span 3, 4, or 5 edges across specialties. But a 4-hop finding is only as strong as its weakest link. AMG-RAG (EMNLP 2025) formalized this with a confidence propagation algorithm that Consilium adopts:
+
+```
+path_confidence = edge_1_confidence × edge_2_confidence × ... × edge_N_confidence
+```
+
+Each confidence tier maps to a numeric score for propagation:
+
+| Tier | Label | Score |
+|------|-------|-------|
+| 1 | established | 0.95 |
+| 2 | inferred | 0.70 |
+| 3 | exploratory | 0.40 |
+| 4 | unknown | 0.15 |
+
+**Example — the 4-hop ACE inhibitor discovery:**
+```
+ACE Inhibitor ──ELEVATES──► Potassium       (established, 0.95)
+Potassium     ──IMPAIRED_BY──► CKD Stage 3b (established, 0.95)
+CKD Stage 3b  ──WORSENED_BY──► NSAID use    (established, 0.95)
+NSAID use     ──INTERACTS──► ACE Inhibitor   (established, 0.95)
+
+Path confidence: 0.95 × 0.95 × 0.95 × 0.95 = 0.81 → HIGH confidence finding
+```
+
+**Compare — a path through exploratory edges:**
+```
+HRV decline  ──PRECEDES──► CKD onset       (exploratory, 0.40)
+CKD onset    ──CAUSES──► Anemia            (established, 0.95)
+
+Path confidence: 0.40 × 0.95 = 0.38 → LOW confidence finding
+→ Agent presents this as: "emerging research suggests..." not "you likely have..."
+```
+
+This propagation algorithm ensures that preparation reports don't present a 4-hop chain through exploratory edges with the same certainty as a 2-hop chain through established edges. The confidence score directly controls how the agent frames each finding — and which severity tier (🔴🟡🔵) it receives.
+
+**Confidence propagation is a Phase 0 requirement.** Even with the hand-curated 200-node graph, multi-hop traversals will produce findings at varying confidence levels. The propagation algorithm must be in place from day one to ensure that discovery outputs are properly calibrated.
+
+### Prior Art — Medical Knowledge Graph Frameworks
+
+Consilium's architecture draws on and extends three recent frameworks that validate our core design decisions. Each contributes a distinct pattern that maps directly to our pipeline:
+
+**AMG-RAG** (EMNLP 2025) — *Autonomous Medical Graph RAG*
+- **What it does:** Builds and continuously updates a medical knowledge graph (MKG) using a three-stage LLM pipeline: entity extraction → relationship inference with confidence scores (1–10, threshold ≥ 8) → Neo4j assembly. Produced 76,681 entities and 354,299 typed relationships. Graph updates run independently from the QA pipeline.
+- **Key innovation:** Confidence propagation across multi-hop paths: `child_confidence = parent_confidence × edge_confidence`. This means a 4-hop finding through high-confidence edges scores differently than the same finding through exploratory edges — exactly what Consilium needs for scoring graph-derived discoveries.
+- **How it maps to Consilium:** AMG-RAG's three-stage construction pipeline is essentially our Research Paper Pipeline (Step 3: Knowledge Extraction). Their Neo4j + confidence scores + LLM agents + provenance tracking validates our architecture choices. Consilium extends AMG-RAG by adding mesh consensus validation, expert micro-questions, and knowledge decay — things AMG-RAG's static institutional model doesn't need but a distributed personal system does.
+
+**KGARevion** (ICLR 2025, Harvard) — *Knowledge Graph Augmented Reasoning via Iterative Verification*
+- **What it does:** Implements a generate-verify-revise cycle. The LLM generates knowledge triplets (claims), a fine-tuned verifier checks each triplet against a knowledge graph (PrimeKG) using TransE embeddings projected as prefix tokens. Triplets that fail verification are revised and re-checked. Achieved +5.2% average improvement across 7 medical QA benchmarks.
+- **Key innovation:** The knowledge graph acts as a fact-checker for LLM outputs, not just a retrieval source. This inverts the typical RAG pattern — instead of "retrieve then generate," it's "generate then verify against the graph."
+- **How it maps to Consilium:** KGARevion's generate-verify-revise pattern maps directly to our Extraction Validation Pipeline. When our agents extract relationships from papers or generate findings from user data, the knowledge graph should verify those outputs before they're presented. This is a critical accuracy safeguard — the graph catches LLM hallucinations that dual-extraction alone might miss.
+
+**MedGraphRAG** (ACL 2025) — *Medical Graph RAG with Hierarchical Retrieval*
+- **What it does:** Builds a triple-tier hierarchical graph (document → semantic cluster → atomic fact) and uses U-shaped retrieval (broad-to-narrow-to-broad) for medical QA. Achieved 91.3% on MedQA with GPT-4. Every answer traces back through the hierarchy to specific source documents.
+- **Key innovation:** Hierarchical source traceability — every generated answer can point to the exact document, section, and fact that supports it. The graph structure itself encodes the provenance chain.
+- **How it maps to Consilium:** MedGraphRAG's traceability model validates our requirement that every graph edge carries `primary_source`, `source_text`, and `evidence_count`. Their hierarchical structure also suggests that our preparation reports should organize findings by confidence tier and link each finding to its source edges — users and doctors should be able to "drill down" from any finding to the evidence chain.
+
+**What Consilium combines from all three:**
+
+| Pattern | Source | Consilium implementation |
+|---------|--------|------------------------|
+| Dynamic graph construction via LLM pipeline | AMG-RAG | Research Paper Pipeline (Step 3) |
+| Confidence propagation across multi-hop paths | AMG-RAG | Epistemic confidence scoring for graph-derived discoveries |
+| Generate-verify-revise cycle | KGARevion | Extraction Validation Pipeline + agent output verification |
+| Graph as fact-checker (not just retrieval) | KGARevion | Graph self-validation (Step 4) + agent reasoning verification |
+| Hierarchical source traceability | MedGraphRAG | Edge provenance + preparation report drill-down |
+| U-shaped retrieval (broad → narrow → broad) | MedGraphRAG | Agent traversal strategy for multi-system findings |
+
+**What Consilium adds beyond all three:**
+- **Distributed mesh validation** — none of these frameworks operate in a decentralized network. Consilium's mesh consensus replaces institutional authority with collective verification.
+- **Knowledge decay and supersession** — all three treat their graphs as append-only or static. Consilium models the temporal dimension: edges age, get superseded, and can be retracted.
+- **Personal data integration** — all three operate on public medical knowledge only. Consilium connects domain knowledge to individual personal data at query time, enabling personalized discovery.
+- **Expert micro-questions** — none of these frameworks have a human-in-the-loop for edge cases the graph can't resolve.
+
 ### Existing Foundations to Import *(Phase 2 — Phase 0 uses hand-curated subset)*
 
 Rather than building from scratch, the system imports established biomedical knowledge graphs and maps them into the two-layer schema:
@@ -531,7 +608,7 @@ Every paper gets an automated credibility profile. The system presents the signa
 
 #### Step 3: Knowledge Extraction (LLM)
 
-The LLM reads the paper and extracts structured knowledge — entities, relationships, and findings.
+The LLM reads the paper and extracts structured knowledge — entities, relationships, and findings. This follows a three-stage pipeline validated by AMG-RAG (EMNLP 2025): **(1) entity extraction** — identify biomedical entities with standard terminology codes, **(2) relationship inference** — infer typed relationships between entities with confidence scores, **(3) graph assembly** — merge extracted entities and edges into the Neo4j knowledge graph with deduplication and conflict detection. AMG-RAG demonstrated this pattern at scale (76,681 entities, 354,299 relationships) using the same Neo4j backend Consilium uses.
 
 ```
 Paper: "SGLT2 inhibitors reduce the risk of kidney failure in patients
@@ -567,7 +644,7 @@ LLM Knowledge Extraction
 
 **Extraction Validation Pipeline (critical for accuracy):**
 
-LLM extraction is the single biggest accuracy risk in the system. Negation detection alone fails 5–15% of the time with current models. The system uses a multi-layer validation approach:
+LLM extraction is the single biggest accuracy risk in the system. Negation detection alone fails 5–15% of the time with current models. The system uses a multi-layer validation approach that combines our own safeguards with the **generate-verify-revise** pattern from KGARevion (ICLR 2025, Harvard):
 
 1. **Dual extraction:** Extract twice with different prompts (one structured, one free-form) and compare results. Disagreements are flagged for manual review or mesh validation.
 
@@ -577,13 +654,20 @@ LLM extraction is the single biggest accuracy risk in the system. Negation detec
 
 4. **Conditional extraction check:** Papers often contain subgroup-specific findings. The system checks: "Did this paper report different effects for different subgroups?" If yes, verify that the extraction produced MULTIPLE edges with DIFFERENT populations and effect sizes — not a single edge that averaged them.
 
-5. **Extraction confidence score:** Every extracted edge gets an `extraction_confidence` (0–1) based on: prompt agreement (dual extraction), quantitative cross-check match, source text length and clarity. Edges below 0.7 are flagged.
+5. **Graph-based verification (KGARevion pattern):** After extraction, each extracted triplet is verified against the existing knowledge graph — the graph acts as a fact-checker, not just a retrieval source. KGARevion demonstrated +5.2% accuracy improvement across 7 medical QA benchmarks using this pattern. The cycle works as follows:
+   - **Generate:** LLM extracts relationship triplets from the paper (steps 1–4 above)
+   - **Verify:** Each triplet is checked against the knowledge graph. Does this relationship contradict established edges? Is it consistent with known mechanisms? Does it fit the graph's structural patterns?
+   - **Revise:** Triplets that fail verification are sent back to the LLM with the contradicting graph evidence: "You extracted [Drug X TREATS Condition Y], but the graph shows [Drug X CONTRAINDICATED_FOR Condition Y] with 4 evidence sources. Re-read the source text and revise." The LLM re-extracts with the graph context, often catching its own errors (negation misses, population confusion, subgroup conflation).
+   - **Re-verify:** Revised triplets are checked again. Triplets that fail twice are flagged for mesh validation or expert micro-question — the system does not silently accept them.
 
-6. **Accuracy tracking:** The system tracks what % of extractions are later corrected (by mesh contradiction, expert micro-question, or user report). This metric is reported to the user and used to calibrate trust in the extraction pipeline over time.
+6. **Extraction confidence score:** Every extracted edge gets an `extraction_confidence` (0–1) based on: prompt agreement (dual extraction), quantitative cross-check match, graph verification pass/fail, source text length and clarity. Edges below 0.7 are flagged.
+
+7. **Accuracy tracking:** The system tracks what % of extractions are later corrected (by mesh contradiction, expert micro-question, or user report). This metric is reported to the user and used to calibrate trust in the extraction pipeline over time.
 
 **Safeguards summary:**
 - Negation detection is a core engineering challenge, not a checkbox — dedicated validation pass on every extraction
-- Source text stored alongside every extracted relationship for auditability
+- Generate-verify-revise cycle (KGARevion pattern) catches hallucinations that dual-extraction alone misses — the graph is the fact-checker
+- Source text stored alongside every extracted relationship for auditability (MedGraphRAG-style traceability)
 - Contradictions with existing graph edges are flagged (see Step 4)
 - Table/figure extraction is explicitly marked as lower confidence — key findings in supplementary materials may be missed
 
