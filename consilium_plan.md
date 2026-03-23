@@ -1,26 +1,30 @@
 # Consilium — Decentralized Personal Knowledge System
 
-**Vision:** Every person — including domain experts themselves — runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local graph database. When the AI faces a hard question, it consults a mesh of other instances worldwide and taps a network of credentialed domain experts who earn micro-payments by answering targeted knowledge questions. No one knows everything: a cardiologist needs nephrology insight, a tax attorney needs immigration law context. The result is a global knowledge improvement system where experts and non-experts alike benefit from collective wisdom, and no one's data ever leaves their machine.
+**Vision:** Every person — including domain experts themselves — runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local knowledge graph that grows smarter every day as users discover, curate, and share research through a peer-to-peer mesh. When one user anywhere finds and verifies a paper, every interested node benefits. No one knows everything: a cardiologist needs nephrology insight, a tax attorney needs immigration law context. The result is a global knowledge dissemination and organization system — a living, community-curated knowledge network where experts and non-experts alike discover non-obvious connections, and no one's data ever leaves their machine.
+
+**The patient advocacy problem:** With large patient-to-doctor ratios, a doctor's attention per patient is measured in minutes, not hours. They see today's labs, not the trend over 18 months. They see a medication list but don't have time to cross-check every interaction against every comorbidity across multiple specialists. Important information gets missed — not because doctors are careless, but because the system gives them too many patients and too little time. The patient is the only person who has ALL their data across ALL providers over ALL time. Consilium organizes that data so the patient can surface the information that matters — not opinions, not recommendations, but the facts, trends, and connections that help the doctor develop critical insights in the time they have. Patients must advocate for themselves. Consilium makes that advocacy informed.
+
+**What Consilium gives the doctor — information, not opinion:** The preparation report is not "Consilium thinks you should do X." It is structured, factual data the doctor needs but may not have time to assemble: complete medication list with all prescribers, lab trends across multiple providers over months/years, drug interactions checked against current conditions, threshold violations flagged with guideline citations. The doctor brings the clinical judgment. Consilium brings the organized information. A 15-minute appointment where the doctor gets a complete picture is worth more than a 30-minute appointment where they're assembling the picture from scratch.
 
 **This is an open-source project built for the common good.** The Consilium platform is free software that anyone can run, modify, and share. The Expert Portal — a company-operated service that routes micro-questions to credentialed experts — is the only paid component, funded by an optional Pro subscription (≤$20/month). The goal is to give every person — regardless of means — the ability to organize complex information and walk into professional appointments prepared. Domain experts, including retirees who want to stay active and contribute their lifetime of knowledge, earn income by improving the knowledge graphs that make this possible. If it helps people have better conversations with their doctors, advisors, and attorneys, that is the reward.
 
 **Consilium is not a product in any regulated domain.** It is a general-purpose knowledge organization and educational entertainment system. It helps users organize complex information, explore connections, and prepare for informed conversations with real-world professionals (doctors, lawyers, financial advisors, engineers). It does not provide advice, diagnoses, recommendations, or professional services of any kind.
 
-**Supported knowledge domains (at launch):**
+**Supported knowledge domains:**
 
-| Domain | Knowledge graph | Expert pool | Example use |
-|--------|----------------|-------------|-------------|
-| **Wellness & Body Literacy** | Human body systems, biomarkers, physiology | Licensed physicians, researchers | Understand your lab results before talking to your doctor |
-| **Personal Finance** | Markets, instruments, tax rules, macro indicators | CFAs, CPAs, financial analysts | Prepare questions for your financial advisor |
-| **Legal Literacy** | Statutes, case law, procedures, rights | Licensed attorneys, paralegals | Understand your situation before meeting a lawyer |
-| **Engineering & Technical** | Systems, specifications, failure modes, standards | Licensed engineers, domain specialists | Explore technical concepts for professional discussions |
-| **Nutrition & Fitness** | Nutrients, metabolic pathways, exercise physiology | Registered dietitians, exercise scientists | Organize personal fitness data and explore patterns |
+| Domain | Knowledge graph | Expert pool | Example use | Phase |
+|--------|----------------|-------------|-------------|-------|
+| **Wellness & Body Literacy** | Human body systems, biomarkers, physiology | Licensed physicians, researchers | Understand your lab results before talking to your doctor | **Phase 0** |
+| **Personal Finance** | Markets, instruments, tax rules, macro indicators | CFAs, CPAs, financial analysts | Prepare questions for your financial advisor | Phase 3 |
+| **Legal Literacy** | Statutes, case law, procedures, rights | Licensed attorneys, paralegals | Understand your situation before meeting a lawyer | Phase 3 |
+| **Engineering & Technical** | Systems, specifications, failure modes, standards | Licensed engineers, domain specialists | Explore technical concepts for professional discussions | Phase 3 |
+| **Nutrition & Fitness** | Nutrients, metabolic pathways, exercise physiology | Registered dietitians, exercise scientists | Organize personal fitness data and explore patterns | Phase 3 |
 
 **The system is domain-agnostic by design.** The graph database, agent framework, mesh protocol, and expert micro-question network are identical across domains. Only the knowledge graph content and expert pool differ. Adding a new domain = importing a new foundational knowledge graph + onboarding domain-specific experts.
 
 **Relationship to MiroFish:** Consilium extends the MiroFish/OASIS multi-agent simulation framework (see `mirofish_bittensor_plan.md`). MiroFish provides the agent orchestration engine — persistent agent populations with graph-backed memory. Consilium specializes this for personal knowledge management across multiple domains, with credentialed expert validation via micro-questions.
 
-**Wellness & Body Literacy is the primary launch domain** because it has the richest available foundational knowledge graphs (Hetionet, Uberon, SPOKE), the largest addressable user base (everyone has health data), and the strongest expert pool (millions of licensed physicians worldwide). The rest of this document uses wellness examples throughout, but every technical component is domain-agnostic.
+**Wellness & Body Literacy is the only Phase 0 domain** because it has the richest available foundational knowledge graphs (Hetionet, Uberon, SPOKE), the largest addressable user base (everyone has health data), and the strongest expert pool (millions of licensed physicians worldwide). Additional domains are Phase 3. The rest of this document uses wellness examples throughout, but every technical component is domain-agnostic.
 
 ---
 
@@ -28,16 +32,95 @@
 
 1. **Open source, common good** — the platform is free and open-source. The Expert Portal is a company-operated service with a transparent fee. Infrastructure for people, built by people.
 2. **Local first** — your personal knowledge graph never leaves your device
-3. **Opinions travel, not data** — the mesh shares reasoning, not records
-4. **Graph-native** — all knowledge is modeled as a graph, enabling holistic reasoning across topics, time, and interconnected domains
-5. **Persistent consilium** — your advisory team remembers everything, forever
-6. **Open mesh** — anyone can run a node; more nodes = richer collective knowledge
-7. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add data and explore insights. Everything else is invisible.
-8. **Educational entertainment** — Consilium helps users explore, learn, and prepare for real-world professional conversations. It is not a substitute for professional advice in any domain.
-9. **Domain-agnostic** — the platform contains zero domain-specific code. All domain knowledge — agents, graphs, schemas — lives in external open-source repos and is loaded on-demand only when the user's data triggers it.
-10. **User-driven domains** — the platform never suggests or pre-installs domain capabilities. The user loads their own data; the system classifies it and asks permission to install the relevant domain plugin. If a user never loads medical records, no medical code ever runs on their machine.
-11. **Expert dignity** — domain experts, including retirees, earn income and stay engaged by contributing their knowledge. Retirement doesn't mean your expertise stops mattering.
-12. **Experts are users too** — no one knows everything. A cardiologist needs nephrology insight. A tax attorney needs immigration law context. Domain experts use Consilium to tap into collective wisdom beyond their own specialty — through the mesh, external AI, and the Expert Portal. They are the system's most powerful users and its most valuable mesh nodes.
+3. **Information, not opinion** — the system surfaces facts, trends, and connections. It does not tell the user or the doctor what to do. The doctor brings clinical judgment. Consilium brings the organized, complete picture. This is both a design principle and a legal requirement.
+4. **Patient advocacy** — with high patient-to-doctor ratios, patients must advocate for themselves. Consilium makes that advocacy informed by organizing ALL their data across ALL providers over ALL time and extracting the key information that helps doctors develop critical insights in the minutes they have.
+5. **Opinions travel, not data** — the mesh shares reasoning, not records
+6. **Graph-native** — all knowledge is modeled as a graph, enabling holistic reasoning across topics, time, and interconnected domains
+7. **Persistent consilium** — your advisory team remembers everything, forever
+8. **Open mesh** — anyone can run a node; more nodes = richer collective knowledge
+9. **Zero configuration for the user** — the user should never see a terminal, a database, or a config file. They add data and explore insights. Everything else is invisible.
+10. **Educational entertainment** — Consilium helps users explore, learn, and prepare for real-world professional conversations. It is not a substitute for professional advice in any domain.
+11. **Domain-agnostic** — the platform contains zero domain-specific code. All domain knowledge — agents, graphs, schemas — lives in external open-source repos and is loaded on-demand only when the user's data triggers it.
+12. **User-driven domains** — the platform never suggests or pre-installs domain capabilities. The user loads their own data; the system classifies it and asks permission to install the relevant domain plugin. If a user never loads medical records, no medical code ever runs on their machine.
+13. **Expert dignity** — domain experts, including retirees, earn income and stay engaged by contributing their knowledge. Retirement doesn't mean your expertise stops mattering.
+14. **Experts are users too** — no one knows everything. A cardiologist needs nephrology insight. A tax attorney needs immigration law context. Domain experts use Consilium to tap into collective wisdom beyond their own specialty — through the mesh, external AI, and the Expert Portal. They are the system's most powerful users and its most valuable mesh nodes.
+
+---
+
+## Phasing Strategy — Build the Foundation, Then Expand
+
+**The future is unknown. The system must be able to pivot.** This plan describes the full vision, but the build order matters. Each phase validates assumptions before the next phase adds complexity. Features are described in detail throughout this document for completeness, but only Phase 0 is the immediate build target.
+
+### Phase 0: Foundation (Build This First)
+
+The minimum system that delivers the core value proposition: **an individual navigating a complex domain outside their expertise walks into a professional appointment prepared.**
+
+| Component | What's included | What's NOT included |
+|-----------|----------------|---------------------|
+| **Local data store** | Per-person folders, structured JSON, audit/delete | Backup integrations, FHIR export |
+| **Data ingestion** | PDF upload (LLM extraction), Apple Health XML export | Oura/Whoop/CGM APIs, patient portal FHIR |
+| **Knowledge graph** | Hand-curated wellness subset (CKD+Diabetes+Hypertension, ~200 nodes, ~500 edges) | Hetionet/SPOKE/OpenBioLink import |
+| **Domain plugin** | Wellness plugin only, bundled (not pulled from GitHub) | Multi-domain, dynamic plugin discovery |
+| **Agent** | Single generalist agent (not a swarm) | Multi-agent swarms, agent memory, proactive monitoring |
+| **LLM** | Local Ollama only | External LLM escalation |
+| **Threshold checking** | Deterministic rules in plugin YAML (metformin+eGFR, potassium, etc.) | Outcome-calibrated thresholds |
+| **Drug interactions** | Drug-drug interaction graph (deterministic) | Drug-food, drug-supplement, pharmacogenomic |
+| **Preparation report** | Severity-triaged (🔴🟡🔵) factual summary: lab trends, threshold violations, drug interactions, complete medication list — information to help doctor develop insights, not opinions | Clinician view, medication reconciliation |
+| **Terminology** | SNOMED CT, RxNorm, LOINC on all nodes | UMLS crosswalk for bulk imports |
+| **Data quality** | Plausibility checks, unit normalization, extraction confidence | Lab source tracking, cross-lab warnings |
+| **Legal framing** | Dual framing, ToS, UI language rules | FDA pre-submission, international review |
+| **UI** | Local web dashboard, single-user | QR code sharing, multi-device |
+
+**Phase 0 validates:** Do users actually upload their data? Do they find the preparation report useful? Do they take it to their doctor? Is the single-agent + threshold approach sufficient, or do they need more?
+
+### Phase 1: Validated Expansion (After Phase 0 Proves Value)
+
+Build what users are asking for based on Phase 0 feedback.
+
+| Component | What's added |
+|-----------|-------------|
+| **Multi-agent swarms** | Specialist agents spawned by data, swarm formation, agent memory |
+| **Trend analysis** | Longitudinal monitoring, automated alerting on declining trends |
+| **Medication reconciliation** | Compare new vs. previous medication list after appointments |
+| **Alert severity triage** | 4-tier system with user-configurable density |
+| **Patient + clinician view** | Two presentations of the same findings |
+| **Research paper pipeline** | Basic: user uploads paper → LLM extracts edges → adds to graph |
+| **External LLM escalation** | User's API key for harder questions |
+| **Additional wearable integrations** | Only the ones users request |
+| **Acute-on-chronic differentiation** | Dual comparison logic, KDIGO AKI staging |
+
+### Phase 2: Network Effects (After Phase 1 Has Active Users)
+
+| Component | What's added |
+|-----------|-------------|
+| **Mesh network** | P2P consultation, DHT discovery, barter credits, anonymized queries |
+| **Expert Portal** | Micro-questions, reputation, golden sets, Stripe micropayments |
+| **Knowledge decay** | Review intervals, supersession, mesh-assisted decay |
+| **Outcome tracking** | Post-appointment recording, federated calibration |
+| **Full KG import** | Hetionet/SPOKE via UMLS crosswalk, schema alignment |
+| **Paper pipeline (advanced)** | Automated discovery, dual extraction, mesh consensus validation |
+
+### Phase 3: Scale (After Network Effects Are Proven)
+
+| Component | What's added |
+|-----------|-------------|
+| **Additional domains** | Finance, legal, engineering plugins |
+| **Dynamic plugin discovery** | GitHub-based plugin registry, auto-detection, sandboxing |
+| **Appliance hardware** | Open-source BOM, pre-configured ARM/x86 device |
+| **Cohort query mode** | Professional cross-folder queries |
+| **Emergency data card** | Lock screen, wallet card, QR, NFC, FHIR |
+| **SDOH-aware reports** | Cost, transportation, access context in preparation reports |
+| **Pharmacogenomics** | CYP2D6 and other gene-drug interactions |
+| **Advanced privacy** | TEE, ZK proofs, differential privacy |
+
+### Why This Order
+
+1. **Phase 0 tests the core hypothesis** without building infrastructure nobody may want. If users don't upload data or don't find the report useful, the mesh and expert portal are irrelevant.
+2. **Phase 1 adds depth** — the features that make the system genuinely better than "paste into ChatGPT" (trends, multi-agent reasoning, medication safety).
+3. **Phase 2 adds network effects** — but only after there are users generating the demand for expert knowledge and mesh consultation.
+4. **Phase 3 adds breadth** — new domains and hardware, but only after the wellness domain proves the model works.
+
+**The domain-agnostic architecture is designed from day one** even though only wellness ships in Phase 0. The plugin interface, competence tag system, and graph schema are all domain-agnostic — but the first plugin is bundled, not dynamically discovered. This means pivoting to new domains later requires writing a new plugin, not rewriting the platform.
 
 ---
 
@@ -352,7 +435,7 @@ Not all knowledge is equal. Every relationship in the body knowledge graph carri
 Agents cite confidence when giving opinions:
 > *"Your fatigue is likely explained by anemia of CKD — this connection is well-established. There is also an emerging association between HRV decline and early renal stress, but this is based on limited studies."*
 
-### Existing Foundations to Import
+### Existing Foundations to Import *(Phase 2 — Phase 0 uses hand-curated subset)*
 
 Rather than building from scratch, the system imports established biomedical knowledge graphs and maps them into the two-layer schema:
 
@@ -364,40 +447,78 @@ Rather than building from scratch, the system imports established biomedical kno
 | **SPOKE** (UCSF) | 4M+ nodes from 40+ sources — anatomy, protein, disease, compound | Neo4j native | mixed, tiered |
 | **OpenBioLink** | Quality-filtered biomedical KG — explicitly separates high-confidence from low-confidence edges | TSV | explicitly tiered |
 
-**Import strategy:** Hetionet and SPOKE are Neo4j-native and import directly. Uberon/FMA require OWL→Cypher conversion. OpenBioLink provides the confidence filtering logic. The import pipeline maps all into the unified schema with confidence tiers preserved.
+**Import strategy — schema alignment is a major engineering effort:**
 
-### Research Paper Ingestion
+Hetionet uses its own relationship types (e.g., `PALLIATES`, `ASSOCIATES`, `DOWNREGULATES`). SPOKE uses different types again. Our schema uses `TREATS`, `CAUSES`, `LOWERS`, etc. Mapping 2.25M edges from one schema to another while preserving semantics is not trivial.
 
-The knowledge graph grows not just from foundational imports and expert answers, but from **research papers**. Users (especially domain experts) can feed research papers into Consilium to enrich their local knowledge graph.
+**Approach:**
+1. **Design the schema mapping FIRST.** Before finalizing Consilium's edge schema, map the 24 Hetionet metaedge types and SPOKE's edge types to our relationship types. Let the available data shape the schema — don't force 2.25M edges into a schema designed from 200 hand-curated edges.
+2. **Import at `inferred` confidence.** Imported edges from bulk databases lack the qualified claims (population, effect size, confounders) that hand-curated edges have. Import them as `inferred` with `source: "hetionet_v1.0"` and upgrade as papers/experts enrich them with qualifiers.
+3. **Entity resolution via standard terminologies.** Hetionet uses DOID (Disease Ontology), DrugBank IDs, and Entrez Gene IDs. SPOKE uses UMLS CUIs. Our schema uses SNOMED, RxNorm, and LOINC. The mapping layer converts between these using UMLS Metathesaurus as the crosswalk — UMLS maps between ~200 source vocabularies including all of the above.
+4. **Accept incompleteness.** Not all Hetionet edges will map cleanly to our schema. Edges with no clear mapping are stored in a `RELATED_TO` catch-all type with the original Hetionet metaedge as a property, and refined later.
+5. **Proof-of-concept first.** Import the renal + cardiovascular + endocrine subset (~5% of Hetionet) and validate that entity resolution, schema mapping, and confidence assignment work correctly before attempting full import.
 
-**Ingestion pipeline:**
+Uberon/FMA require OWL→Cypher conversion. OpenBioLink provides the confidence filtering logic. The import pipeline maps all into the unified schema with confidence tiers preserved.
+
+### Research Paper Pipeline — Discovery, Curation, and Mesh Knowledge Sharing *(Phase 1 basic; Phase 2 full pipeline with mesh)*
+
+**Knowledge dissemination and organization is the core value of Consilium.** The knowledge graph is only as valuable as its edges. Research papers are how new edges get added — and the mesh is how those edges spread to everyone who needs them. This pipeline is not a nice-to-have feature; it is the engine that makes the system more valuable every day.
+
+#### Step 1: Paper Discovery (automated)
+
+The system proactively finds papers relevant to the user's knowledge graph. The graph itself drives discovery — topics, conditions, biomarkers, and medications already in the graph define what's relevant.
 
 ```
-Research paper (PDF, DOI link, PubMed ID)
+User's Knowledge Graph
+    │
+    ├── Topics of interest extracted from graph nodes
+    │   (e.g., CKD, SGLT2 inhibitors, diabetic nephropathy)
     │
     ▼
-Credibility Assessment (automated)
-    ├── Journal impact factor / ranking
-    ├── Peer review status (preprint vs. published)
-    ├── Citation count and citation network
-    ├── Retraction database check (Retraction Watch)
-    ├── Author credentials and h-index
-    └── Assigns confidence tier: established / inferred / exploratory
+Source Monitoring (configurable frequency — daily/weekly)
+    ├── PubMed API — biomedical research
+    ├── arXiv — preprints (medical, CS, engineering)
+    ├── SSRN — finance, economics, law
+    ├── Google Scholar alerts — cross-domain
+    ├── Cochrane Library — systematic reviews
+    ├── Domain-specific databases (IEEE, FINRA filings, court opinions)
+    └── Mesh paper announcements (see Step 5)
     │
     ▼
-Knowledge Extraction (LLM + NLP)
-    ├── Entity recognition (conditions, biomarkers, drugs, mechanisms)
-    ├── Relationship extraction (causes, correlates, treats, precedes)
-    ├── Quantitative findings (effect sizes, p-values, sample sizes)
-    └── Maps to graph schema with edges carrying source and confidence
-    │
-    ▼
-Knowledge Graph Update
-    ├── New entities and relationships added
-    ├── Existing relationships reinforced (evidence count increases)
-    ├── Confidence tiers adjusted based on accumulated evidence
-    └── Provenance tracked — every edge links back to its source paper(s)
+Relevance Filtering (local LLM)
+    ├── Scores relevance to user's graph topics (0–1)
+    ├── Filters out duplicates (already ingested)
+    ├── Limits suggestions to user-configured max per day/week
+    └── Presents top candidates with relevance explanation
 ```
+
+The user sees: "3 new papers found relevant to your CKD + SGLT2 inhibitor knowledge. Review?"
+
+#### Step 2: Credibility Assessment (automated, user can override)
+
+Every paper gets an automated credibility profile. The system presents the signals — it does NOT make a binary accept/reject decision. Users (especially domain experts) use their judgment.
+
+**Automated credibility signals:**
+
+| Signal | Source | Weight |
+|--------|--------|--------|
+| Peer review status | Journal metadata | High — published > preprint |
+| Journal ranking / impact factor | Journal Citation Reports | Medium — proxy for review rigor |
+| Citation count | Semantic Scholar API | Medium — lagging indicator, low for new papers |
+| Citation network quality | Who cites it? Other high-quality papers? | Medium |
+| Retraction status | Retraction Watch database | Critical — retracted = reject |
+| Author h-index and affiliation | Semantic Scholar, ORCID | Low — reputation is a weak signal |
+| Study type | LLM classification | High — RCT/meta-analysis > case report > opinion |
+| Sample size | LLM extraction | Medium — larger studies, higher confidence |
+| Conflict of interest | LLM extraction from disclosures | Low — flag but don't auto-reject |
+
+**Composite credibility score:** Weighted combination of signals, mapped to confidence tiers:
+- Score > 0.8 → suggest `established` tier
+- Score 0.5–0.8 → suggest `inferred` tier
+- Score 0.2–0.5 → suggest `exploratory` tier
+- Score < 0.2 → warn user, suggest caution
+
+**Expert override:** Domain experts can override the automated assessment. A nephrologist reading a preprint from a respected lab can mark it credible despite low citation count. A layperson should generally accept the automated assessment. Override decisions are tracked in provenance.
 
 **Credibility signals by domain:**
 
@@ -408,7 +529,221 @@ Knowledge Graph Update
 | Legal | Published opinion, law review, official reporter, statutory source |
 | Engineering | IEEE/ASME/standards body, peer-reviewed, field-validated |
 
-**Users can also load papers manually** and override the automated credibility assessment — marking a paper as more or less credible based on their own domain expertise. This is especially valuable for domain experts who understand nuances the automated system may miss.
+#### Step 3: Knowledge Extraction (LLM)
+
+The LLM reads the paper and extracts structured knowledge — entities, relationships, and findings.
+
+```
+Paper: "SGLT2 inhibitors reduce the risk of kidney failure in patients
+        with type 2 diabetes regardless of baseline eGFR: EMPA-KIDNEY"
+    │
+    ▼
+LLM Knowledge Extraction
+    │
+    ├── Entities found:
+    │   [Empagliflozin] (Medication, SGLT2 Inhibitor)
+    │   [CKD Progression] (Condition)
+    │   [Type 2 Diabetes] (Condition)
+    │   [Kidney Failure] (Condition)
+    │
+    ├── Relationships extracted:
+    │   1. Empagliflozin ──REDUCES_RISK_OF──► Kidney Failure
+    │      Source text: "...28% reduction in risk of kidney disease
+    │      progression (HR 0.72, 95% CI 0.64–0.82, p<0.001)"
+    │
+    │   2. Empagliflozin ──PROTECTS──► Kidney
+    │      Source text: "...benefit observed regardless of baseline eGFR,
+    │      including eGFR 20–45 mL/min"
+    │
+    │   3. Empagliflozin ──EFFECTIVE_AT──► eGFR 20–45
+    │      Source text: "...no significant interaction by baseline eGFR
+    │      subgroup (p-interaction = 0.30)"
+    │
+    └── Quantitative findings:
+        HR: 0.72 (0.64–0.82), p<0.001, n=6609, follow-up: 2 years
+```
+
+**Which model does paper extraction?** Research paper extraction — parsing 12-page RCTs with tables, extracting qualified relationships with effect sizes, detecting negation, handling conditional subgroup analyses — requires a frontier model. Local LLMs (Llama/Mistral on consumer hardware) cannot reliably do this today. Paper extraction uses the **External LLM** path (user's API key for OpenAI/Anthropic/Google). This is acceptable because research papers are public documents, not personal data. If no external API key is configured, the system still discovers and presents papers but marks extracted edges as `extraction_confidence: low` and prioritizes them for mesh validation.
+
+**Extraction Validation Pipeline (critical for accuracy):**
+
+LLM extraction is the single biggest accuracy risk in the system. Negation detection alone fails 5–15% of the time with current models. The system uses a multi-layer validation approach:
+
+1. **Dual extraction:** Extract twice with different prompts (one structured, one free-form) and compare results. Disagreements are flagged for manual review or mesh validation.
+
+2. **Quantitative cross-check:** For numerical findings (HR, OR, NNT, CI, p-values), run a regex/structured parser in parallel with the LLM. If the LLM says "HR 0.72" but the regex finds "HR 0.95" in the same sentence, flag for review.
+
+3. **Negation stress test:** After extraction, run a dedicated negation-detection pass: "Does the source text for this edge contain any negation, non-significance, or null-result language?" Flag any edge where negation is detected but a positive relationship was extracted.
+
+4. **Conditional extraction check:** Papers often contain subgroup-specific findings. The system checks: "Did this paper report different effects for different subgroups?" If yes, verify that the extraction produced MULTIPLE edges with DIFFERENT populations and effect sizes — not a single edge that averaged them.
+
+5. **Extraction confidence score:** Every extracted edge gets an `extraction_confidence` (0–1) based on: prompt agreement (dual extraction), quantitative cross-check match, source text length and clarity. Edges below 0.7 are flagged.
+
+6. **Accuracy tracking:** The system tracks what % of extractions are later corrected (by mesh contradiction, expert micro-question, or user report). This metric is reported to the user and used to calibrate trust in the extraction pipeline over time.
+
+**Safeguards summary:**
+- Negation detection is a core engineering challenge, not a checkbox — dedicated validation pass on every extraction
+- Source text stored alongside every extracted relationship for auditability
+- Contradictions with existing graph edges are flagged (see Step 4)
+- Table/figure extraction is explicitly marked as lower confidence — key findings in supplementary materials may be missed
+
+#### Step 4: Graph Self-Validation (no human review needed)
+
+**The system does NOT ask users or experts to review papers.** Instead, it validates extracted relationships against the knowledge it already has — the existing graph, the paper's credibility score, and mesh consensus.
+
+```
+For each extracted relationship, the system checks:
+    │
+    ├── CONSISTENT — relationship already exists in the graph
+    │   Example: "Empagliflozin PROTECTS Kidney" — already in graph
+    │            from 3 other papers
+    │   Action: AUTO-ACCEPT. Increase evidence count. No human needed.
+    │
+    ├── NOVEL + CONSISTENT — relationship is new but fits the graph structure
+    │   Example: "Empagliflozin EFFECTIVE_AT eGFR 20–45" — new edge,
+    │            but Empagliflozin and eGFR are known entities with
+    │            existing connections
+    │   Action: ADD at suggested confidence tier (based on paper credibility
+    │           + study type + sample size). No human needed.
+    │
+    ├── NOVEL + NO CONTEXT — relationship involves entities or connections
+    │   the graph has no opinion about
+    │   Example: "Gut microbiome modulates CKD progression" — graph has
+    │            no edges between gut microbiome and CKD
+    │   Action: ADD at exploratory confidence. Flag for mesh consensus
+    │           (Step 5). Generate targeted expert micro-question if the
+    │           edge would change clinical reasoning (Step 6).
+    │
+    └── CONTRADICTORY — relationship contradicts an established edge
+        Example: Paper claims "Metformin is safe at eGFR < 20" but
+                 graph has "Metformin CONTRAINDICATED_WHEN eGFR < 30"
+                 (established, FDA label, 12 evidence sources)
+        Action: DO NOT ADD. Flag the contradiction. The system needs
+                strong evidence to override established knowledge:
+                - Paper credibility must be very high (> 0.9)
+                - Study must be RCT or meta-analysis
+                - Even then, add as competing edge with provenance,
+                  don't remove the established edge
+                - Generate expert micro-question to resolve (Step 6)
+```
+
+**Confidence tier assignment for novel edges (no human needed):**
+
+A single study — no matter how large — is never `established` on its own. The standard for `established` is replication: multiple independent studies confirming the same effect, or clinical guideline adoption. A single RCT is strong evidence, but it's one data point.
+
+| Paper credibility | Study type | Replication | Assigned tier |
+|------------------|-----------|-------------|--------------|
+| > 0.8 | Meta-analysis of multiple RCTs | By definition, replicated | established |
+| > 0.8 | Single RCT, any sample size | Not yet replicated | inferred (max) |
+| > 0.8 | Adopted by clinical guideline (KDIGO, ADA, etc.) | Guideline implies expert consensus on evidence | established |
+| > 0.8 | RCT, confirmed by ≥ 1 independent RCT | Replicated | established candidate (upgrade via mesh consensus or expert micro-question) |
+| 0.5–0.8 | Cohort/observational | > 500 participants | inferred |
+| 0.5–0.8 | Case-control/small study | < 500 participants | exploratory |
+| < 0.5 | Any | Any | exploratory (flagged) |
+| Any | Case report / opinion | Any | exploratory |
+
+Every edge carries a `replication_count` — how many independent studies confirm this relationship. A single EMPA-REG OUTCOME result starts at `inferred`. When CREDENCE and DAPA-CKD confirm the SGLT2i class effect (replication_count = 3), and KDIGO adopts it, the edge upgrades to `established`.
+
+**The key insight: the graph validates against itself.** A graph with 10,000 edges can assess whether a new edge is consistent with established knowledge. The more the graph grows, the better it gets at self-validation. This is a virtuous cycle — more knowledge = better curation = more trustworthy knowledge.
+
+#### Step 5: Mesh Consensus (distributed validation without human review)
+
+When a node adds new edges from a paper, it announces them to the mesh. Other nodes validate the edges **automatically** — not by having their users review the paper, but by checking whether the edges are consistent with their own knowledge graphs.
+
+```
+Node A extracts and self-validates edges from a paper
+    │
+    ▼
+Node A publishes to the mesh:
+    {
+      type: "paper_announcement",
+      doi: "10.1056/NEJMoa2204233",
+      domain_tags: ["nephrology", "sglt2", "ckd", "diabetes"],
+      credibility_score: 0.92,
+      study_type: "RCT",
+      edges_extracted: [
+        { from: "Empagliflozin", rel: "REDUCES_RISK_OF", to: "Kidney Failure",
+          confidence: "established", effect_size: "HR 0.72" },
+        { from: "Empagliflozin", rel: "PROTECTS", to: "Kidney",
+          confidence: "established" },
+        { from: "Empagliflozin", rel: "EFFECTIVE_AT", to: "eGFR 20-45",
+          confidence: "established" }
+      ]
+    }
+    │
+    ▼
+Other nodes with matching domain tags AUTOMATICALLY validate:
+    │
+    ├── Node B's graph: "Empagliflozin PROTECTS Kidney" — CONSISTENT
+    │   (I already have this edge from 2 other papers)
+    │   → auto-ingest new edges, increment consensus count
+    │
+    ├── Node C's graph: "Empagliflozin PROTECTS Kidney" — CONSISTENT
+    │   (matches my graph structure)
+    │   → auto-ingest, increment consensus count
+    │
+    ├── Node D's graph: "EFFECTIVE_AT eGFR 20-45" — NO CONTEXT
+    │   (I have Empagliflozin but no eGFR threshold edges)
+    │   → ingest at exploratory, wait for more consensus
+    │
+    └── Node E's graph: contradiction detected on edge 2
+        → dispute flag raised, mesh tracks: 3 consistent vs 1 dispute
+```
+
+**Consensus thresholds (no human involvement):**
+
+| Consensus level | Action |
+|----------------|--------|
+| ≥ 10 nodes consistent, 0 disputes | Confidence upgrade (exploratory → inferred) |
+| ≥ 50 nodes consistent, < 5% dispute rate | Confidence upgrade (inferred → established) |
+| Dispute rate > 20% | Flag edge as contested — do not upgrade |
+| Retraction detected | Broadcast retraction alert → all nodes notified → edges flagged |
+
+**Consensus is weighted by graph diversity, not just count.** Ten nodes that all imported the same foundational graph and ingested zero papers are worth less than two nodes with independently enriched graphs. The system weights consensus by:
+
+| Weight factor | How it works | Why |
+|---------------|-------------|-----|
+| **Graph depth in relevant domain** | A nephrologist's node with 500 nephrology papers carries more weight than a general user | Expert-enriched graphs have more edges to validate against |
+| **Source diversity** | Nodes that derived their knowledge from DIFFERENT papers/sources get higher weight | Prevents echo — 10 nodes that all read the same paper = 1 signal, not 10 |
+| **Independent validation** | Nodes that validated the edge against their own unique edges (not just the same foundational graph) get higher weight | Foundational graph agreement is low-signal — everyone has it |
+| **Provenance chain tracking** | The mesh tracks WHERE each node's matching edges originally came from (which paper DOIs) | If all agreeing nodes trace back to the same single source, consensus is shallow |
+
+**Example — shallow vs. deep consensus:**
+```
+Shallow: 50 nodes agree on "Empagliflozin PROTECTS Kidney"
+  BUT all 50 imported this from the same foundational Hetionet graph
+  Effective consensus: 1 source, weight = LOW
+
+Deep: 8 nodes agree on "Empagliflozin PROTECTS Kidney"
+  Node A: from EMPA-REG OUTCOME paper ingestion
+  Node B: from CREDENCE trial paper + independent analysis
+  Node C: nephrologist who ingested DAPA-CKD + clinical observations
+  Node D: from EMPA-KIDNEY paper ingestion
+  Effective consensus: 4 independent sources, weight = HIGH
+```
+
+**What the mesh shares:** Extracted edges + DOI + credibility signals + consensus count + provenance DOIs (which papers each node's agreement traces to). **NOT** the paper content itself (copyright). The mesh shares knowledge, not documents.
+
+#### Step 6: Expert Micro-Questions (only for specific gaps)
+
+**Experts are NOT asked to review papers.** They answer targeted micro-questions generated when the system encounters specific uncertainties during curation. These are the same 10–30 second questions from the Expert Portal — not paper reviews.
+
+**When micro-questions are generated:**
+
+| Trigger | Example question | Why |
+|---------|-----------------|-----|
+| Novel edge with no graph context | "Is there evidence for gut microbiome affecting CKD progression? [Yes with strong evidence / Emerging research / No evidence / My area, but unsure]" | System found this in a paper but has no existing edges to validate against |
+| Contradiction with established edge | "Recent large RCT suggests Metformin may be safe at eGFR 25–30. Does this align with your clinical experience? [Yes, practice is shifting / No, still contraindicated / Depends on patient factors]" | System can't resolve the conflict between paper and existing graph |
+| Confidence tier uncertainty | "How would you rate the evidence for HRV decline preceding CKD progression? [Strong / Moderate / Weak / Not aware of evidence]" | System has the edge at exploratory but can't determine if it should be upgraded |
+| Threshold refinement | "At what eGFR level would you consider reducing Metformin dose? [< 30 / < 45 / < 60 / Depends on other factors]" | Multiple papers suggest different thresholds |
+
+**The key difference:** The system does all the work — finds papers, assesses credibility, extracts knowledge, validates against the graph, builds mesh consensus. Experts only answer specific, pointed questions that the system can't resolve on its own. Each answer makes the system better at future curation — it's not just adding one edge, it's calibrating the system's judgment.
+
+**Expert answers improve curation, not just knowledge.** When an expert answers "Yes, practice is shifting on Metformin at eGFR 25–30," the system doesn't just add that edge — it learns that recent RCTs in this area may override older FDA guidance. This improves how the system handles similar contradictions in the future.
+
+**The compound effect:** Over time, the mesh becomes a distributed knowledge curation network that operates almost entirely without human intervention. Papers are discovered, validated against the collective knowledge of thousands of graphs, and disseminated — all automatically. Expert micro-questions handle the edge cases where the system genuinely doesn't know. The more the system curates, the fewer questions it needs to ask.
+
+**Knowledge dissemination is the core value of Consilium.** The graph is the structure. Papers are the fuel. The mesh is the distribution and validation network. Expert micro-questions handle the gaps. Together, they create a living knowledge system that curates itself.
 
 ### Multi-Person Data Model
 
@@ -432,10 +767,37 @@ Consilium supports **per-person folders** for organizing personal data. This ser
 ```
 
 **Isolation rules:**
-- Each person's folder is fully isolated — agents operating on Igor's data cannot access Elena's data
+- Each person's folder is fully isolated by default — agents operating on Igor's data cannot access Elena's data
 - The knowledge graph is shared across all folders (it's domain knowledge, not personal data)
 - Agents are scoped per-person — when you select a person's folder, agents reason against that person's data + the shared knowledge graph
 - Mesh queries never include any personal data from any folder
+
+**Cohort query mode (professional use only) — Phase 3:**
+
+For professionals managing multiple clients/patients, per-folder isolation is essential for privacy but prevents practice-level queries like "Which of my CKD patients haven't had potassium checked in 6 months?" or "Show me all clients with concentrated sector exposure."
+
+Consilium supports a **cohort query mode** that the professional user can explicitly enable:
+
+```
+Cohort query mode:
+  ├── Requires explicit authorization per query (not a persistent mode toggle)
+  ├── Only available to the instance owner — not the mesh, not agents autonomously
+  ├── Runs locally — cross-folder data never leaves the machine
+  ├── Returns aggregate results — "4 of 12 CKD patients need potassium recheck"
+  │   not individual records unless the user drills into a specific folder
+  ├── Audit-logged — every cross-folder query is recorded with timestamp and scope
+  └── Not available for household mode — cohort queries are for professional
+      client management only (user configures which folders are "clients")
+```
+
+**Example cohort queries:**
+| Query | Result |
+|-------|--------|
+| "Which clients on ACE inhibitors haven't had potassium checked in 6 months?" | List of client folders matching criteria |
+| "Show me all clients with eGFR declining > 5 pts/year" | Aggregate count + individual folders if requested |
+| "What % of my diabetic clients are on an SGLT2 inhibitor?" | Percentage + list |
+
+This is not a population analytics tool — it's a practice management aid. All computation is local. No cross-folder data enters the mesh.
 
 ### Data Sovereignty — Audit, Deletion, and Backup
 
@@ -461,6 +823,47 @@ Users have full control over their personal data at all times.
 **What gets backed up:** Personal data store only. The knowledge graph is reproducible from foundational imports + research papers + expert answers — it doesn't need personal backup. Users can optionally back up their knowledge graph state for convenience (faster restore vs. re-import).
 
 **Consilium's responsibility ends at export.** The system provides the mechanism to export data in standard formats. Security, retention, encryption-at-rest, and access control of backups are the user's responsibility. Consilium does not store backup credentials, does not monitor backup health, and does not guarantee data recovery.
+
+### Outcome Tracking — Closing the Feedback Loop *(Phase 2)*
+
+The system generates preparation reports and flags findings, but it never learns whether they were useful. Without outcome feedback, the system can't improve its clinical reasoning over time or calibrate whether its thresholds and alerts are well-tuned.
+
+**After-appointment recording:** After a professional appointment, the user can optionally record outcomes:
+
+```
+Consilium flagged: "Metformin dose may need adjustment (eGFR 42, current dose 2000mg)"
+
+User records outcome (simple multiple choice):
+  ├── ✅ Doctor agreed — dose was reduced
+  ├── ❌ Doctor said not needed — reason: [free text, optional]
+  ├── ⏸ Doctor wants to monitor and revisit
+  └── 🔄 Doctor ordered additional tests
+```
+
+**How outcomes improve the system:**
+
+| Outcome | System action |
+|---------|--------------|
+| Doctor agreed with flag | Positive signal — threshold/rule is well-calibrated |
+| Doctor dismissed flag | Investigate — was the flag wrong, or does the doctor disagree with the guideline? Store as data point, don't change threshold from a single dismissal |
+| Doctor ordered more tests | The flag prompted useful action even if the finding wasn't confirmed yet |
+| Doctor said not needed + provided reason | Most valuable — the reason may reveal a MODIFIED_BY factor the system missed (e.g., "patient has a single kidney, different thresholds apply") |
+
+**Aggregated outcome calibration (via mesh, anonymized):**
+
+Outcome data — stripped of all personal context — can be shared via mesh to calibrate the system's thresholds:
+```
+{
+  "type": "outcome_signal",
+  "rule": "metformin_dose_adjust_when_egfr_below_45",
+  "outcome": "doctor_agreed",
+  "count": 1
+}
+```
+
+Aggregated across thousands of nodes: "This threshold was confirmed by doctors 87% of the time" vs "This threshold was dismissed 60% of the time — it may be too aggressive." This is federated outcome tracking — each node shares only the boolean result, never the personal context.
+
+**Outcome recording is always optional.** Many users won't bother, and that's fine. The system works without it. But for users who do record outcomes, the system becomes personally calibrated over time — learning which flags their specific doctors find useful and which ones they consistently dismiss.
 
 ### Body Knowledge Graph Schema Extension
 
@@ -491,9 +894,20 @@ The foundational layer adds node types that the personal layer connects to:
 | `MODULATES` | Gene → Condition | inferred | APOL1 modulates CKD risk |
 | `ASSOCIATED_WITH` | Biomarker ↔ Biomarker | inferred/exploratory | HRV ↔ eGFR correlation |
 
-All edges carry: `confidence_tier`, `evidence_count`, `primary_source`, `last_reviewed_date`.
+All edges carry: `confidence_tier`, `evidence_count`, `primary_source`, `last_reviewed_date`, `created_date`, `superseded_by` (if replaced by newer evidence).
 
-### Mesh Contributes to the Knowledge Graph
+**Additional edge properties for precision (see health_knowledge_graph.md for full schema):**
+
+| Property category | Properties | Purpose |
+|-------------------|-----------|---------|
+| **Qualified claims** | `population`, `effect_size`, `adjusted_for`, `subgroups`, `confounders`, `limitations` | Prevent oversimplification — medical relationships are rarely universal |
+| **Context** | `severity`, `temporal` (acute/chronic/transient), `phenotype`, `onset`, `reversibility`, `dose_dependent` | Describe WHEN and HOW the relationship applies |
+| **Conflict tracking** | `CONFLICTS_WITH` edge type, `resolution_status` (resolved_by_population / unresolved / superseded) | Model legitimate scientific disagreements (e.g., SPRINT vs ACCORD) |
+| **Patient modifiers** | `MODIFIED_BY` edges with `modifier_type` (contraindication / dose_adjustment / reduced_efficacy) | Capture how race, pregnancy, genetics, and comorbidities modify a relationship |
+| **Knowledge decay** | `superseded_by`, `stale` flag, review intervals per edge type | Ensure the graph stays current as guidelines update and papers are retracted |
+| **Interaction model** | `interaction_type` (drug-drug / drug-drug-disease / drug-food / pharmacogenomic), `disease_context`, `severity` | Handle complex multi-factor interactions, not just simple drug pairs |
+
+### Mesh Contributes to the Knowledge Graph *(Phase 2)*
 
 Over time the mesh itself becomes a source of `exploratory` and `inferred` knowledge — but without a central coordinator (which would contradict the decentralized design).
 
@@ -519,27 +933,56 @@ This is **federated analytics** — each node computes locally, shares only the 
 
 **Limitations:** This only works for pre-defined pattern queries. The network publishes a periodic "pattern ballot" — a list of hypothesized relationships to test. Nodes that have relevant data attest; nodes without relevant data abstain. New pattern hypotheses can be proposed by any node and added to the ballot after community review.
 
+### Knowledge Decay — Keeping the Graph Current *(Phase 2)*
+
+Medical guidelines update. Trials get superseded. Papers get retracted. The knowledge graph must age gracefully — edges that were correct when added may become outdated. Consilium handles this systematically:
+
+**Review intervals by edge type:**
+
+| Edge type | Review interval | Rationale |
+|-----------|----------------|-----------|
+| Drug interactions | 12 months | New drugs and interactions discovered regularly |
+| Clinical guidelines | 24 months | Major guidelines update every 2–5 years |
+| Pathophysiology | 60 months | Basic mechanisms change slowly |
+| Drug thresholds | 12 months | Regulatory updates, new trial data |
+| Exploratory/inferred edges | 6 months | Weak evidence needs frequent re-evaluation |
+
+**Automated staleness workflow:**
+1. System detects edges past their review interval
+2. Searches for newer papers on the same topic (automated via Paper Discovery pipeline)
+3. If newer evidence found → extract, validate, update or supersede the edge
+4. If retraction found → broadcast to mesh, downgrade confidence, flag for user
+5. If guideline updated → auto-supersede with new guideline edge
+
+**Supersession model:** Old edges are never deleted — they're marked `superseded_by` pointing to the replacement edge. This preserves the full provenance chain: *why* the knowledge changed, *when*, and *what replaced it*.
+
+**Mesh-assisted decay:** When one node discovers a retraction or guideline update, it broadcasts a `knowledge_update` to the mesh. All nodes with matching edges auto-update. One node's vigilance benefits the entire network.
+
+See `health_knowledge_graph.md` section 8 for the full knowledge decay specification with examples.
+
 ---
 
-## Phase 1 — Local Knowledge Graph + Personal Data Store
+## Phase 0 — Local Knowledge Graph + Personal Data Store *(Immediate Build Target)*
 
-### 1.1 Graph Schema
+### 0.1 Graph Schema *(Phase 0 — immediate build target)*
 
 The knowledge graph captures **domain knowledge** — entities, relationships, mechanisms, and patterns. It is not a personal data store. Personal data (lab results, financial records, documents) lives in the **personal data store** (per-person folders on the local filesystem). Agents reason across both at query time.
 
 **Knowledge Graph Node Types (domain knowledge — shared, not personal):**
 
-| Node | Description | Example |
-|------|-------------|---------|
-| `Condition` | Medical condition (domain knowledge) | Type 2 Diabetes, Hypertension |
-| `Symptom` | Known symptom type | Fatigue, Shortness of breath |
-| `Medication` | Drug with known properties | Metformin, Lisinopril |
-| `Biomarker` | Physiological metric definition | eGFR, HbA1c, Blood Pressure |
-| `Procedure` | Medical procedure type | Colonoscopy, ECG, MRI |
-| `Genomic` | Genetic variant with known effects | APOL1 G1/G2, CYP2D6 poor metabolizer |
-| `AgentOpinion` | Reasoning output from a specialist agent | Nephrology agent analysis |
-| `MeshOpinion` | Anonymous reasoning from another node | External cardiology opinion |
-| `ResearchPaper` | Source paper with credibility metadata | DOI, journal, confidence tier |
+| Node | Standard Codes | Description | Example |
+|------|---------------|-------------|---------|
+| `Condition` | ICD-10, SNOMED CT, OMOP | Medical condition (domain knowledge) | Type 2 Diabetes (SNOMED: 44054006, ICD-10: E11) |
+| `Symptom` | SNOMED CT | Known symptom type | Fatigue (SNOMED: 84229001) |
+| `Medication` | RxNorm CUI, ATC | Drug with known properties | Metformin (RxNorm: 6809, ATC: A10BA02) |
+| `Biomarker` | LOINC | Physiological metric definition | eGFR (LOINC: 48642-3), Creatinine (LOINC: 2160-0) |
+| `Procedure` | CPT/HCPCS | Medical procedure type | Comprehensive metabolic panel (CPT: 80053) |
+| `Genomic` | — | Genetic variant with known effects | APOL1 G1/G2, CYP2D6 poor metabolizer |
+| `AgentOpinion` | — | Reasoning output from a specialist agent | Nephrology agent analysis |
+| `MeshOpinion` | — | Anonymous reasoning from another node | External cardiology opinion |
+| `ResearchPaper` | DOI | Source paper with credibility metadata | DOI, journal, confidence tier, replication_count |
+
+**Standard terminology mapping is required for all clinical nodes.** Without SNOMED CT, RxNorm, and LOINC, entity resolution across imported knowledge bases (Hetionet, SPOKE, DrugBank), research papers, and user-uploaded data becomes unreliable. "Type 2 DM" = "T2DM" = "NIDDM" = SNOMED 44054006. "Glucophage" = "Metformin" = RxNorm 6809. "Serum creatinine" ≠ "Urine creatinine" — LOINC disambiguates. This mapping is done at ingestion time (see Data Quality Layer) and is the single most important prerequisite for scaling the knowledge graph beyond hand-curated edges.
 
 **Personal Data Types (per-person folder on filesystem — private, auditable, deletable):**
 
@@ -550,8 +993,29 @@ The knowledge graph captures **domain knowledge** — entities, relationships, m
 | Allergies | Known allergies or adverse reactions | Penicillin allergy |
 | Family history | Hereditary/familial conditions | Father: MI at 52 |
 | Social factors | Lifestyle or environmental factors | Smoking 10 pack-years |
+| Social determinants | Factors that affect access to care and outcomes | Insurance status, transportation barriers, food security |
 | Provider records | Treating physicians, encounters | Dr. Smith visit 2026-01-15 |
 | Documents | Raw uploaded files | Lab report PDF, legal document |
+
+**Social determinants of health (SDOH):** Research estimates social determinants drive 50–80% of health outcomes. A preparation report that says "ask about SGLT2 inhibitors" is useless if the patient can't afford them ($500/month without insurance). Consilium tracks SDOH as personal data (optional, user-entered):
+
+| Factor | Example | How agents use preparation reports |
+|--------|---------|-----------------------------------|
+| Insurance type | Medicare, Medicaid, uninsured, commercial | "Ask about Empagliflozin AND whether there's a patient assistance program or generic alternative" (instead of just "ask about Empagliflozin" — which is $500/month without insurance) |
+| Transportation | No car, relies on public transit | "Nephrology referral recommended — ask if telehealth is available" (instead of assuming the patient can drive to a specialist) |
+| Food security | Limited access to fresh food | "Low-potassium diet recommended — ask your doctor about what's practical given your food access" (instead of a standard dietary restriction that requires expensive specialty foods) |
+| Health literacy | Self-reported comfort with medical info | Adjust language complexity of preparation reports. Clinician view is unaffected. |
+| Medication affordability | Monthly medication budget | Flag cost-prohibitive medications before the appointment so the patient can discuss alternatives proactively, not discover the cost at the pharmacy |
+| Lives alone | No caregiver present | Flag if a condition requires monitoring that depends on someone else being present (e.g., post-procedure observation, hypoglycemia monitoring) |
+
+**How SDOH changes the preparation report:**
+
+Without SDOH: "Consider SGLT2 inhibitor (e.g., Empagliflozin) — proven kidney and heart protection."
+With SDOH (uninsured): "Consider SGLT2 inhibitor — proven kidney and heart protection. Note: Empagliflozin costs ~$500/month without insurance. Ask about: (1) manufacturer patient assistance programs, (2) generic dapagliflozin availability, (3) whether your clinic has samples."
+
+The difference between a clinically correct suggestion and a practically actionable one is often the SDOH context. A perfect treatment plan that the patient can't execute is fiction.
+
+SDOH data is never shared via mesh, never enters the knowledge graph, and is entirely optional. Agents use it to make preparation reports more realistic — not just clinically accurate, but practically actionable for the specific person's situation.
 
 Personal data is loaded into memory at query time, connected to knowledge graph entities by the agent, and never persisted in the graph database. The graph holds "Metformin TREATS Type 2 Diabetes" (knowledge). The personal data store holds "Igor takes Metformin 1000mg 2x daily" (personal fact).
 
@@ -564,8 +1028,12 @@ Personal data is loaded into memory at query time, connected to knowledge graph 
 | `CORRELATES_WITH` | Biomarker ↔ Symptom | Statistical correlation |
 | `CAUSES` | Condition → Symptom | Known causal relationship |
 | `CONTRADICTS` | Medication → Medication | Drug interaction |
+| `INTERACTS_WITH` | Medication → Medication/Food/Supplement | Drug interaction (typed: drug-drug, drug-food, pharmacogenomic) |
 | `PRECEDES` | Biomarker → Condition | Temporal pattern |
 | `TRENDING` | Biomarker → Biomarker | Biomarker trend relationship |
+| `CONFLICTS_WITH` | Edge → Edge | Two edges with contradictory evidence (e.g., SPRINT vs ACCORD) |
+| `MODIFIED_BY` | Edge → PatientFactor | Relationship modified by pregnancy, genetics, comorbidity, etc. |
+| `SUPERSEDED_BY` | Edge → Edge | Newer evidence replaces older (knowledge decay) |
 | `EVIDENCED_BY` | Edge → ResearchPaper | Source paper for this relationship |
 
 **How agents connect personal data to the knowledge graph at query time:**
@@ -585,7 +1053,7 @@ Knowledge Graph (Neo4j — domain knowledge)              Personal Data Store (f
 
 An agent querying "why is this person fatigued?" loads Igor's personal data into memory, traverses the knowledge graph for domain context, and finds: declining eGFR (personal) + CKD causes anemia (knowledge) + anemia causes fatigue (knowledge) + low HRV (personal) + HRV decline precedes CKD (knowledge). It reasons across both layers simultaneously — but the graph itself contains only domain knowledge.
 
-### 1.2 Temporal Modeling
+### 0.2 Temporal Modeling *(Phase 0 — store timestamped records; Phase 1 — automated trend analysis)*
 
 Personal measurements are stored in the per-person data folder as timestamped JSON records. Agents load these into memory and compute trends at query time:
 
@@ -601,7 +1069,7 @@ Agents compute trends from the personal data and reason against the knowledge gr
 - *"eGFR declining at 4.5 points/year — at this rate, Stage 4 CKD in 18 months"* (trend from personal data + CKD staging thresholds from knowledge graph)
 - *"HRV trending down 3 months before creatinine rose — early stress signal"* (temporal pattern from personal data + HRV-CKD correlation from knowledge graph)
 
-### 1.3 Data Ingestion
+### 0.3 Data Ingestion *(Phase 0 — PDF + Apple Health; Phase 1 — additional sources)*
 
 **Wearables:**
 
@@ -632,25 +1100,82 @@ Agents compute trends from the personal data and reason against the knowledge gr
 ```
 Raw data (PDF, API, XML, research paper)
     → Parser (extract structured fields)
+    → Data Quality Layer (see below)
     → Classifier (personal data vs. domain knowledge)
     │
     ├── Personal data path:
     │   → Store in per-person folder as structured JSON
     │   → Deduplicator (don't double-count the same result)
     │   → Change detector (flag new data for agent review)
+    │   → Lab source tracker (tag which lab/assay produced this result)
     │
     └── Knowledge path:
-        → Entity recognizer (map to knowledge graph node types)
+        → Entity resolver (map to SNOMED/RxNorm/LOINC — see terminology mapping)
         → Relationship extractor (identify domain relationships)
         → Knowledge graph writer (upsert nodes and edges in Neo4j)
         → Confidence tier assignment (based on source credibility)
 ```
 
+### Data Quality Layer
+
+The hardest problem isn't reasoning over data — it's trusting the data. Lab reports from different sources, PDF extraction errors, unit confusion, and physiologically impossible values can all produce wrong conclusions. The data quality layer catches these before they enter the personal data store.
+
+**Plausibility checks (reject or flag physiologically impossible values):**
+
+| Biomarker | Reject if | Flag for review if | Rationale |
+|-----------|----------|-------------------|-----------|
+| eGFR | < 0 or > 200 | < 5 or > 150 | Physiologically impossible outside range |
+| Creatinine | < 0 or > 30 mg/dL | > 10 mg/dL | Values > 10 almost always mean dialysis |
+| Potassium | < 1.0 or > 10.0 mEq/L | < 2.5 or > 6.5 | Outside range = likely lab error or critical emergency |
+| Hemoglobin | < 1.0 or > 25 g/dL | < 5 or > 20 | Below 5 = near death, above 20 = polycythemia or error |
+| HbA1c | < 2% or > 20% | > 15% | Values > 15 are almost always lab errors |
+
+**Unit normalization:** Labs report values in different units. The system normalizes on ingestion:
+
+| Biomarker | Accepted units | Normalized to | Conversion |
+|-----------|---------------|---------------|-----------|
+| Creatinine | mg/dL, μmol/L | mg/dL | μmol/L ÷ 88.4 |
+| Potassium | mEq/L, mmol/L | mEq/L | 1:1 (equivalent) |
+| Glucose | mg/dL, mmol/L | mg/dL | mmol/L × 18.018 |
+| Hemoglobin | g/dL, g/L | g/dL | g/L ÷ 10 |
+
+If the unit is ambiguous or missing, the system flags the value for user confirmation rather than guessing.
+
+**Lab source tracking:** Every measurement records WHERE it came from:
+
+```json
+{
+  "value": 1.8,
+  "biomarker": "creatinine",
+  "loinc_code": "2160-0",
+  "unit": "mg/dL",
+  "date": "2026-03-20",
+  "source": {
+    "lab_name": "Quest Diagnostics",
+    "report_id": "QD-2026-0320-4571",
+    "extraction_method": "pdf_llm",
+    "extraction_confidence": 0.95,
+    "original_text": "Creatinine    1.8   mg/dL   H   (0.7-1.3)"
+  }
+}
+```
+
+**Why this matters for trend analysis:** The same blood sample can produce different creatinine values at different labs (different assays, different calibration). If a user switches labs between measurements, a trend line may show a false jump. The system warns: *"Note: this measurement is from Lab B; previous measurements were from Lab A. Trend comparison may be affected by assay differences."*
+
+**Extraction confidence and user verification:** When a value is parsed from a PDF, the system stores the `extraction_confidence` and the `original_text` it read. If an extracted value triggers a clinical threshold (e.g., eGFR < 45 = metformin dose adjustment), the system shows the user the extracted value alongside the original text and asks: *"We read your eGFR as 42 from this report. Is this correct?"* Safety-critical thresholds require confirmation before generating alerts.
+
+**FHIR terminology mapping on ingestion:** Every ingested biomarker, condition, and medication is mapped to standard terminologies at parse time:
+- Biomarkers → LOINC code (resolves "Creatinine" vs "Creatine" vs "Creatinine Clearance")
+- Conditions → SNOMED CT + ICD-10 (resolves "Type 2 DM" vs "T2DM" vs "Diabetes, non-insulin dependent")
+- Medications → RxNorm CUI (resolves "Glucophage" vs "Metformin" vs "Metformin HCl 500mg")
+
+Entity resolution happens at ingestion — not at query time. This ensures consistent matching across all data sources.
+
 ---
 
-## Phase 2 — Dynamic Agent Swarms
+## Phase 1 — Dynamic Agent Swarms *(After Phase 0 Validation)*
 
-### 2.1 Agents Are Spawned by Data, Not Pre-Installed
+### 1.1 Agents Are Spawned by Data, Not Pre-Installed
 
 The platform does not come with a fixed roster of agents. **Agents are spawned dynamically based on what data the user loads and what domain plugins are installed.** The plugin provides agent templates; the platform instantiates only the agents relevant to the user's actual data.
 
@@ -696,7 +1221,7 @@ watches_patterns:
 
 The platform uses these tags for swarm formation, mesh routing, and expert question targeting — without understanding what they mean.
 
-### 2.2 Swarm Formation — Agents Find Each Other by Competence
+### 1.2 Swarm Formation — Agents Find Each Other by Competence
 
 When a consilium is triggered (new data, user question, scheduled review), agents don't follow a pre-defined workflow. They **self-organize into a swarm** based on competence overlap with the data involved.
 
@@ -722,7 +1247,7 @@ Swarm forms: { Nephro, Endo, Hemato, Pharma, Generalist }
 
 **Cross-domain swarms:** If a user has both wellness and finance plugins installed, and loads data that touches both (e.g., medical expenses in a financial plan), agents from different domains can be invited to the same swarm. A FinanceAgent and a WellnessAgent might both have opinions on a pattern — the platform doesn't care what domain they come from, only that their competence tags match the data.
 
-### 2.3 Agent Memory via Graph
+### 1.3 Agent Memory via Graph
 
 Unlike MDAgents (stateless), every agent opinion is written back to the graph:
 
@@ -736,7 +1261,7 @@ Unlike MDAgents (stateless), every agent opinion is written back to the graph:
 
 Next time NephrologyAgent runs, it reads its own prior opinions and the subsequent data to see if its observations held up. Agents track their own accuracy over time.
 
-### 2.4 Proactive Monitoring
+### 1.4 Proactive Monitoring
 
 Agents don't only respond to triggers — they watch for patterns in the background:
 
@@ -756,11 +1281,165 @@ PortfolioAgent:
 
 Agents that find nothing noteworthy write a brief "all clear" note to the graph so there's a record of monitoring. Watch rules are defined by plugins, not by the platform.
 
+### 1.5 Alert Severity Triage
+
+**Alert fatigue kills clinical decision support tools.** Every EHR fires dozens of alerts per patient; clinicians override 95% of them and miss the 5% that matter. Consilium prevents this with a mandatory severity classification on every alert.
+
+**Every finding must be classified into exactly one severity tier:**
+
+| Tier | Label | Criteria | Presentation | Example |
+|------|-------|----------|-------------|---------|
+| 🔴 | **Critical** | Immediate danger if not addressed. Exceeds a safety threshold. | Red banner, top of report. Cannot be scrolled past without acknowledgment. | Metformin 2000mg with eGFR 42 (exceeds FDA threshold) |
+| 🟡 | **Urgent** | Should be addressed at next appointment. Trending toward danger. | Yellow highlight, prominent position. | eGFR declining 16 pts/year, K+ 5.2 trending up |
+| 🔵 | **Monitor** | Worth tracking but not actionable now. | Listed in report, standard formatting. | Phosphorus 4.8 (slightly above 4.5) |
+| ⚪ | **Informational** | Educational context, no action needed. | Available on request, collapsed by default. Not in summary view. | "Here's how CKD and diabetes are connected" |
+
+**Severity is deterministic, not LLM-judged.** Plugins define severity rules alongside threshold rules:
+
+```yaml
+# From wellness plugin: rules/metformin_egfr.yaml
+rule: "metformin_dose_exceeds_safe_limit"
+trigger: "on_metformin AND current_dose > 1000 AND eGFR < 45"
+severity: critical      # deterministic — not LLM opinion
+message_patient: "Your Metformin dose exceeds safe limits for your kidney function."
+message_clinician: "Metformin {dose}mg/d — eGFR {egfr} (< 45 threshold). FDA/KDIGO: max 1000mg/d."
+source: "FDA label, KDIGO 2024"
+```
+
+**User-configurable alert density:** Users choose how many alerts they want to see:
+
+| Mode | What's shown | Who it's for |
+|------|-------------|-------------|
+| **Critical only** | Only 🔴 critical alerts | Clinicians glancing at patient's phone, busy users |
+| **Critical + Urgent** | 🔴 + 🟡 | Default for most users |
+| **Full report** | 🔴 + 🟡 + 🔵 + educational context | Patients preparing for appointments |
+| **Clinician view** | All tiers, compact format, no educational text, raw values + evidence sources | Healthcare providers reviewing patient data |
+
+### 1.6 Patient View vs. Clinician View
+
+The same findings, presented two different ways:
+
+**Patient view** (default): Educational explanations, plain language, "questions to ask your doctor" framing. This is the preparation report.
+
+**Clinician view**: Raw findings with standard medical abbreviations, ICD-10 codes, guideline citations, and trend data. Designed to be scanned in 30 seconds. No educational framing, no "your kidneys are like a filter" explanations. Just: `eGFR 58→52→42 in 12mo (-16/yr). On metformin 2000mg — exceeds FDA threshold at eGFR < 45. KDIGO 2024.`
+
+**How to access clinician view:**
+- Patient shows their phone to the doctor → doctor taps "Clinician View" button
+- Exports to PDF in clinician format for printing or faxing
+- QR code on patient's screen → doctor scans → opens clinician view on their device (data transmitted via local network, never via internet)
+
+The clinician view is NOT the "educational entertainment" product. It is a data summary tool — like a patient bringing an organized spreadsheet of their labs. The clinician view never says "Consilium recommends" or "you should" — it presents findings and citations.
+
+### 1.7 Medication Reconciliation at Transitions of Care
+
+**The #1 cause of preventable harm in hospitals is medication errors during transitions of care** — ER admission, hospital discharge, specialist referral, nursing home transfer. A patient on 12 medications gets admitted, half get changed, they go home with a new list that doesn't match what they were taking before, and nobody catches that the cardiologist added Drug X which interacts with the nephrologist's Drug Y from 6 months ago.
+
+Consilium is perfectly positioned to catch this because it has the complete medication history.
+
+**Transition of care mode — triggered when the user updates their medication list:**
+
+```
+User photographs discharge summary or enters new medication list
+    │
+    ▼
+System compares NEW list against PREVIOUS list
+    │
+    ├── ADDED medications:
+    │   Check each new med against ALL existing meds + conditions for interactions
+    │   "New: Spironolactone 25mg. WARNING: you are on Lisinopril (ACE inhibitor)
+    │    and your potassium is 5.2. Triple risk: ACEi + K-sparing diuretic + CKD."
+    │
+    ├── REMOVED medications:
+    │   Flag if removal seems unintentional (was it discussed at the appointment?)
+    │   "Removed: Amlodipine 5mg. Was this intentional? Your blood pressure was
+    │    142/88 at last reading — removing a BP medication may need monitoring."
+    │
+    ├── DOSE CHANGES:
+    │   Check if new dose is appropriate for current labs
+    │   "Changed: Metformin 2000mg → 1000mg. This is appropriate — your eGFR is 42."
+    │
+    └── UNCHANGED but should have changed:
+        Flag medications that should have been adjusted but weren't
+        "Unchanged: Metformin 2000mg. WARNING: your eGFR is 42.
+         Current guidelines recommend max 1000mg/day at eGFR < 45.
+         Was a dose reduction discussed?"
+```
+
+**This is a patient safety feature that saves lives.** It should be prominently accessible after every appointment or hospital stay: "Just had an appointment? Update your medications and Consilium will check for issues."
+
+### 1.8 Acute-on-Chronic Differentiation
+
+Agents must distinguish between acute changes (developing over hours/days) and chronic trends (developing over months). The same lab value means completely different things depending on the timeframe.
+
+**When new labs arrive, agents compute TWO comparisons:**
+
+```
+New creatinine: 2.4    Date: 2026-03-23
+
+Comparison 1 — vs. most recent value:
+  Previous: 1.8 (3 days ago)
+  Delta: +0.6 in 3 days → ACUTE CHANGE
+
+Comparison 2 — vs. stable baseline:
+  Baseline: average of last 3 readings over 6 months = 1.8
+  Chronic trend: stable at 1.8 (CKD Stage 3b)
+
+Assessment: ACUTE kidney injury superimposed on chronic kidney disease.
+  "Your creatinine rose from 1.8 to 2.4 in 3 days. This is a SUDDEN change
+   on top of your existing kidney disease, not a continuation of your CKD
+   trend. This may require urgent evaluation."
+  Severity: 🔴 CRITICAL (acute rise ≥ 0.3 mg/dL in 48h = KDIGO AKI Stage 1)
+```
+
+**KDIGO AKI staging criteria (built into the knowledge graph):**
+
+| AKI Stage | Definition | Severity |
+|-----------|-----------|----------|
+| Stage 1 | Creatinine ≥ 1.5x baseline within 7 days, or ≥ 0.3 mg/dL rise within 48h | 🟡 Urgent |
+| Stage 2 | Creatinine ≥ 2.0x baseline | 🔴 Critical |
+| Stage 3 | Creatinine ≥ 3.0x baseline, or creatinine ≥ 4.0 mg/dL, or initiated on dialysis | 🔴 Critical — emergency |
+
+Without acute-on-chronic differentiation, a creatinine of 2.4 in a CKD patient with a baseline of 1.8 looks like "gradual worsening." With it, the system recognizes an acute 33% rise in 3 days and flags an emergency. This distinction saves lives.
+
+### 1.9 Emergency Data Card *(Phase 3)*
+
+**If a patient is unconscious in the ER, their medication list, allergies, and conditions could save their life.** But Consilium's local-first design means the data is on their device, which the ER doctor may not be able to access.
+
+**The Emergency Data Card is a pre-generated minimal summary designed for emergency access:**
+
+```
+Contents (automatically generated, updated when data changes):
+  ├── Current medications (name, dose, frequency)
+  ├── Allergies and adverse reactions
+  ├── Active conditions (with ICD-10 codes)
+  ├── Most recent critical lab values (eGFR, K+, glucose, INR if on anticoagulant)
+  ├── Emergency contact
+  └── Last updated date
+```
+
+**Access methods (user configures which they want):**
+
+| Method | How it works | When it's useful |
+|--------|-------------|-----------------|
+| **Phone lock screen** | Exports to Apple Health Medical ID or Android emergency info | ER staff check phones routinely |
+| **Printed wallet card** | PDF formatted for credit-card-size printing | Phone dead or unavailable |
+| **QR code** | Scannable code on phone lock screen or printed card → opens a local web page with the summary | Fast access for any healthcare provider |
+| **NFC tag** | Programmable NFC sticker on phone case or medical bracelet → tap to read | Fastest — tap and read |
+| **FHIR export** | Emergency data in standard HL7 FHIR format for EHR import | Hospital systems can ingest directly |
+
+**What the Emergency Data Card is NOT:**
+- It is NOT the full knowledge graph or personal data store
+- It is NOT shared via mesh or internet — it's local to the user's devices
+- It does NOT contain trend data, agent opinions, or preparation reports
+- It IS the minimum information an ER doctor needs in the first 5 minutes
+
+**Auto-update:** The card regenerates automatically whenever medications, allergies, or conditions change. The user is prompted: "Your medication list changed. Update your Emergency Data Card?" The card shows a "last updated" date so clinicians can judge currency.
+
 ---
 
-## Phase 3 — Mesh Network (Federated Consultation)
+## Phase 2 — Mesh Network (Federated Consultation) *(After Phase 1 Has Active Users)*
 
-### 3.1 How the Mesh Works — Dynamic Domain Discovery
+### 2.1 How the Mesh Works — Dynamic Domain Discovery
 
 When your local consilium faces a question beyond its confidence threshold, it reaches out to the mesh — other instances running on other people's machines. **The mesh does not use hardcoded domains or specialties.** It routes by competence tags — the same tags agents use locally to form swarms.
 
@@ -796,17 +1475,19 @@ When your local consilium faces a question beyond its confidence threshold, it r
   "anonymized_context": {
     "data_patterns": ["declining_trend:eGFR:18_months", "elevated:creatinine", "stable:HbA1c"],
     "co_occurring_tags": ["diabetes", "hypertension", "anemia"],
-    "values": {
-      "eGFR_latest": 52,
-      "creatinine": 1.8,
-      "HbA1c": 7.2,
-      "hemoglobin": 10.2
+    "binned_values": {
+      "eGFR_range": "30-59",
+      "creatinine_range": "1.5-2.0",
+      "HbA1c_range": "7.0-8.0",
+      "hemoglobin_range": "10.0-11.0"
     }
   },
   "question": "What patterns do agents with renal_function competence see in this data?",
   "requesting_node": "node_hash_xyz"
 }
 ```
+
+**Values are sent as clinically meaningful bins, not exact numbers.** Exact values (eGFR 52, creatinine 1.8) combined with co-occurring conditions form quasi-identifiers in small populations. Binned ranges (eGFR 30–59, creatinine 1.5–2.0) match thousands of people, making re-identification impractical. The bins are aligned with clinical staging (CKD stages, diabetes control bands, anemia severity) so responding nodes can still reason effectively — a nephrologist doesn't need eGFR 52 vs 54, they need "Stage 3" vs "Stage 4".
 
 No domain labels. No specialty names. No medical terminology in the protocol layer. Just competence tags and anonymized data patterns. The protocol is domain-agnostic — the same mesh message format works for renal function queries, portfolio allocation queries, and contract clause queries. The mesh doesn't know what domain it's routing.
 
@@ -828,10 +1509,11 @@ No domain name. No "I'm a medical node." Just tags and stats.
 ```
 
 **Re-identification risk (honest assessment):** Removing demographics is necessary but not sufficient. Rare condition combinations can be uniquely identifying — a patient with Fabry disease + pheochromocytoma + a specific medication list may be one of a handful of people worldwide. Mitigation strategies:
+- **Binned values, not exact values**: mesh queries send clinically meaningful ranges (eGFR "30–59") instead of exact numbers (eGFR 52). Bins match thousands of people; exact values narrow to individuals. See query format above.
 - **k-anonymity enforcement**: before sending a mesh query, the local node checks whether the condition combination is shared by at least k patients in the body knowledge graph. If not, the query is generalized (e.g., "rare lysosomal storage disease" instead of "Fabry disease").
-- **Differential privacy noise**: add controlled noise to lab values (within clinically meaningful ranges) to prevent exact-value matching.
+- **Temporal linkability protection**: even with fresh pseudonymous IDs, sequential queries from the same node about "declining eGFR" every 3 months with progressively worse values create a re-identifiable pattern. Mitigations: (1) randomize query timing within a window (±2 weeks), (2) batch multiple queries into single compound requests, (3) vary the bin width between queries so the same person's data appears in different bins over time, (4) rate-limit per-topic queries (same competence tags) to max 2 per 6-month period per person.
 - **Query rate limiting**: a node cannot send more than N mesh queries per day, preventing profile reconstruction from query patterns.
-- **No longitudinal linking**: each mesh query uses a fresh pseudonymous ID. No way to determine that two queries came from the same patient.
+- **No longitudinal linking**: each mesh query uses a fresh pseudonymous ID. No way to determine that two queries came from the same patient. Combined with binned values and temporal randomization, reconstructing a progression timeline from mesh queries is computationally infeasible.
 
 **What comes back:**
 ```json
@@ -849,7 +1531,7 @@ No domain name. No "I'm a medical node." Just tags and stats.
 }
 ```
 
-### 3.2 What Nodes Share With Each Other
+### 2.2 What Nodes Share With Each Other
 
 | Shared | Not shared |
 |--------|-----------|
@@ -861,7 +1543,7 @@ No domain name. No "I'm a medical node." Just tags and stats.
 
 The responding node's agent draws on its *own patient's graph* to inform its opinion — it has seen similar cases. But it shares only the conclusion, not the underlying data.
 
-### 3.3 Mesh Protocol
+### 2.3 Mesh Protocol
 
 **Node discovery:** nodes advertise competence tags on a DHT (distributed hash table) — similar to BitTorrent. No central registry. No domain labels.
 
@@ -877,7 +1559,7 @@ The responding node's agent draws on its *own patient's graph* to inform its opi
 
 **Volume:** a single consultation might query 5–20 nodes. Perspectives are aggregated by the local GeneralistAgent (or equivalent coordinator from the plugin).
 
-### 3.4 Mesh Credit System — BitTorrent-Style Barter
+### 2.4 Mesh Credit System — BitTorrent-Style Barter
 
 Mesh queries are free — no money changes hands. Instead, the mesh uses a **credit-based barter system** inspired by BitTorrent's tit-for-tat protocol:
 
@@ -902,7 +1584,7 @@ You configure your capacity       → "serve up to N queries/day"
 
 **Relationship to the Expert Portal:** The mesh (free, barter-based) and the Expert Portal (paid, company-operated) are completely separate systems. A user with zero money can still use the mesh to query other nodes' agents. The Expert Portal is only needed when the user wants to fund expert micro-questions to fill specific knowledge gaps.
 
-### 3.5 External AI Escalation
+### 2.5 External AI Escalation *(available from Phase 1 for paper extraction; mesh escalation in Phase 2)*
 
 If the user configures an external LLM API key (OpenAI, Anthropic, Google, etc.), the system can escalate to more powerful AI models when the local LLM and mesh perspectives aren't sufficient. This is entirely user-controlled:
 
@@ -922,7 +1604,7 @@ Reasoning escalation chain:
 
 **Why this matters:** A local qwen3:14b quantized model may struggle with complex multi-system reasoning that GPT-4 or Claude handles well. Rather than compromising on reasoning quality, the user can opt into more powerful models for the hardest questions — at their own cost, under their own API key. The local system remains the default; external AI is a power-user option.
 
-### 3.6 Collective Context Without Sharing Data
+### 2.6 Collective Context Without Sharing Data
 
 **Important distinction:** agents don't "become smarter" from following one person's data — the underlying LLM's reasoning doesn't improve from longitudinal exposure. What improves is **context richness**. A node that has tracked someone's data for 10 years has a deeply populated graph: complete history, every trend, every agent opinion and whether it held up. When that node's agent answers a mesh query matching its competence tags, it draws on that deep longitudinal context — because it actually happened in its graph.
 
@@ -930,9 +1612,30 @@ The mesh effect: each node contributes **data-grounded context**, not generic LL
 
 Node quality varies significantly. A node with 10 years of comprehensive data produces richer perspectives than a node with 6 months of sparse data. The mesh protocol accounts for this via the `data_richness` signal advertised on the DHT.
 
+### 2.7 Mesh Knowledge Sharing — Distributed Paper Curation
+
+Beyond answering queries, the mesh serves as a **distributed knowledge curation network**. When any node discovers and verifies a research paper, it announces the extracted knowledge to the mesh so all interested nodes can benefit.
+
+**This is the primary mechanism for knowledge dissemination across the network.** It transforms the mesh from a Q&A system into a living, community-curated knowledge base.
+
+**How it works:**
+
+1. User A finds a paper (proactively suggested by the system or manually loaded), reviews the LLM-extracted relationships, and confirms them into their graph (see Research Paper Pipeline in Knowledge Foundation section).
+2. User A's node publishes a paper announcement to the DHT with: DOI, domain tags, credibility score, extracted edges, and whether the confirmer is a credentialed expert.
+3. Other nodes subscribed to matching domain tags see the announcement.
+4. Each node decides: auto-ingest (if credibility is high and expert-confirmed), manual review, or ignore.
+5. If multiple nodes independently confirm the same edges, the confidence score increases across the network.
+6. If a retraction is detected later, the mesh broadcasts a retraction alert and all nodes that ingested are notified.
+
+**The compound effect:** A community of 1000 nephrology-interested users means 1000x the paper discovery rate compared to a single user. Every paper anyone finds enriches everyone's knowledge graph. Over time, this creates a collectively curated knowledge base that no individual, institution, or company could build alone.
+
+**Mesh paper sharing uses the same credit system as mesh queries** — sharing a paper announcement earns credits, just like serving a query response.
+
+See the Research Paper Pipeline section for the full discovery → credibility → extraction → confirmation → sharing workflow.
+
 ---
 
-## Expert Portal — Company-Operated Knowledge Validation Service
+## Expert Portal — Company-Operated Knowledge Validation Service *(Phase 2)*
 
 The Expert Portal is the economic engine of Consilium. It connects users who need knowledge graph improvements with credentialed domain experts who answer micro-questions. The portal is **operated by Consilium as a company** — domain-agnostic, handling routing, payments, quality control, and reporting. The company earns revenue through a transparent service fee on each transaction.
 
@@ -1316,7 +2019,7 @@ Getting the first 50 experts is the hardest problem. Concrete strategies:
 
 ---
 
-## Phase 4 — Privacy Layer (Future)
+## Phase 3 — Privacy Layer & Scale *(Future)*
 
 *Designed from the start to support this — not required for local-only operation.*
 
@@ -1331,6 +2034,21 @@ Getting the first 50 experts is the hardest problem. Concrete strategies:
 ## Legal Strategy — Why Consilium Is Not a Regulated Product
 
 **Consilium is a general-purpose knowledge organization and educational entertainment platform.** It is not a medical device, financial advisory service, legal practice tool, or professional service of any kind. This is not a disclaimer bolted onto a medical product — it is the fundamental architecture of the system.
+
+### Dual Framing — Same System, Two Audiences
+
+Consilium requires different framing for different audiences. The system is the same — the emphasis changes.
+
+| Audience | Framing | Emphasis |
+|----------|---------|----------|
+| **Regulators / Legal** | "Educational entertainment and knowledge exploration tool" | Not a medical device. Not professional advice. No fiduciary relationship. Generic platform + user-installed community plugins. |
+| **Expert recruitment** | "Professional knowledge management system" | Career-long knowledge capture. Cross-specialty consultation via mesh. Client data organization in per-person folders. Research paper ingestion into personal knowledge graph. The best knowledge tool you've ever had — and you can earn income on the side. |
+| **Clinicians reviewing patient data** | "Patient-organized data summary" | Clinician view: raw findings, standard abbreviations, ICD-10 codes, guideline citations, no educational framing. Like a patient bringing an organized spreadsheet — not a "product" that tells doctors what to do. |
+| **General users** | "Personal knowledge organization with AI agents" | Organize your data, see connections, prepare for professional appointments. Your data stays on your device. |
+
+**Why this isn't contradictory:** "Educational entertainment" describes the legal classification (what the system IS NOT — not a professional service). "Professional knowledge management" describes the user experience (what the system IS — a powerful tool for organizing and connecting knowledge). A spreadsheet used by a doctor to organize patient data is both "general-purpose productivity software" (legally) and "a clinical tool" (practically). Same principle.
+
+**The key rule:** All external communications, legal documents, and regulatory filings use the "educational entertainment" framing. Marketing to experts, product documentation, and feature descriptions use the "professional knowledge management" framing. Never mix them in the same document.
 
 ### Why This Is Legally Defensible
 
@@ -1498,7 +2216,7 @@ If a user's system generates more questions than their monthly budget, excess qu
 
 ## Hardware & Deployment Strategy
 
-### Phase 1 Target: MacBook (developer + early adopter)
+### Phase 0 Target: MacBook (developer + early adopter)
 
 The initial deployment target is a MacBook (Apple Silicon, 16GB+ RAM). All components — Neo4j, Ollama, the agent framework, and the dashboard — run locally via Docker Compose behind a native macOS app.
 
@@ -1510,7 +2228,7 @@ The initial deployment target is a MacBook (Apple Silicon, 16GB+ RAM). All compo
 
 **User experience target:** The user downloads a `.dmg`, installs the app, and sees a dashboard. They never interact with Docker, Neo4j, Ollama, or a terminal. The app handles all infrastructure invisibly — similar to how the Docker Desktop app hides containers behind a GUI, or how Obsidian hides its data store behind a note-taking UI.
 
-### Phase 2 Target: Consilium Appliance (DIY or pre-assembled)
+### Phase 3 Target: Consilium Appliance (DIY or pre-assembled)
 
 A pre-configured hardware appliance that plugs into the home network. Open-source hardware design — anyone can build one from the published BOM, or community members may offer pre-assembled units. The user connects it to power and Wi-Fi, opens a web dashboard on their phone or laptop, and starts adding data.
 
