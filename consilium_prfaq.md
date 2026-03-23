@@ -22,7 +22,7 @@ Consilium is a general-purpose knowledge organization and educational entertainm
 
 3. **Your consilium**: A permanent team of AI advisory agents from your installed plugins monitors your knowledge graph. When new data arrives, the relevant agents explore connections and generate questions you might want to discuss with your real-world professional.
 
-4. **The mesh**: When your local consilium faces a question beyond its confidence, it sends an anonymized query to the Consilium network — thousands of other instances. Each node has different plugins installed depending on what data its owner loaded. Your consilium aggregates mesh perspectives alongside its own analysis. No data is shared — only reasoning.
+4. **The mesh**: When your local consilium faces a question beyond its confidence, it consults a four-level reasoning chain: first the mesh — thousands of other Consilium instances worldwide. Each node has different plugins installed depending on what data its owner loaded. Your consilium aggregates mesh perspectives alongside its own analysis. If you've configured an external AI API key (OpenAI, Anthropic, etc.), the system can also escalate harder reasoning tasks to cloud models. No data is shared — only reasoning. Mesh queries are governed by a credit-based barter system: you earn credits by serving queries, and spend them by asking.
 
 5. **Expert knowledge network**: The knowledge graphs that plugins provide are continuously improved by credentialed domain experts answering targeted micro-questions on their phone — 10–30 seconds each, earning $0.05–0.50 per answer through the Consilium Expert Portal. Pro subscribers ($20/month or less) fund these questions — the portal handles routing, quality control, and expert payments. Retired professionals find this especially rewarding — it keeps their expertise active and benefits people, with zero scheduling or liability. An LLM-powered Question Engine identifies gaps in the knowledge graph and generates the most informative questions to fill them.
 
@@ -62,7 +62,11 @@ A: Three ways: (1) Link an account — Apple Health, Oura Ring, patient portals.
 
 **Q: How much does it cost?**
 
-A: The platform is free and open-source — local consilium, mesh consultations, and the base knowledge graphs from domain plugins are all free. Consilium Pro (≤$20/month) adds expert-validated knowledge: your system can route micro-questions to credentialed human experts who improve the knowledge graph. That's the same price as ChatGPT Plus — but Consilium runs on your data, remembers everything, consults a mesh of other instances, and has real human experts validating the knowledge. Free users still benefit from knowledge improvements funded by Pro users. The Consilium Home Unit hardware design is also open-source — you can build one yourself for ~$150–250 in parts.
+A: The platform is free and open-source — local consilium, mesh consultations, and the base knowledge graphs from domain plugins are all free. Consilium Pro (≤$20/month) adds expert-validated knowledge: up to 200 expert micro-questions per month, routed to credentialed human experts who improve the knowledge graph. Questions are prioritized by information gain and deduplicated across users so your budget goes further. That's the same price as ChatGPT Plus — but Consilium runs on your data, remembers everything, consults a mesh of other instances, and has real human experts validating the knowledge. Free users still benefit from knowledge improvements funded by Pro users. The Consilium Home Unit is an open-source hardware design — you can build one yourself for ~$150–250 in parts.
+
+**Q: Can Consilium use cloud AI for harder questions?**
+
+A: Yes. If you configure an API key for an external AI service (OpenAI, Anthropic, Google, etc.), Consilium can escalate harder reasoning tasks to cloud models. This is optional — by default, everything runs on your local hardware. The reasoning chain is: local LLM first → mesh consultation → external AI (if configured) → Expert Portal (Pro only). You control which services are available and pay for external AI usage directly through your own API account.
 
 **Q: Can I export my data?**
 
@@ -107,7 +111,7 @@ The platform is free with no paywalls. Pro adds expert-validated knowledge for �
 
 **Q: What makes Consilium different from existing tools?**
 
-A: No existing tool combines: (1) local-first data storage, (2) persistent multi-agent AI, (3) decentralized mesh consultation, and (4) expert-validated knowledge graphs — all free and open-source. Adjacent tools are all narrower: ChatGPT (stateless, cloud, no experts), WebMD (static, no personalization), TurboTax (single domain, no AI agents), Fitbit (data display only).
+A: No existing tool combines: (1) local-first data storage, (2) persistent multi-agent AI, (3) decentralized mesh consultation, (4) optional external AI escalation via your own API key, and (5) expert-validated knowledge graphs — all on a free and open-source platform with a company-operated Expert Portal for expert payments. Adjacent tools are all narrower: ChatGPT (stateless, cloud, no experts), WebMD (static, no personalization), TurboTax (single domain, no AI agents), Fitbit (data display only).
 
 Consilium's strength is the network effect: more user nodes = richer mesh perspectives = more expert engagement = better knowledge graphs = more users.
 
@@ -141,7 +145,7 @@ Precedent: VS Code has medical imaging extensions. Docker Hub hosts clinical con
 
 A: When a user loads data (drops a PDF, connects a data source), the platform's local LLM classifier detects the domain (wellness, finance, legal, etc.). If no plugin for that domain is installed, the platform asks: "This looks like [domain] data. Would you like to install the [domain] plugin?" The user confirms, and the platform pulls the open-source plugin repository from GitHub.
 
-Each plugin is a self-contained GitHub repo containing: (1) a foundational knowledge graph for the domain, (2) domain-specific AI agents, (3) data parsers for domain document types, and (4) micro-question templates for expert validation. Anyone can create a plugin — the format is open and documented.
+Each plugin is a self-contained GitHub repo containing: (1) a foundational knowledge graph for the domain, (2) domain-specific AI agents, (3) data parsers for domain document types, and (4) micro-question templates for expert validation. Anyone can create a plugin — the format is open and documented. Plugins use tagged releases with cryptographic signatures, run in sandboxed execution environments, and are tracked in a community audit registry for transparency.
 
 Critically: the platform never auto-installs plugins, never pre-loads domain capabilities, and never suggests what data the user should load. Every domain activation is user-initiated. This creates a clean legal separation between the platform (generic infrastructure) and domain intelligence (user-installed community software).
 
@@ -149,7 +153,7 @@ Existing open-source projects serve as plugin foundations: MDAgents and Hetionet
 
 **Q: How does the mesh work?**
 
-A: Consilium uses a BitTorrent-style peer-to-peer mesh. When your local agents face a question beyond their confidence, they query other nodes on the network. Mesh queries are free — they use a credit-based barter system: you earn credits by serving queries to others, and spend credits by querying others. No money, no crypto, no central server. You configure how many queries your node serves per day. The more you contribute, the more you can ask.
+A: Consilium uses a BitTorrent-style peer-to-peer mesh. When your local agents face a question beyond their confidence, they query other nodes on the network. Mesh queries are free — they use a credit-based barter system: you earn credits by serving queries to others, and spend credits by querying others. New nodes start with 10 free credits for bootstrapping. Identity is based on a keypair generated at install to prevent credit farming. No money, no crypto, no central server. You configure how many queries your node serves per day. The more you contribute, the more you can ask.
 
 **Q: How does the Expert Portal work?**
 
@@ -159,7 +163,7 @@ A: The Expert Portal is a company-operated service that connects Pro subscribers
 
 A: In order of severity:
 
-1. **Knowledge graph quality**: If open-source models on consumer hardware can't reason well against the knowledge graph, expert micro-questions can't fix a fundamentally weak AI. Mitigation: benchmark rigorously; fall back to cloud models via privacy-preserving inference if needed.
+1. **Knowledge graph quality**: If open-source models on consumer hardware can't reason well against the knowledge graph, expert micro-questions can't fix a fundamentally weak AI. Mitigation: benchmark rigorously; users can configure external AI API keys (OpenAI, Anthropic, etc.) for harder reasoning tasks.
 2. **Expert adoption**: 50 experts across 3 domains before launch. Micro-questions are lower friction than case review, but still need initial momentum. CME credits and the retired-expert angle are the strongest levers.
 3. **Regulatory reclassification**: Low probability given the general-purpose framing, but if a regulator targets Consilium specifically, it could slow adoption. Mitigation: proactive regulatory engagement, healthcare attorney review.
 4. **User adoption**: Running a local database on a laptop isn't mass-market yet. The Consilium Home Unit appliance (open-source hardware design) is the path to mainstream — but requires community hardware effort.
