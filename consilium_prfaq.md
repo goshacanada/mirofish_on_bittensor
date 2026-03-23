@@ -4,19 +4,19 @@
 
 ## Press Release
 
-### Consilium — Open-Source Personal Knowledge System Where Domain Experts Earn by Sharing Expertise
+### Consilium — Open-Source Personal Knowledge System for Everyone — Including the Experts Themselves
 
-*A permanent AI advisory council on every person's device — a peer-to-peer mesh improved by credentialed domain experts*
+*A permanent AI advisory council on every person's device — a peer-to-peer mesh where even domain experts tap into collective wisdom*
 
-Consilium is a new open-source system for decentralized personal knowledge management. It gives every person a permanent team of AI advisory agents running on their own computer, backed by a knowledge graph that organizes complex information and helps users prepare for informed conversations with real-world professionals.
+Consilium is a new open-source system for decentralized personal knowledge management. It gives every person — from patients organizing lab results to doctors building a lifetime of clinical knowledge — a permanent team of AI advisory agents running on their own computer, backed by a knowledge graph that captures domain knowledge and helps users prepare for informed conversations with real-world professionals.
 
-Consilium is a general-purpose knowledge organization and educational entertainment system. The platform is free and open-source. It supports multiple domains — wellness & body literacy, personal finance, legal literacy, engineering, and more — using the same domain-agnostic architecture. Credentialed domain experts, including retirees who want to stay active and share their lifetime of knowledge, earn micro-payments through the Consilium Expert Portal by answering targeted questions that continuously improve the knowledge graphs all agents reason against.
+Consilium is a general-purpose knowledge organization and educational entertainment system. The platform is free and open-source. It supports multiple domains — wellness & body literacy, personal finance, legal literacy, engineering, and more — using the same domain-agnostic architecture. The system ingests research papers, assesses their credibility, and extracts knowledge into the graph — making it a personal knowledge assistant that grows smarter over time. Credentialed domain experts, including retirees who want to stay active and share their lifetime of knowledge, use Consilium as their own professional knowledge tool and can earn micro-payments through the Consilium Expert Portal by answering targeted questions that continuously improve the knowledge graphs all agents reason against.
 
-"People face complex decisions every day — about their health, finances, legal situations — and they walk into professional appointments unprepared because the information is scattered and hard to understand. Consilium organizes your personal data, helps you see connections, and generates the right questions to ask your doctor, advisor, or attorney. It doesn't replace professionals — it makes every conversation with them more productive. And for retired doctors, lawyers, and engineers, it's a way to keep contributing their expertise — on their own schedule, from their phone, with real impact."
+"People face complex decisions every day — about their health, finances, legal situations — and they walk into professional appointments unprepared because the information is scattered and hard to understand. Consilium organizes your data, builds a knowledge graph from research papers and your own observations, and generates the right questions to ask your doctor, advisor, or attorney. It doesn't replace professionals — it makes every conversation with them more productive. And here's the thing: even professionals need this. No one knows everything. A cardiologist doesn't know nephrology. A tax attorney doesn't know immigration law. Consilium is their personal knowledge assistant — it captures their expertise over their entire career, organizes client data in per-person folders, and connects them to collective wisdom across specialties through the mesh. For retired doctors, lawyers, and engineers, it's a way to keep their knowledge growing and contributing — on their own schedule, with real impact."
 
 **How it works:**
 
-1. **You load your data**: Drop in a lab report PDF, connect your Apple Watch, upload a brokerage statement, or photograph a legal document. Consilium's local AI classifier detects what kind of data it is.
+1. **You load your data**: Drop in a lab report PDF, a research paper, connect your Apple Watch, upload a brokerage statement, or photograph a legal document. Consilium's local AI classifier detects what kind of data it is. Research papers are assessed for credibility and their knowledge is extracted into your graph. Personal data is stored locally in per-person folders — you can organize by household member or by client.
 
 2. **Domain plugins install on-demand**: If you load a lab report and don't have a wellness plugin installed, Consilium asks: "This looks like health data. Would you like to install the Wellness & Body Literacy plugin to organize it?" You confirm, and the system pulls the relevant open-source plugin from GitHub — including domain-specific agents (like MDAgents for wellness), a foundational knowledge graph, and data parsers. **If you never load health data, no health code ever runs on your machine.**
 
@@ -46,7 +46,7 @@ A: No. Consilium is an educational entertainment and knowledge exploration tool.
 
 **Q: Where is my data stored?**
 
-A: On your device only. Consilium runs a local database on your computer. Your data never leaves your machine. There is no cloud account, no server upload, and no way for Consilium or anyone else to access your data.
+A: On your device only. Consilium stores two things locally: (1) a **knowledge graph** — domain knowledge extracted from research papers, expert answers, and your observations, and (2) a **personal data store** — your raw records (lab reports, financial statements, etc.) organized in per-person folders. Your personal data never leaves your machine. The knowledge graph captures domain knowledge (like "elevated creatinine correlates with CKD"), not personal information. You can audit, export, and delete any record at any time. You can configure your own backup solution (Google Drive, OneDrive, etc.) — Consilium provides the export mechanism but takes no responsibility for backup security or retention.
 
 **Q: What domains does Consilium support?**
 
@@ -64,13 +64,25 @@ A: Three ways: (1) Link an account — Apple Health, Oura Ring, patient portals.
 
 A: The platform is free and open-source — local consilium, mesh consultations, and the base knowledge graphs from domain plugins are all free. Consilium Pro (≤$20/month) adds expert-validated knowledge: up to 200 expert micro-questions per month, routed to credentialed human experts who improve the knowledge graph. Questions are prioritized by information gain and deduplicated across users so your budget goes further. That's the same price as ChatGPT Plus — but Consilium runs on your data, remembers everything, consults a mesh of other instances, and has real human experts validating the knowledge. Free users still benefit from knowledge improvements funded by Pro users. The Consilium Home Unit is an open-source hardware design — you can build one yourself for ~$150–250 in parts.
 
+**Q: Can domain experts use Consilium themselves?**
+
+A: Absolutely — Consilium is designed as a personal knowledge assistant for professionals. No one knows everything: a cardiologist needs nephrology insight, a tax attorney needs immigration law context. Experts feed research papers into their knowledge graph over their entire career, building a personal knowledge base that grows smarter with every paper they read and every pattern they observe. They organize client or patient data in per-person folders, and their consilium reasons across their deep knowledge graph plus the cross-specialty mesh. A doctor's node that has absorbed hundreds of research papers produces dramatically better mesh responses for everyone. Expert Portal participation (earning by answering micro-questions) is optional — the primary value is having a personal knowledge system that grows with your career.
+
+**Q: Can Consilium ingest research papers?**
+
+A: Yes. Drop a PDF or paste a DOI/PubMed ID. The system automatically assesses credibility (journal ranking, peer review status, citation count, retraction checks), extracts domain knowledge (entities, relationships, findings), and adds it to your knowledge graph with appropriate confidence tiers. Over time, your graph grows richer with every paper you read. This is especially valuable for domain experts — a physician feeding in papers throughout their career builds a personal knowledge base reflecting decades of accumulated expertise.
+
+**Q: Can I organize data for multiple people?**
+
+A: Yes. Consilium supports per-person folders. A family can have separate folders for each household member. A financial advisor, attorney, or physician can have folders per client. Each person's data is fully isolated — agents operating on one person's data cannot access another's. The knowledge graph is shared across all folders because it contains domain knowledge, not personal data.
+
 **Q: Can Consilium use cloud AI for harder questions?**
 
 A: Yes. If you configure an API key for an external AI service (OpenAI, Anthropic, Google, etc.), Consilium can escalate harder reasoning tasks to cloud models. This is optional — by default, everything runs on your local hardware. The reasoning chain is: local LLM first → mesh consultation → external AI (if configured) → Expert Portal (Pro only). You control which services are available and pay for external AI usage directly through your own API account.
 
 **Q: Can I export my data?**
 
-A: Yes. Your knowledge graph is a standard database on your device. Export as JSON, CSV, or domain-specific formats (FHIR for health data) at any time. You own your data unconditionally.
+A: Yes. Your knowledge graph and personal data store are both on your device. Export as JSON, CSV, or domain-specific formats (FHIR for health data) at any time. You can audit every record Consilium holds, delete any record at will (immediately and permanently), and configure your own backup solution (Google Drive, OneDrive, etc.). You own your data unconditionally.
 
 ---
 
@@ -78,7 +90,7 @@ A: Yes. Your knowledge graph is a standard database on your device. Export as JS
 
 **Q: How do I earn money on Consilium?**
 
-A: You answer targeted micro-questions in your domain of expertise — on your phone, during downtime. Each question takes 10–30 seconds: multiple choice, yes/no, threshold sliders, or short rankings. Pay is $0.05–0.50 per answer depending on question type, funded by Pro user subscriptions. You earn more as your reputation score increases — like Uber, high-rated experts get more questions and better pay rates. For retired professionals, this is a way to stay active, share your lifetime of expertise, and earn supplemental income — all on your own schedule, with no scheduling, no commute, and no liability.
+A: First and foremost, Consilium is a personal knowledge assistant for your professional work. You feed research papers into your knowledge graph, organize client or patient data in per-person folders, and tap into cross-specialty wisdom through the mesh. Your knowledge graph grows with every paper you read and every pattern you observe — it's a crystallized version of your career expertise. Second, you can optionally earn income by answering targeted micro-questions in your specialty — on your phone, during downtime. Each question takes 10–30 seconds: multiple choice, yes/no, threshold sliders, or short rankings. Pay is $0.05–0.50 per answer, funded by Pro subscriptions. You earn more as your reputation score increases — like Uber, high-rated experts get more questions and better pay rates. For retired professionals, this is a way to keep your knowledge growing, stay connected to your field, and earn supplemental income — all on your own schedule, with no scheduling, no commute, and no liability.
 
 **Q: What kind of questions will I see?**
 
@@ -113,18 +125,19 @@ The platform is free with no paywalls. Pro adds expert-validated knowledge for �
 
 A: No existing tool combines: (1) local-first data storage, (2) persistent multi-agent AI, (3) decentralized mesh consultation, (4) optional external AI escalation via your own API key, and (5) expert-validated knowledge graphs — all on a free and open-source platform with a company-operated Expert Portal for expert payments. Adjacent tools are all narrower: ChatGPT (stateless, cloud, no experts), WebMD (static, no personalization), TurboTax (single domain, no AI agents), Fitbit (data display only).
 
-Consilium's strength is the network effect: more user nodes = richer mesh perspectives = more expert engagement = better knowledge graphs = more users.
+Consilium's strength is the network effect: more user nodes = richer mesh perspectives = more expert engagement = better knowledge graphs = more users. Crucially, experts themselves are users — a cardiologist tapping nephrology insight through the mesh makes the mesh better for everyone. The system doesn't just serve experts; it gets better because experts use it.
 
 **Q: How do you solve the expert cold-start problem?**
 
 A: The micro-question model dramatically lowers the bar:
 
-1. **CME credits** (wellness domain): Partner with an ACCME accreditor. Answering clinical knowledge questions counts toward continuing education. Doctors currently pay for CME — Consilium provides it as a benefit.
-2. **Near-zero friction**: 10-second answers on a phone. No case review, no context, no scheduling.
-3. **Retired professionals**: A retired physician, attorney, or engineer can contribute their lifetime of expertise in 10-second increments. The income is supplemental; the sense of purpose and continued relevance is the real draw. Self-worth matters, especially after leaving full-time work.
-4. **Pay-per-answer**: $0.05–0.50, funded by Pro subscriptions. Zero-effort income for active and retired professionals alike.
-5. **Academic partnerships**: Residency programs use the question portal as a clinical reasoning training tool.
-6. **Target**: 50 credentialed experts across 3 domains before launch. 3-month closed beta.
+1. **Experts are users first**: The strongest lever. Experts join because Consilium is the best personal knowledge assistant for their work — it captures their expertise over their career, organizes client data, ingests research papers, and gives them cross-specialty insight through the mesh. Earning income through the Expert Portal is a bonus, not the reason they join.
+2. **CME credits** (wellness domain): Partner with an ACCME accreditor. Answering clinical knowledge questions counts toward continuing education. Doctors currently pay for CME — Consilium provides it as a benefit.
+3. **Near-zero friction**: 10-second answers on a phone. No case review, no context, no scheduling.
+4. **Retired professionals**: A retired physician, attorney, or engineer can contribute their lifetime of expertise in 10-second increments. The income is supplemental; the sense of purpose and continued relevance is the real draw. Self-worth matters, especially after leaving full-time work.
+5. **Pay-per-answer**: $0.05–0.50, funded by Pro subscriptions. Zero-effort income for active and retired professionals alike.
+6. **Academic partnerships**: Residency programs use the question portal as a clinical reasoning training tool.
+7. **Target**: 50 credentialed experts across 3 domains before launch. 3-month closed beta.
 
 **Q: Why is Consilium not a regulated product?**
 

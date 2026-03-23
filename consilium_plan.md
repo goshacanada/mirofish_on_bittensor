@@ -1,6 +1,6 @@
 # Consilium — Decentralized Personal Knowledge System
 
-**Vision:** Every person runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local graph database. When the AI faces a hard question, it consults a mesh of other instances worldwide and taps a network of credentialed domain experts who earn micro-payments by answering targeted knowledge questions. The result is a global knowledge improvement system where no one's data ever leaves their machine.
+**Vision:** Every person — including domain experts themselves — runs a permanent AI advisory council on their own computer. Their personal knowledge — about any complex domain — lives in a local graph database. When the AI faces a hard question, it consults a mesh of other instances worldwide and taps a network of credentialed domain experts who earn micro-payments by answering targeted knowledge questions. No one knows everything: a cardiologist needs nephrology insight, a tax attorney needs immigration law context. The result is a global knowledge improvement system where experts and non-experts alike benefit from collective wisdom, and no one's data ever leaves their machine.
 
 **This is an open-source project built for the common good.** The Consilium platform is free software that anyone can run, modify, and share. The Expert Portal — a company-operated service that routes micro-questions to credentialed experts — is the only paid component, funded by an optional Pro subscription (≤$20/month). The goal is to give every person — regardless of means — the ability to organize complex information and walk into professional appointments prepared. Domain experts, including retirees who want to stay active and contribute their lifetime of knowledge, earn income by improving the knowledge graphs that make this possible. If it helps people have better conversations with their doctors, advisors, and attorneys, that is the reward.
 
@@ -37,6 +37,7 @@
 9. **Domain-agnostic** — the platform contains zero domain-specific code. All domain knowledge — agents, graphs, schemas — lives in external open-source repos and is loaded on-demand only when the user's data triggers it.
 10. **User-driven domains** — the platform never suggests or pre-installs domain capabilities. The user loads their own data; the system classifies it and asks permission to install the relevant domain plugin. If a user never loads medical records, no medical code ever runs on their machine.
 11. **Expert dignity** — domain experts, including retirees, earn income and stay engaged by contributing their knowledge. Retirement doesn't mean your expertise stops mattering.
+12. **Experts are users too** — no one knows everything. A cardiologist needs nephrology insight. A tax attorney needs immigration law context. Domain experts use Consilium to tap into collective wisdom beyond their own specialty — through the mesh, external AI, and the Expert Portal. They are the system's most powerful users and its most valuable mesh nodes.
 
 ---
 
@@ -46,7 +47,9 @@
 Your Machine
 ├── Consilium Platform (domain-agnostic core)
 │   ├── Data Classifier (LLM)          ← detects what kind of data you loaded
-│   ├── Graph Database (Neo4j)          ← empty until you add data
+│   ├── Knowledge Graph (Neo4j)         ← domain knowledge, not personal data
+│   ├── Personal Data Store             ← per-person folders, auditable, deletable
+│   ├── Research Paper Pipeline         ← ingests papers, assesses credibility, extracts knowledge
 │   ├── Agent Framework                 ← runs agents from installed domain plugins
 │   ├── Local LLM (Ollama)              ← inference stays on your hardware
 │   ├── External LLM (optional)         ← user's API key for harder questions
@@ -58,15 +61,21 @@ Your Machine
 │   ├── e.g. finance plugin  ← pulled only when user loads portfolio data
 │   └── e.g. legal plugin    ← pulled only when user uploads legal documents
 │
-└── Your Data (drives everything)
-    ├── Whatever you load → classified → routed to the right graph
-    └── You control what domains are active on your machine
+├── Personal Data (per-person folders, never leaves your machine)
+│   ├── /people/igor/        ← household member's records
+│   ├── /people/elena/       ← household member's records
+│   ├── /clients/smith/      ← professional's client records
+│   └── Fully auditable — view, export, delete any record at will
+│
+└── User-Configured Backup (optional, user's responsibility)
+    ├── Google Drive, OneDrive, external drive, or custom
+    └── Consilium provides export — user owns security and retention
 
 Mesh Network (other people's machines)
 ├── Node A: runs wellness + finance plugins    ← her data drove those installs
 ├── Node B: runs only finance plugin           ← he only loaded financial data
-├── Node C: runs wellness + legal plugins      ← her data drove those installs
-└── Each node is different — shaped by its owner's data
+├── Node C: doctor's node with rich KG         ← enriched by years of research papers
+└── Mesh shares knowledge graph reasoning only — never personal data
 
 Expert Portal (company-operated service)
 ├── Credentialed domain experts answer micro-questions
@@ -280,24 +289,44 @@ When a domain plugin is installed (user-initiated), it imports a **foundational 
 
 When installed, the wellness plugin imports a knowledge graph mapping organs, systems, biomarkers, and their relationships.
 
-### The Two-Layer Graph
+### The Two-Layer Architecture — Knowledge Graph + Personal Data Store
+
+Consilium separates **domain knowledge** from **personal data**. These are fundamentally different things with different storage, sharing, and lifecycle rules.
 
 ```
-Layer 1: Body Knowledge Graph (shared, pre-loaded, updated from research)
-├── Organs, tissues, systems (anatomy)
-├── Physiological relationships (how things connect)
-├── Biomarker meanings (what creatinine rising means for kidneys)
-├── Known disease mechanisms (how CKD progresses)
-└── Drug effects and interactions (known mechanism of action)
+Layer 1: Domain Knowledge Graph (Neo4j — shared, enriched over time)
+├── Domain entities and relationships (organs, biomarkers, statutes, instruments)
+├── Patterns and correlations (what creatinine rising means for kidneys)
+├── Known mechanisms (how CKD progresses, how tax rules interact)
+├── Research-derived knowledge (from papers, expert answers, mesh patterns)
+└── Confidence tiers on every relationship (established → exploratory)
+    ↑ This is what agents reason against
+    ↑ This is what the mesh shares
+    ↑ This is NOT personal data — it's domain knowledge
 
-Layer 2: Personal Health Graph (private, per-person)
-├── Your lab results, conditions, symptoms
-├── Your medications and doses
-├── Your wearable data
-└── Agent opinions about your case
+Layer 2: Personal Data Store (local filesystem — private, per-person, auditable)
+├── Raw records organized in per-person folders
+│   ├── /people/igor/            ← household member
+│   ├── /people/elena/           ← household member
+│   ├── /clients/smith-john/     ← financial advisor's client
+│   └── /clients/doe-jane/       ← attorney's client
+├── Lab results, financial statements, legal documents
+├── Wearable data exports
+├── Agent analysis reports
+└── Fully auditable — user can view, export, and delete any record at will
 ```
 
-Agents traverse both layers simultaneously. When NephrologyAgent sees your eGFR declining, it already knows (from Layer 1) that: kidney → filters creatinine → declining eGFR → tubular damage → anemia of CKD → fatigue. It connects your personal data to established physiology automatically.
+**The knowledge graph captures knowledge, not personal data.** When you upload a lab report, the system:
+1. Extracts domain knowledge (relationships, patterns, thresholds)
+2. Updates the knowledge graph with any new connections
+3. Stores the raw personal data in the per-person folder for your reference
+4. Agents reason across both layers — the knowledge graph for domain context, personal data for your specific situation
+
+**Personal data never enters the knowledge graph.** Your creatinine value of 1.8 stays in your personal data folder. The knowledge that "creatinine above 1.5 with declining eGFR suggests CKD stage 3" lives in the knowledge graph. Agents connect the two at query time.
+
+**Personal data never leaves your machine.** The mesh shares reasoning from the knowledge graph only. No personal data is transmitted, shared, or accessible to anyone — including the Expert Portal.
+
+Agents traverse both layers simultaneously. When NephrologyAgent sees your eGFR declining (personal data), it already knows (from the knowledge graph) that: kidney → filters creatinine → declining eGFR → tubular damage → anemia of CKD → fatigue. It connects your personal data to established domain knowledge automatically.
 
 ### Epistemic Confidence Tiers
 
@@ -336,6 +365,102 @@ Rather than building from scratch, the system imports established biomedical kno
 | **OpenBioLink** | Quality-filtered biomedical KG — explicitly separates high-confidence from low-confidence edges | TSV | explicitly tiered |
 
 **Import strategy:** Hetionet and SPOKE are Neo4j-native and import directly. Uberon/FMA require OWL→Cypher conversion. OpenBioLink provides the confidence filtering logic. The import pipeline maps all into the unified schema with confidence tiers preserved.
+
+### Research Paper Ingestion
+
+The knowledge graph grows not just from foundational imports and expert answers, but from **research papers**. Users (especially domain experts) can feed research papers into Consilium to enrich their local knowledge graph.
+
+**Ingestion pipeline:**
+
+```
+Research paper (PDF, DOI link, PubMed ID)
+    │
+    ▼
+Credibility Assessment (automated)
+    ├── Journal impact factor / ranking
+    ├── Peer review status (preprint vs. published)
+    ├── Citation count and citation network
+    ├── Retraction database check (Retraction Watch)
+    ├── Author credentials and h-index
+    └── Assigns confidence tier: established / inferred / exploratory
+    │
+    ▼
+Knowledge Extraction (LLM + NLP)
+    ├── Entity recognition (conditions, biomarkers, drugs, mechanisms)
+    ├── Relationship extraction (causes, correlates, treats, precedes)
+    ├── Quantitative findings (effect sizes, p-values, sample sizes)
+    └── Maps to graph schema with edges carrying source and confidence
+    │
+    ▼
+Knowledge Graph Update
+    ├── New entities and relationships added
+    ├── Existing relationships reinforced (evidence count increases)
+    ├── Confidence tiers adjusted based on accumulated evidence
+    └── Provenance tracked — every edge links back to its source paper(s)
+```
+
+**Credibility signals by domain:**
+
+| Domain | Key credibility signals |
+|--------|----------------------|
+| Wellness | PubMed indexed, peer-reviewed, RCT/meta-analysis, Cochrane inclusion |
+| Finance | Published in recognized journal, regulatory filing, established institution |
+| Legal | Published opinion, law review, official reporter, statutory source |
+| Engineering | IEEE/ASME/standards body, peer-reviewed, field-validated |
+
+**Users can also load papers manually** and override the automated credibility assessment — marking a paper as more or less credible based on their own domain expertise. This is especially valuable for domain experts who understand nuances the automated system may miss.
+
+### Multi-Person Data Model
+
+Consilium supports **per-person folders** for organizing personal data. This serves two distinct use cases:
+
+**Household use:** A family runs one Consilium instance with separate folders for each member.
+```
+/people/
+├── igor/          ← dad's health records, financial data
+├── elena/         ← mom's health records
+├── alex/          ← child's health records
+└── shared/        ← family-level documents (insurance, shared finances)
+```
+
+**Professional use:** A financial advisor, attorney, or physician uses Consilium to organize client data.
+```
+/clients/
+├── smith-john/    ← client's financial records
+├── doe-jane/      ← client's legal documents
+└── templates/     ← reusable document templates
+```
+
+**Isolation rules:**
+- Each person's folder is fully isolated — agents operating on Igor's data cannot access Elena's data
+- The knowledge graph is shared across all folders (it's domain knowledge, not personal data)
+- Agents are scoped per-person — when you select a person's folder, agents reason against that person's data + the shared knowledge graph
+- Mesh queries never include any personal data from any folder
+
+### Data Sovereignty — Audit, Deletion, and Backup
+
+Users have full control over their personal data at all times.
+
+**Audit:** Every piece of personal data has a clear provenance trail — when it was loaded, from what source, what knowledge was extracted from it. Users can browse their data store, see exactly what Consilium holds, and verify accuracy.
+
+**Deletion:** Users can delete any record at any time. When personal data is deleted:
+- The raw record is removed from the personal data store
+- Knowledge already extracted into the graph remains (it's domain knowledge, not personal data)
+- Any agent analysis reports referencing that data are also deleted
+- Deletion is immediate and permanent — no soft-delete, no recovery period
+
+**Backup:** Consilium provides export and sync mechanisms but **takes zero responsibility for backup security or retention**. The user configures their own backup solution:
+
+| Backup target | How it works |
+|---------------|-------------|
+| Google Drive | Consilium exports encrypted archive → user's Drive folder syncs it |
+| Microsoft OneDrive | Same — encrypted archive → user's OneDrive folder |
+| Local external drive | Export to user-specified path |
+| Custom solution | Export API — user scripts their own backup |
+
+**What gets backed up:** Personal data store only. The knowledge graph is reproducible from foundational imports + research papers + expert answers — it doesn't need personal backup. Users can optionally back up their knowledge graph state for convenience (faster restore vs. re-import).
+
+**Consilium's responsibility ends at export.** The system provides the mechanism to export data in standard formats. Security, retention, encryption-at-rest, and access control of backups are the user's responsibility. Consilium does not store backup credentials, does not monitor backup health, and does not guarantee data recovery.
 
 ### Body Knowledge Graph Schema Extension
 
@@ -396,101 +521,85 @@ This is **federated analytics** — each node computes locally, shares only the 
 
 ---
 
-## Phase 1 — Local Health Graph
+## Phase 1 — Local Knowledge Graph + Personal Data Store
 
 ### 1.1 Graph Schema
 
-The health graph is the foundation. Everything is a node or an edge.
+The knowledge graph captures **domain knowledge** — entities, relationships, mechanisms, and patterns. It is not a personal data store. Personal data (lab results, financial records, documents) lives in the **personal data store** (per-person folders on the local filesystem). Agents reason across both at query time.
 
-**Core Node Types:**
+**Knowledge Graph Node Types (domain knowledge — shared, not personal):**
 
 | Node | Description | Example |
 |------|-------------|---------|
-| `Condition` | Diagnosed medical condition | Type 2 Diabetes, Hypertension |
-| `Symptom` | Observed symptom | Fatigue, Shortness of breath |
-| `Allergy` | Known allergy or adverse reaction | Penicillin allergy, Sulfa sensitivity |
-| `FamilyHistory` | Hereditary / familial condition | Father: MI at 52, Mother: Type 2 DM |
-| `SocialFactor` | Lifestyle or environmental factor | Smoking 10 pack-years, Sedentary, Alcohol 14 units/wk |
-| `Medication` | Drug with dose and schedule | Metformin 1000mg 2x daily |
-| `LabResult` | Single lab measurement at a point in time | Creatinine 1.8 mg/dL on 2026-01-15 |
-| `LabPanel` | Group of related lab results | Complete Metabolic Panel |
-| `WearableReading` | Metric from a wearable device | HRV 42ms, Sleep score 73 |
-| `Biomarker` | Tracked physiological metric | eGFR, HbA1c, Blood Pressure |
-| `Doctor` | Treating physician with specialty | Dr. Smith, Nephrologist |
-| `Encounter` | Medical visit or event | ER visit 2025-11-03, Annual checkup |
-| `Procedure` | Medical procedure | Colonoscopy, ECG, MRI |
-| `AgentOpinion` | Opinion from a specialist agent | Nephrology agent analysis 2026-03-01 |
-| `MeshOpinion` | Anonymous opinion from another node | External cardiology opinion |
-| `Genomic` | Genetic variant or pharmacogenomic result | APOL1 G1/G2, CYP2D6 poor metabolizer |
+| `Condition` | Medical condition (domain knowledge) | Type 2 Diabetes, Hypertension |
+| `Symptom` | Known symptom type | Fatigue, Shortness of breath |
+| `Medication` | Drug with known properties | Metformin, Lisinopril |
+| `Biomarker` | Physiological metric definition | eGFR, HbA1c, Blood Pressure |
+| `Procedure` | Medical procedure type | Colonoscopy, ECG, MRI |
+| `Genomic` | Genetic variant with known effects | APOL1 G1/G2, CYP2D6 poor metabolizer |
+| `AgentOpinion` | Reasoning output from a specialist agent | Nephrology agent analysis |
+| `MeshOpinion` | Anonymous reasoning from another node | External cardiology opinion |
+| `ResearchPaper` | Source paper with credibility metadata | DOI, journal, confidence tier |
 
-**Core Edge Types:**
+**Personal Data Types (per-person folder on filesystem — private, auditable, deletable):**
+
+| Data | Description | Example |
+|------|-------------|---------|
+| Lab results | Single measurement at a point in time | Creatinine 1.8 mg/dL on 2026-01-15 |
+| Wearable readings | Metrics from wearable devices | HRV 42ms, Sleep score 73 |
+| Allergies | Known allergies or adverse reactions | Penicillin allergy |
+| Family history | Hereditary/familial conditions | Father: MI at 52 |
+| Social factors | Lifestyle or environmental factors | Smoking 10 pack-years |
+| Provider records | Treating physicians, encounters | Dr. Smith visit 2026-01-15 |
+| Documents | Raw uploaded files | Lab report PDF, legal document |
+
+Personal data is loaded into memory at query time, connected to knowledge graph entities by the agent, and never persisted in the graph database. The graph holds "Metformin TREATS Type 2 Diabetes" (knowledge). The personal data store holds "Igor takes Metformin 1000mg 2x daily" (personal fact).
+
+**Knowledge Graph Edge Types (domain relationships):**
 
 | Edge | Connects | Meaning |
 |------|----------|---------|
-| `HAS_CONDITION` | Person → Condition | Diagnosed with |
-| `HAS_SYMPTOM` | Person/Condition → Symptom | Experiences / caused by |
-| `TAKES` | Person → Medication | Currently taking |
 | `TREATS` | Medication → Condition | Medication for condition |
-| `MEASURED_AT` | LabResult → date property | When measured (stored as datetime on the edge or node, not a separate Timeline node) |
-| `RESULT_OF` | LabResult → LabPanel | Part of this panel |
-| `INDICATES` | LabResult → Biomarker | Measures this biomarker |
 | `SUGGESTS` | Biomarker → Condition | Abnormal value may indicate |
 | `CORRELATES_WITH` | Biomarker ↔ Symptom | Statistical correlation |
-| `MANAGED_BY` | Condition → Doctor | Under care of |
-| `ALLERGIC_TO` | Person → Allergy | Known allergy |
-| `HAS_FAMILY_HISTORY` | Person → FamilyHistory | Hereditary risk factor |
-| `HAS_SOCIAL_FACTOR` | Person → SocialFactor | Lifestyle / environmental factor |
-| `HAS_VARIANT` | Person → Genomic | Genetic variant carried |
-| `OCCURRED_AT` | Encounter → date property | When visit happened |
-| `LED_TO` | Encounter → Condition/Procedure | Visit resulted in |
-| `TRENDING` | Biomarker → Biomarker | Biomarker trend relationship |
+| `CAUSES` | Condition → Symptom | Known causal relationship |
 | `CONTRADICTS` | Medication → Medication | Drug interaction |
-| `GENERATED_BY` | AgentOpinion → Condition | Opinion about this condition |
-| `INFORMED_BY` | AgentOpinion → LabResult | Opinion used this data |
+| `PRECEDES` | Biomarker → Condition | Temporal pattern |
+| `TRENDING` | Biomarker → Biomarker | Biomarker trend relationship |
+| `EVIDENCED_BY` | Edge → ResearchPaper | Source paper for this relationship |
 
-**Example subgraph for a patient:**
+**How agents connect personal data to the knowledge graph at query time:**
 
 ```
-[Person]
-  ├─HAS_CONDITION──► [Type 2 Diabetes] ──MANAGED_BY──► [Dr. Chen, Endocrinologist]
-  │                        │
-  │                   TREATED_BY
-  │                        ▼
-  ├─TAKES──────────► [Metformin 1000mg]
-  │
-  ├─HAS_CONDITION──► [Hypertension] ──MANAGED_BY──► [Dr. Smith, GP]
-  │
-  ├─HAS_SYMPTOM───► [Fatigue] ◄──CAUSED_BY?──── [Anemia] ← SUGGESTS ← [Hemoglobin 10.2]
-  │
-  ├─LAB_RESULT────► [Creatinine 1.8] ──MEASURED_AT──► [2026-01-15]
-  │                       │
-  │               INDICATES▼
-  │                   [eGFR: 52] ──SUGGESTS──► [Early CKD Stage 3]
-  │                       │
-  │               TRENDING▼
-  │              [eGFR: 61 → 58 → 55 → 52]  ← 18-month decline
-  │
-  └─WEARABLE──────► [HRV: 38ms avg] ──CORRELATES_WITH──► [Fatigue]
-                    [Sleep: 5.8h avg]
-                    [Resting HR: 72bpm]
+Knowledge Graph (Neo4j — domain knowledge)              Personal Data Store (filesystem)
+┌─────────────────────────────────────────┐            ┌──────────────────────────────────┐
+│ [Metformin] ──TREATS──► [Type 2 DM]    │            │ /people/igor/                    │
+│ [Creatinine] ──SUGGESTS──► [CKD]       │  ◄─agents─►│   labs/2026-01-15-cmp.json       │
+│ [CKD] ──CAUSES──► [Anemia]             │  connect   │     creatinine: 1.8, eGFR: 52   │
+│ [Anemia] ──CAUSES──► [Fatigue]         │  at query  │   medications/current.json        │
+│ [HRV decline] ──PRECEDES──► [CKD]      │  time      │     metformin 1000mg 2x daily    │
+│ [Metformin] ──CONTRADICTS──► [...]      │            │   wearables/hrv-march.json       │
+└─────────────────────────────────────────┘            │     HRV: 38ms avg               │
+                                                       └──────────────────────────────────┘
 ```
 
-This is what gives agents *holistic* context. An agent querying "why is this patient fatigued?" traverses the graph and finds: declining eGFR + low hemoglobin + poor sleep + metformin use — and reasons across all of them simultaneously.
+An agent querying "why is this person fatigued?" loads Igor's personal data into memory, traverses the knowledge graph for domain context, and finds: declining eGFR (personal) + CKD causes anemia (knowledge) + anemia causes fatigue (knowledge) + low HRV (personal) + HRV decline precedes CKD (knowledge). It reasons across both layers simultaneously — but the graph itself contains only domain knowledge.
 
 ### 1.2 Temporal Modeling
 
-Every measurement carries a `measured_at` datetime property directly on the node (not in a separate Timeline node — that would add unnecessary indirection and multiply edge count). The graph supports trend queries natively:
+Personal measurements are stored in the per-person data folder as timestamped JSON records. Agents load these into memory and compute trends at query time:
 
-```cypher
--- Find all eGFR readings in the last 2 years, ordered by time
-MATCH (b:Biomarker {name: "eGFR"})<-[:INDICATES]-(r:LabResult)
-WHERE r.measured_at > date() - duration({years: 2})
-RETURN r.value, r.measured_at ORDER BY r.measured_at
+```
+/people/igor/labs/
+├── 2025-07-15-cmp.json    → { "eGFR": 61, "creatinine": 1.4, ... }
+├── 2025-10-20-cmp.json    → { "eGFR": 58, "creatinine": 1.5, ... }
+├── 2026-01-15-cmp.json    → { "eGFR": 55, "creatinine": 1.6, ... }
+└── 2026-03-10-cmp.json    → { "eGFR": 52, "creatinine": 1.8, ... }
 ```
 
-Agents use trends, not just snapshots:
-- *"eGFR declining at 4.5 points/year — at this rate, Stage 4 CKD in 18 months"*
-- *"HRV trending down 3 months before creatinine rose — early stress signal"*
+Agents compute trends from the personal data and reason against the knowledge graph:
+- *"eGFR declining at 4.5 points/year — at this rate, Stage 4 CKD in 18 months"* (trend from personal data + CKD staging thresholds from knowledge graph)
+- *"HRV trending down 3 months before creatinine rose — early stress signal"* (temporal pattern from personal data + HRV-CKD correlation from knowledge graph)
 
 ### 1.3 Data Ingestion
 
@@ -510,17 +619,31 @@ Agents use trends, not just snapshots:
 - Direct integration with Quest, LabCorp APIs (where available)
 
 **Doctor Notes / Medical Records:**
-- Upload PDF/text → LLM extracts structured data → mapped to graph nodes
-- Patient controls what gets ingested — nothing automatic
+- Upload PDF/text → LLM extracts structured data
+- User controls what gets ingested — nothing automatic
+
+**Research Papers:**
+- Upload PDF, paste DOI or PubMed ID
+- Credibility assessment (journal, peer review, citations, retraction check)
+- Knowledge extraction into graph (entities, relationships, findings)
+- See "Research Paper Ingestion" section above for full pipeline
 
 **Ingestor pipeline:**
 ```
-Raw data (PDF, API, XML)
+Raw data (PDF, API, XML, research paper)
     → Parser (extract structured fields)
-    → Entity recognizer (map to graph node types)
-    → Deduplicator (don't double-count the same result)
-    → Graph writer (upsert nodes and edges in Neo4j)
-    → Change detector (flag new results for agent review)
+    → Classifier (personal data vs. domain knowledge)
+    │
+    ├── Personal data path:
+    │   → Store in per-person folder as structured JSON
+    │   → Deduplicator (don't double-count the same result)
+    │   → Change detector (flag new data for agent review)
+    │
+    └── Knowledge path:
+        → Entity recognizer (map to knowledge graph node types)
+        → Relationship extractor (identify domain relationships)
+        → Knowledge graph writer (upsert nodes and edges in Neo4j)
+        → Confidence tier assignment (based on source credibility)
 ```
 
 ---
@@ -1163,6 +1286,33 @@ Getting the first 50 experts is the hardest problem. Concrete strategies:
 | Research collaborators | Academic professionals | Offer co-authorship on publications analyzing expert consensus patterns. Academic currency. |
 
 **Target: 50 credentialed experts across 3+ domains before launch. 3-month closed beta.**
+
+### Experts as Users — Personal Knowledge Assistant and Cross-Specialty Wisdom
+
+**No one knows everything.** A cardiologist doesn't know nephrology. A tax attorney doesn't know immigration law. A structural engineer doesn't know electrical systems. Domain experts face the same problem as everyone else — complex decisions that cross specialty boundaries — but with higher stakes and less tolerance for superficial answers.
+
+**Consilium is a personal knowledge assistant for domain experts.** The primary value for experts is not earning money through the Expert Portal — it's using the system to **capture, organize, and build on their own professional knowledge over their entire career.**
+
+| Expert user | How they use Consilium | What they gain |
+|-------------|----------------------|----------------|
+| Cardiologist | Feeds research papers, clinical observations over years | A personal knowledge graph crystallizing decades of cardiology expertise + cross-specialty mesh access for nephrology, endocrinology |
+| Tax attorney | Loads case law, tax code changes, client patterns | A living knowledge base of tax reasoning + immigration/corporate law context from the mesh |
+| Structural engineer | Ingests building codes, failure analyses, specifications | Accumulated engineering knowledge + electrical/mechanical insights from other specialists' nodes |
+| Retired internist | Continues feeding new research papers post-retirement | Stays current on oncology, immunology developments through mesh + contributes lifetime of clinical reasoning |
+| Financial advisor | Organizes client data in per-client folders, loads market research | Cross-domain insight (legal, tax) for complex client situations |
+
+**How it works for expert users:**
+
+1. **They capture their professional knowledge over time** — every research paper they read, every clinical pattern they observe, every case outcome they note gets processed into their knowledge graph. Over years, this becomes an invaluable personal knowledge base — a crystallized version of their professional expertise.
+2. **Per-person folders organize client/patient data** — a doctor creates folders per patient, a financial advisor per client. Personal data stays isolated; the knowledge graph grows from patterns across all cases.
+3. **Their knowledge graph is dramatically richer** — enriched by research papers, professional observations, and years of domain-specific data. Agents working against this deep graph produce more sophisticated analysis.
+4. **The mesh is especially powerful for them** — when their consilium queries the mesh, it can reach nodes run by experts in other specialties. An expert node's mesh responses are higher quality because its knowledge graph is deeper.
+5. **Cross-specialty consultation is the core value** — a cardiologist tapping nephrology insight through the mesh, a tax attorney getting immigration law context. This is what professionals need and can't get from any other tool.
+6. **They make the mesh better for everyone** — expert nodes are the most valuable mesh participants. More experts using the system = dramatically richer mesh for all users.
+
+**This creates a virtuous cycle:** experts join because Consilium is the best personal knowledge assistant for their work → their rich knowledge graphs make the mesh better for everyone → more experts join → the mesh becomes even more valuable. The system doesn't just serve experts — it gets better because experts use it.
+
+**Expert Portal participation is optional and secondary.** Experts can also earn income by answering micro-questions in their specialty through the Expert Portal — but this is a bonus, not the primary value proposition. The primary value is having a personal knowledge system that grows with your career and connects you to collective wisdom across specialties.
 
 ---
 
